@@ -1,13 +1,11 @@
-// ============================================
-// LifeOS — Dashboard Home Page
-// ============================================
-
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { usePomodoroStore } from '../stores/pomodoroStore';
 import { useTaskStore } from '../stores/taskStore';
 import { useHabitStore } from '../stores/habitStore';
 import { useProjectStore } from '../stores/projectStore';
 import { useNoteStore } from '../stores/noteStore';
+import { useSettingsStore } from '../stores/settingsStore';
+import { getUpcomingEvents } from '../services/googleCalendarService';
 import { TaskStatus, ProjectStatus } from '../types';
 import { format, subDays } from 'date-fns';
 import { Timer, CheckSquare, Flame, Target, BookOpen, Clock, CalendarDays, Plus, Activity, BookText } from 'lucide-react';
@@ -24,6 +22,16 @@ export default function DashboardPage() {
   const habitLogs = useHabitStore((s) => s.logs);
   const projects = useProjectStore((s) => s.projects);
   const notes = useNoteStore((s) => s.notes);
+
+  const googleCalendarToken = useSettingsStore((s) => s.googleCalendarToken);
+  const [upcomingGoogleEvents, setUpcomingGoogleEvents] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (!googleCalendarToken) return;
+    getUpcomingEvents(new Date().toISOString(), 5)
+      .then(setUpcomingGoogleEvents)
+      .catch(err => console.error('Error loading dashboard events:', err));
+  }, [googleCalendarToken]);
 
   const todaySessions = sessions.filter((s) => s.date === today);
   const focusHours = (todaySessions.reduce((sum, s) => sum + s.duration, 0) / 60).toFixed(1);
@@ -280,9 +288,44 @@ export default function DashboardPage() {
               <CalendarDays size={14} /> Upcoming Events
             </h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-              <div style={{ fontSize: 13, color: 'var(--color-text-muted)', padding: '12px 0', textAlign: 'center' }}>
-                No events scheduled. Connect Google Calendar.
-              </div>
+              {!googleCalendarToken ? (
+                <div style={{ fontSize: 13, color: 'var(--color-text-muted)', padding: '12px 0', textAlign: 'center' }}>
+                  No events scheduled. Connect Google Calendar in Settings.
+                </div>
+              ) : upcomingGoogleEvents.length === 0 ? (
+                <div style={{ fontSize: 13, color: 'var(--color-text-muted)', padding: '12px 0', textAlign: 'center' }}>
+                  No upcoming events.
+                </div>
+              ) : (
+                upcomingGoogleEvents.map((event) => {
+                  const startDateTime = event.start?.dateTime || event.start?.date;
+                  const dateStr = startDateTime ? format(new Date(startDateTime), 'MMM d, yyyy') : '';
+                  const timeStr = event.start?.dateTime ? format(new Date(event.start.dateTime), 'HH:mm') : 'All Day';
+                  return (
+                    <div
+                      key={event.id}
+                      style={{
+                        padding: '10px 12px',
+                        background: 'var(--color-bg-tertiary)',
+                        borderRadius: 'var(--radius-md)',
+                        borderLeft: '3px solid var(--color-accent)',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: 4
+                      }}
+                    >
+                      <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text-primary)' }}>
+                        {event.summary}
+                      </span>
+                      <div style={{ display: 'flex', gap: 8, fontSize: 11, color: 'var(--color-text-muted)' }}>
+                        <span>{dateStr}</span>
+                        <span>•</span>
+                        <span>{timeStr}</span>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
             </div>
           </motion.div>
 

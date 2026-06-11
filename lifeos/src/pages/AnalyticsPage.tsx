@@ -91,7 +91,7 @@ export default function AnalyticsPage() {
     })).filter(item => item.value > 0);
   }, [sessions]);
 
-  const COLORS = ['#6c63ff', '#10b981', '#06b6d4', '#f43f5e', '#f59e0b', '#8b5cf6', '#a855f7'];
+  const COLORS = ['#3fb950', '#58a6ff', '#d29922', '#f85149', '#a371f7', '#56d364', '#79c0ff'];
 
   // Overall Statistics
   const totalFocusHours = useMemo(() => {
@@ -176,7 +176,7 @@ export default function AnalyticsPage() {
       <motion.div variants={item} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16 }}>
         
         <div className="glass-card" style={{ padding: '20px', display: 'flex', alignItems: 'center', gap: 16 }}>
-          <div style={{ width: 44, height: 44, borderRadius: 'var(--radius-md)', background: 'rgba(108,99,255,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6c63ff' }}>
+          <div style={{ width: 44, height: 44, borderRadius: 'var(--radius-md)', background: 'rgba(63,185,80,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#3fb950' }}>
             <Clock size={20} />
           </div>
           <div>
@@ -223,7 +223,7 @@ export default function AnalyticsPage() {
         {/* Chart 1: Focus Hours */}
         <div className="glass-card" style={{ padding: '20px' }}>
           <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 20, display: 'flex', alignItems: 'center', gap: 8 }}>
-            <Clock size={16} style={{ color: '#6c63ff' }} /> Focus Sessions Output (Hours)
+            <Clock size={16} style={{ color: '#3fb950' }} /> Focus Sessions Output (Hours)
           </h3>
           <div style={{ width: '100%', height: 260 }}>
             <ResponsiveContainer>
@@ -235,7 +235,7 @@ export default function AnalyticsPage() {
                   contentStyle={{ background: 'var(--color-bg-secondary)', borderColor: 'var(--color-border)', borderRadius: '8px' }}
                   labelStyle={{ color: 'var(--color-text-primary)', fontWeight: 600 }}
                 />
-                <Bar dataKey="hours" fill="#6c63ff" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="hours" fill="#3fb950" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>

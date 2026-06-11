@@ -106,13 +106,13 @@ export default function Sidebar() {
           width: 24,
           height: 24,
           borderRadius: 6,
-          background: 'var(--color-text-primary)',
+          background: 'var(--color-accent)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           fontSize: 12,
           fontWeight: 800,
-          color: 'var(--color-bg-primary)',
+          color: '#ffffff',
           flexShrink: 0,
         }}>
           L
@@ -214,12 +214,12 @@ export default function Sidebar() {
               width: 24,
               height: 24,
               borderRadius: 'var(--radius-full)',
-              background: 'var(--color-bg-active)',
+              background: 'var(--color-accent-glow)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
             }}>
-              <Zap size={12} color="var(--color-text-primary)" />
+              <Zap size={12} color="var(--color-accent)" />
             </div>
             <div>
               <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--color-text-primary)' }}>Level {level}</div>

@@ -16,12 +16,12 @@ const PRESET_ICONS = [
 ];
 
 const PRESET_COLORS = [
-  { name: 'Indigo', value: '#6c63ff' },
-  { name: 'Emerald', value: '#10b981' },
-  { name: 'Cyan', value: '#06b6d4' },
-  { name: 'Rose', value: '#f43f5e' },
-  { name: 'Amber', value: '#f59e0b' },
-  { name: 'Violet', value: '#8b5cf6' },
+  { name: 'Green', value: '#3fb950' },
+  { name: 'Blue', value: '#58a6ff' },
+  { name: 'Gold', value: '#d29922' },
+  { name: 'Red', value: '#f85149' },
+  { name: 'Purple', value: '#a371f7' },
+  { name: 'Lime', value: '#56d364' },
 ];
 
 export default function HabitsPage() {
@@ -43,7 +43,7 @@ export default function HabitsPage() {
   const [icon, setIcon] = useState('Activity');
   const [frequency, setFrequency] = useState<'daily' | 'weekly'>('daily');
   const [dailyTarget, setDailyTarget] = useState(1);
-  const [color, setColor] = useState('#6c63ff');
+  const [color, setColor] = useState('#3fb950');
 
   const todayStr = format(new Date(), 'yyyy-MM-dd');
   
@@ -66,7 +66,7 @@ export default function HabitsPage() {
     setIcon('Activity');
     setFrequency('daily');
     setDailyTarget(1);
-    setColor('#6c63ff');
+    setColor('#3fb950');
     setEditingHabit(null);
   };
 
@@ -232,14 +232,14 @@ export default function HabitsPage() {
 
                   {/* 7-day Tracker Grid */}
                   <div style={{ background: 'var(--color-bg-secondary)', padding: '12px', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8, fontSize: 10, color: 'var(--color-text-muted)', fontWeight: 600 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', gap: 6, marginBottom: 8, fontSize: 10, color: 'var(--color-text-muted)', fontWeight: 600 }}>
                       {last7Days.map((d) => (
-                        <div key={d.toISOString()} style={{ width: 28, textAlign: 'center' }}>
+                        <div key={d.toISOString()} style={{ width: 24, textAlign: 'center' }}>
                           {format(d, 'EE').charAt(0)}
                         </div>
                       ))}
                     </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', gap: 6 }}>
                       {last7Days.map((d) => {
                         const formattedD = format(d, 'yyyy-MM-dd');
                         const isDone = getHabitCompletionForDate(habit.id, formattedD);
@@ -250,24 +250,16 @@ export default function HabitsPage() {
                             key={formattedD}
                             onClick={() => toggleHabitDay(habit.id, formattedD)}
                             style={{
-                              width: 28,
-                              height: 28,
-                              borderRadius: '50%',
-                              border: isToday ? `2px solid ${habit.color}` : '1px solid var(--color-border)',
-                              background: isDone ? habit.color : 'transparent',
-                              color: isDone ? 'white' : 'var(--color-text-muted)',
+                              width: 24,
+                              height: 24,
+                              borderRadius: '4px',
+                              border: isToday ? `1.5px solid ${habit.color}` : '1px solid transparent',
+                              background: isDone ? habit.color : 'var(--color-heat-0)',
                               cursor: 'pointer',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              fontSize: 10,
-                              fontWeight: 700,
                               transition: 'all 0.15s',
                             }}
-                            title={format(d, 'MMM d')}
-                          >
-                            {isDone ? <Check size={14} strokeWidth={3} /> : format(d, 'd')}
-                          </button>
+                            title={`${format(d, 'EEEE, MMM d')}: ${isDone ? 'Completed' : 'Not completed'}`}
+                          />
                         );
                       })}
                     </div>

@@ -1,5 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { useNoteStore } from '../stores/noteStore';
+import { useSettingsStore } from '../stores/settingsStore';
+import { createNotionPage } from '../services/notionService';
 import type { Note } from '../types';
 import { Plus, Search, Pin, Archive, Trash2, Tag, BookOpen, Clock, ChevronRight, FileText, Check } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -23,6 +25,42 @@ export default function NotesPage() {
   const [editTitle, setEditTitle] = useState('');
   const [editContent, setEditContent] = useState('');
   const [editTags, setEditTags] = useState('');
+
+  // Notion integration states
+  const notionApiKey = useSettingsStore((s) => s.notionApiKey);
+  const defaultNotionDatabaseId = useSettingsStore((s) => s.notionDatabaseId);
+  const defaultNotionParentType = useSettingsStore((s) => s.notionParentType);
+
+  const [isNotionModalOpen, setIsNotionModalOpen] = useState(false);
+  const [notionParentId, setNotionParentId] = useState('');
+  const [notionParentType, setNotionParentType] = useState<'database' | 'page'>('database');
+  const [exportingNotion, setExportingNotion] = useState(false);
+  const [notionExportStatus, setNotionExportStatus] = useState<{ type: 'success' | 'error', message: string } | null>(null);
+
+  const handleExportToNotion = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!activeNote || !notionParentId.trim()) return;
+
+    setExportingNotion(true);
+    setNotionExportStatus(null);
+    try {
+      await createNotionPage(
+        notionParentId.trim(),
+        notionParentType,
+        activeNote.title,
+        activeNote.content
+      );
+      setNotionExportStatus({ type: 'success', message: 'Note exported to Notion successfully!' });
+      setTimeout(() => {
+        setIsNotionModalOpen(false);
+        setNotionExportStatus(null);
+      }, 2000);
+    } catch (err: any) {
+      setNotionExportStatus({ type: 'error', message: err.message || 'Failed to export note.' });
+    } finally {
+      setExportingNotion(false);
+    }
+  };
 
   const activeNote = useMemo(() => {
     return notes.find((n) => n.id === activeNoteId) || null;
@@ -262,6 +300,21 @@ export default function NotesPage() {
                   <Archive size={13} />
                   {activeNote.archived ? 'Activate' : 'Archive'}
                 </button>
+                {notionApiKey && (
+                  <button
+                    onClick={() => {
+                      setNotionParentId(defaultNotionDatabaseId || '');
+                      setNotionParentType(defaultNotionParentType || 'database');
+                      setIsNotionModalOpen(true);
+                    }}
+                    className="btn btn-secondary btn-sm"
+                    style={{ display: 'flex', alignItems: 'center', gap: 6 }}
+                    title="Export Note to Notion"
+                  >
+                    <div style={{ width: 12, height: 12, fontWeight: 'bold', fontSize: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid var(--color-border-light)', borderRadius: 2 }}>N</div>
+                    Export
+                  </button>
+                )}
               </div>
 
               <div style={{ display: 'flex', gap: 8 }}>
@@ -360,6 +413,71 @@ export default function NotesPage() {
           </div>
         )}
       </div>
+
+      {/* Notion Export Modal */}
+      {isNotionModalOpen && (
+        <div className="modal-overlay" onClick={() => setIsNotionModalOpen(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3 style={{ fontSize: 16, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8 }}>
+                <div style={{ width: 16, height: 16, fontWeight: 'bold', fontSize: 13, background: 'var(--color-text-primary)', color: 'var(--color-bg-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 3 }}>N</div>
+                Export Note to Notion
+              </h3>
+              <button onClick={() => setIsNotionModalOpen(false)} style={{ background: 'transparent', border: 'none', color: 'var(--color-text-muted)', cursor: 'pointer', fontSize: 18 }}>×</button>
+            </div>
+            <form onSubmit={handleExportToNotion}>
+              <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                
+                <div>
+                  <label style={{ display: 'block', fontSize: 12, fontWeight: 500, color: 'var(--color-text-secondary)', marginBottom: 6 }}>Export Target Type</label>
+                  <select
+                    value={notionParentType}
+                    onChange={(e) => setNotionParentType(e.target.value as any)}
+                    className="input"
+                  >
+                    <option value="database">Database</option>
+                    <option value="page">Parent Page</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: 12, fontWeight: 500, color: 'var(--color-text-secondary)', marginBottom: 6 }}>
+                    Notion {notionParentType === 'page' ? 'Page ID' : 'Database ID'}
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder={notionParentType === 'page' ? 'Enter Parent Page ID...' : 'Enter Database ID...'}
+                    value={notionParentId}
+                    onChange={(e) => setNotionParentId(e.target.value)}
+                    className="input"
+                  />
+                </div>
+
+                {notionExportStatus && (
+                  <div style={{
+                    background: notionExportStatus.type === 'success' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+                    border: notionExportStatus.type === 'success' ? '1px solid rgba(16, 185, 129, 0.2)' : '1px solid rgba(239, 68, 68, 0.2)',
+                    borderRadius: 'var(--radius-md)',
+                    padding: '8px 12px',
+                    fontSize: 12,
+                    color: notionExportStatus.type === 'success' ? 'var(--color-success)' : 'var(--color-danger)',
+                  }}>
+                    {notionExportStatus.message}
+                  </div>
+                )}
+
+              </div>
+              <div className="modal-footer">
+                <button type="button" onClick={() => setIsNotionModalOpen(false)} className="btn btn-secondary" disabled={exportingNotion}>Cancel</button>
+                <button type="submit" className="btn btn-primary" disabled={exportingNotion}>
+                  {exportingNotion ? 'Exporting...' : 'Export'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
     </div>
   );

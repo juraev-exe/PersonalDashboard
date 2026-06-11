@@ -28,6 +28,8 @@ const defaultSettings: AppSettings = {
   soundEnabled: true,
   notificationsEnabled: true,
   sidebarCollapsed: false,
+  notionDatabaseId: '',
+  notionParentType: 'database',
 };
 
 const loadSettings = (): AppSettings => getValue<AppSettings>('settings', defaultSettings);

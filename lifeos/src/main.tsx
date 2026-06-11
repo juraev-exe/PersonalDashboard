@@ -52,18 +52,18 @@ function App() {
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        background: '#0a0a0f',
+        background: '#000000',
         gap: 16,
       }}>
         <div style={{
           width: 32,
           height: 32,
           borderRadius: '50%',
-          border: '3px solid #2a2a4a',
-          borderTopColor: '#6c63ff',
+          border: '3px solid #151b23',
+          borderTopColor: '#3fb950',
           animation: 'spin 1s linear infinite',
         }} />
-        <span style={{ fontSize: 13, color: '#6a6a8a', fontFamily: 'system-ui, sans-serif' }}>Loading LifeOS...</span>
+        <span style={{ fontSize: 13, color: '#6e7681', fontFamily: 'system-ui, sans-serif' }}>Loading LifeOS...</span>
         <style dangerouslySetInnerHTML={{ __html: `
           @keyframes spin {
             to { transform: rotate(360deg); }

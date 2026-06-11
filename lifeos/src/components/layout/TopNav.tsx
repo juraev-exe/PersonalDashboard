@@ -103,7 +103,7 @@ export default function TopNav() {
               width: 6,
               height: 6,
               borderRadius: 'var(--radius-full)',
-              background: 'var(--color-text-primary)',
+              background: 'var(--color-accent)',
             }} />
           </button>
 

@@ -1,9 +1,11 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { useCalendarStore } from '../stores/calendarStore';
 import { useTaskStore } from '../stores/taskStore';
 import { useProjectStore } from '../stores/projectStore';
+import { useSettingsStore } from '../stores/settingsStore';
+import { getUpcomingEvents, createEvent } from '../services/googleCalendarService';
 import type { CalendarEvent } from '../types';
-import { Plus, ChevronLeft, ChevronRight, Calendar, Clock, Bookmark, List, Trash2, CheckCircle } from 'lucide-react';
+import { Plus, ChevronLeft, ChevronRight, Calendar, Clock, Bookmark, List, Trash2, CheckCircle, RefreshCw } from 'lucide-react';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, startOfWeek, endOfWeek, isSameDay, isSameMonth, addMonths, subMonths } from 'date-fns';
 
 export default function CalendarPage() {
@@ -14,6 +16,11 @@ export default function CalendarPage() {
   const tasks = useTaskStore((s) => s.tasks);
   const projects = useProjectStore((s) => s.projects);
 
+  const googleCalendarToken = useSettingsStore((s) => s.googleCalendarToken);
+  const [googleEvents, setGoogleEvents] = useState<any[]>([]);
+  const [loadingGoogle, setLoadingGoogle] = useState(false);
+  const [syncToGoogle, setSyncToGoogle] = useState(false);
+
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
   
@@ -22,8 +29,26 @@ export default function CalendarPage() {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [type, setType] = useState<'task' | 'exam' | 'deadline' | 'event' | 'study_plan'>('event');
-  const [color, setColor] = useState('#6c63ff');
+  const [color, setColor] = useState('#3fb950');
   const [time, setTime] = useState('');
+
+  const fetchGoogleEvents = useCallback(async () => {
+    if (!googleCalendarToken) return;
+    setLoadingGoogle(true);
+    try {
+      const monthStart = startOfMonth(currentMonth).toISOString();
+      const events = await getUpcomingEvents(monthStart, 100);
+      setGoogleEvents(events);
+    } catch (error) {
+      console.error('Error fetching Google Calendar events:', error);
+    } finally {
+      setLoadingGoogle(false);
+    }
+  }, [googleCalendarToken, currentMonth]);
+
+  useEffect(() => {
+    fetchGoogleEvents();
+  }, [fetchGoogleEvents]);
 
   // Synthesize events from tasks and projects
   const allEvents = useMemo(() => {
@@ -63,8 +88,27 @@ export default function CalendarPage() {
       }
     });
 
+    // Add Google Calendar events
+    googleEvents.forEach((g: any) => {
+      const startDateTime = g.start?.dateTime || g.start?.date;
+      if (!startDateTime) return;
+      const dateStr = startDateTime.split('T')[0];
+      const timeStr = g.start?.dateTime ? format(new Date(g.start.dateTime), 'HH:mm') : undefined;
+
+      eventsList.push({
+        id: `gcal-${g.id}`,
+        title: `Google: ${g.summary}`,
+        description: g.description,
+        date: dateStr,
+        startTime: timeStr,
+        type: 'event',
+        color: '#58a6ff',
+        isGenerated: true
+      });
+    });
+
     return eventsList;
-  }, [customEvents, tasks, projects]);
+  }, [customEvents, tasks, projects, googleEvents]);
 
   // Calendar days generation
   const calendarDays = useMemo(() => {
@@ -91,14 +135,28 @@ export default function CalendarPage() {
     return getEventsForDate(selectedDate);
   }, [selectedDate, allEvents]);
 
-  const handleSaveEvent = (e: React.FormEvent) => {
+  const handleSaveEvent = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim()) return;
+
+    const eventDate = format(selectedDate, 'yyyy-MM-dd');
+    const startHour = time || '09:00';
+    const startTimeISO = new Date(`${eventDate}T${startHour}`).toISOString();
+    const endTimeISO = new Date(new Date(startTimeISO).getTime() + 60 * 60 * 1000).toISOString();
+
+    if (syncToGoogle && googleCalendarToken) {
+      try {
+        await createEvent(title, description, startTimeISO, endTimeISO);
+        fetchGoogleEvents();
+      } catch (err: any) {
+        alert(`Failed to add event to Google Calendar: ${err.message}`);
+      }
+    }
 
     addEvent({
       title,
       description: description || undefined,
-      date: format(selectedDate, 'yyyy-MM-dd'),
+      date: eventDate,
       startTime: time || undefined,
       type,
       color
@@ -108,6 +166,7 @@ export default function CalendarPage() {
     setTitle('');
     setDescription('');
     setTime('');
+    setSyncToGoogle(false);
   };
 
   const getEventBadgeColor = (t: string) => {
@@ -137,6 +196,17 @@ export default function CalendarPage() {
           </div>
           
           <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            {googleCalendarToken && (
+              <button 
+                onClick={fetchGoogleEvents} 
+                className="btn btn-secondary btn-icon btn-sm" 
+                style={{ width: 30, height: 30 }}
+                title="Sync Google Calendar"
+                disabled={loadingGoogle}
+              >
+                <RefreshCw size={14} style={{ animation: loadingGoogle ? 'spin 1.5s linear infinite' : 'none' }} />
+              </button>
+            )}
             <button onClick={handleToday} className="btn btn-secondary btn-sm">
               Today
             </button>
@@ -398,7 +468,7 @@ export default function CalendarPage() {
                 <div>
                   <label style={{ display: 'block', fontSize: 12, fontWeight: 500, color: 'var(--color-text-secondary)', marginBottom: 8 }}>Label Color</label>
                   <div style={{ display: 'flex', gap: 10 }}>
-                    {['#6c63ff', '#10b981', '#06b6d4', '#f43f5e', '#f59e0b', '#8b5cf6'].map((col) => (
+                    {['#3fb950', '#58a6ff', '#d29922', '#f85149', '#a371f7', '#56d364'].map((col) => (
                       <button
                         key={col}
                         type="button"
@@ -415,6 +485,18 @@ export default function CalendarPage() {
                     ))}
                   </div>
                 </div>
+
+                {googleCalendarToken && (
+                  <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: 'var(--color-text-primary)', cursor: 'pointer', marginTop: 10 }}>
+                    <input
+                      type="checkbox"
+                      checked={syncToGoogle}
+                      onChange={(e) => setSyncToGoogle(e.target.checked)}
+                      style={{ width: 14, height: 14, cursor: 'pointer' }}
+                    />
+                    Add event to Google Calendar
+                  </label>
+                )}
 
               </div>
               <div className="modal-footer">

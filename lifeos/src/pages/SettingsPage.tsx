@@ -1,10 +1,14 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { useSettingsStore } from '../stores/settingsStore';
 import { pomodoroPresets } from '../data/seed';
 import { exportAllData, importAllData, clearAllData } from '../services/storage';
-import { Settings, Sun, Moon, Bell, Volume2, Download, Upload, Trash2, ShieldAlert, Plug, GitBranch, Code, CalendarDays } from 'lucide-react';
+import { Settings, Sun, Moon, Bell, Volume2, Download, Upload, Trash2, ShieldAlert, Plug, GitBranch, Code, CalendarDays, FileSpreadsheet } from 'lucide-react';
 import type { AppSettings } from '../types';
 import { supabase } from '../services/supabase';
+import { exportToGoogleSheets } from '../services/googleSheetsService';
+import { useTaskStore } from '../stores/taskStore';
+import { useHabitStore } from '../stores/habitStore';
+import { usePomodoroStore } from '../stores/pomodoroStore';
 
 import { motion } from 'framer-motion';
 
@@ -34,6 +38,8 @@ export default function SettingsPage() {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const [exportingSheets, setExportingSheets] = useState(false);
+
   const handleConnectGoogle = async () => {
     if (!supabase) {
       alert('Supabase is not configured. Google integration requires a live Supabase instance.');
@@ -44,13 +50,38 @@ export default function SettingsPage() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          scopes: 'https://www.googleapis.com/auth/calendar.events https://www.googleapis.com/auth/calendar.readonly',
+          scopes: 'https://www.googleapis.com/auth/calendar.events https://www.googleapis.com/auth/calendar.readonly https://www.googleapis.com/auth/spreadsheets',
           redirectTo: `${window.location.origin}/settings`,
         },
       });
       if (error) throw error;
     } catch (e: any) {
       alert(`Connection failed: ${e.message}`);
+    }
+  };
+
+  const handleExportToGoogleSheets = async () => {
+    if (!googleCalendarToken) {
+      alert('Google account token is missing. Please connect or input your Google OAuth token.');
+      return;
+    }
+    setExportingSheets(true);
+    try {
+      const tasks = useTaskStore.getState().tasks;
+      const habits = useHabitStore.getState().habits;
+      const pomodoros = usePomodoroStore.getState().sessions;
+
+      const { spreadsheetUrl } = await exportToGoogleSheets(googleCalendarToken, {
+        tasks,
+        habits,
+        pomodoros,
+      });
+      alert('Export to Google Sheets completed successfully!');
+      window.open(spreadsheetUrl, '_blank');
+    } catch (e: any) {
+      alert(`Google Sheets Export failed: ${e.message}`);
+    } finally {
+      setExportingSheets(false);
     }
   };
 
@@ -184,29 +215,69 @@ export default function SettingsPage() {
                 onChange={(e) => setIntegrationKey('notionApiKey', e.target.value)}
                 className="input"
               />
+              
+              <div style={{ display: 'grid', gridTemplateColumns: '150px 1fr', gap: 12, marginTop: 12 }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: 12, fontWeight: 500, color: 'var(--color-text-muted)', marginBottom: 6 }}>Export Target</label>
+                  <select
+                    value={useSettingsStore((s) => s.notionParentType) || 'database'}
+                    onChange={(e) => setIntegrationKey('notionParentType', e.target.value)}
+                    className="input"
+                  >
+                    <option value="database">Database</option>
+                    <option value="page">Parent Page</option>
+                  </select>
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: 12, fontWeight: 500, color: 'var(--color-text-muted)', marginBottom: 6 }}>
+                    Default {useSettingsStore((s) => s.notionParentType) === 'page' ? 'Page ID' : 'Database ID'}
+                  </label>
+                  <input
+                    type="text"
+                    placeholder={useSettingsStore((s) => s.notionParentType) === 'page' ? 'e.g. 4b29...' : 'e.g. 8f10...'}
+                    value={useSettingsStore((s) => s.notionDatabaseId) || ''}
+                    onChange={(e) => setIntegrationKey('notionDatabaseId', e.target.value)}
+                    className="input"
+                  />
+                </div>
+              </div>
             </div>
 
-            {/* Google Calendar */}
+            {/* Google Services */}
             <div>
               <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 500, color: 'var(--color-text-secondary)', marginBottom: 6 }}>
-                <CalendarDays size={14} /> Google Calendar Integration
+                <CalendarDays size={14} /> Google Services Integration (Calendar & Sheets)
               </label>
-              <div style={{ display: 'flex', gap: 8 }}>
-                <input
-                  type="text"
-                  placeholder="OAuth Token (Handled by Auth flow)"
-                  value={googleCalendarToken}
-                  readOnly
-                  className="input"
-                  style={{ opacity: 0.7, flex: 1 }}
-                />
-                <button 
-                  onClick={handleConnectGoogle}
-                  className="btn btn-secondary" 
-                  style={{ whiteSpace: 'nowrap' }}
-                >
-                  Connect Google
-                </button>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <input
+                    type="password"
+                    placeholder="Google OAuth Token (Populated via OAuth or paste manually)"
+                    value={googleCalendarToken}
+                    onChange={(e) => setIntegrationKey('googleCalendarToken', e.target.value)}
+                    className="input"
+                    style={{ flex: 1 }}
+                  />
+                  <button 
+                    onClick={handleConnectGoogle}
+                    className="btn btn-secondary" 
+                    style={{ whiteSpace: 'nowrap' }}
+                  >
+                    Connect Google
+                  </button>
+                </div>
+                
+                {googleCalendarToken && (
+                  <button
+                    onClick={handleExportToGoogleSheets}
+                    className="btn btn-secondary"
+                    disabled={exportingSheets}
+                    style={{ display: 'flex', alignItems: 'center', gap: 8, alignSelf: 'flex-start' }}
+                  >
+                    <FileSpreadsheet size={14} /> 
+                    {exportingSheets ? 'Exporting to Sheets...' : 'Export Dashboard to Google Sheets'}
+                  </button>
+                )}
               </div>
             </div>
           </div>

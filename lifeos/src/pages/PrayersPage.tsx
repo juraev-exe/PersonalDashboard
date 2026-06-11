@@ -207,22 +207,16 @@ export default function PrayersPage() {
                       <button
                         onClick={() => togglePrayer(prayer, dateStr)}
                         style={{
-                          width: 26,
-                          height: 26,
-                          borderRadius: 6,
-                          border: isToday ? '2px solid var(--color-violet)' : '1px solid var(--color-border)',
-                          background: completed ? 'var(--color-violet)' : 'transparent',
-                          color: completed ? 'white' : 'var(--color-text-muted)',
+                          width: 24,
+                          height: 24,
+                          borderRadius: '4px',
+                          border: isToday ? '1.5px solid var(--color-violet)' : '1px solid transparent',
+                          background: completed ? 'var(--color-violet)' : 'var(--color-heat-0)',
                           cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
                           transition: 'all 0.15s',
                         }}
-                        title={`${prayer} - ${format(d, 'MMM d')}`}
-                      >
-                        {completed && <Check size={14} strokeWidth={3} />}
-                      </button>
+                        title={`${prayer} — ${format(d, 'EEEE, MMM d')}: ${completed ? 'Completed' : 'Not completed'}`}
+                      />
                     </div>
                   );
                 })}

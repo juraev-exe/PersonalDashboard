@@ -43,15 +43,44 @@ export const searchNotion = async (query: string) => {
 };
 
 /**
- * Create a new page in a specific database
+ * Create a new page in a specific database or page
  */
-export const createNotionPage = async (databaseId: string, title: string, content: string) => {
+export const createNotionPage = async (parentId: string, parentType: 'database' | 'page', title: string, content: string) => {
   try {
+    const parentObj = parentType === 'database' 
+      ? { database_id: parentId } 
+      : { page_id: parentId };
+
+    // Split paragraphs by newlines and sanitize size to Notion limits
+    const paragraphs = content.split('\n');
+    const children = paragraphs.map(p => ({
+      object: 'block',
+      type: 'paragraph',
+      paragraph: {
+        rich_text: [
+          { type: 'text', text: { content: p.substring(0, 2000) } }
+        ]
+      }
+    }));
+
+    // If empty, add a default empty paragraph block
+    if (children.length === 0) {
+      children.push({
+        object: 'block',
+        type: 'paragraph',
+        paragraph: {
+          rich_text: [
+            { type: 'text', text: { content: '' } }
+          ]
+        }
+      });
+    }
+
     const response = await fetch(`${NOTION_API_BASE}/pages`, {
       method: 'POST',
       headers: getHeaders(),
       body: JSON.stringify({
-        parent: { database_id: databaseId },
+        parent: parentObj,
         properties: {
           title: {
             title: [
@@ -59,21 +88,14 @@ export const createNotionPage = async (databaseId: string, title: string, conten
             ]
           }
         },
-        children: [
-          {
-            object: 'block',
-            type: 'paragraph',
-            paragraph: {
-              rich_text: [
-                { type: 'text', text: { content } }
-              ]
-            }
-          }
-        ]
+        children: children.slice(0, 100)
       })
     });
     
-    if (!response.ok) throw new Error(`Notion API error: ${response.status}`);
+    if (!response.ok) {
+      const errData = await response.json().catch(() => ({}));
+      throw new Error(errData.message || `Notion API error: ${response.status}`);
+    }
     return await response.json();
   } catch (error) {
     console.error('Failed to create Notion page:', error);

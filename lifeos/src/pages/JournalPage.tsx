@@ -9,9 +9,9 @@ import { ChevronLeft, ChevronRight, Calendar, Save, Trash2, Smile, Meh, Frown, T
 import { motion, AnimatePresence } from 'framer-motion';
 
 const moods = [
-  { icon: Smile, label: 'Great', color: '#10b981', value: 'great' },
-  { icon: Meh, label: 'Okay', color: '#6c63ff', value: 'okay' },
-  { icon: Frown, label: 'Bad', color: '#f43f5e', value: 'bad' },
+  { icon: Smile, label: 'Great', color: '#3fb950', value: 'great' },
+  { icon: Meh, label: 'Okay', color: '#58a6ff', value: 'okay' },
+  { icon: Frown, label: 'Bad', color: '#f85149', value: 'bad' },
 ];
 
 export default function JournalPage() {
