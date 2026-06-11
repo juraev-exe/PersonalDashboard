@@ -1,0 +1,108 @@
+// ============================================
+// LifeOS — Gamification Store (XP, Levels, Achievements)
+// ============================================
+
+import { create } from 'zustand';
+import type { Achievement } from '../types';
+import { getValue, setValue } from '../services/storage';
+import { achievementDefinitions } from '../data/seed';
+
+interface GamificationState {
+  xp: number;
+  level: number;
+  achievements: Achievement[];
+  addXP: (amount: number) => void;
+  checkAchievements: (stats: { pomodoros: number; tasks: number; streak: number; focusHours: number; dailyPrayers: number; dailyHabits: number; totalHabits: number }) => void;
+  loadGamification: () => void;
+  getXPForNextLevel: () => number;
+  getXPProgress: () => number;
+}
+
+function levelFromXP(xp: number): number {
+  return Math.floor(xp / 200) + 1;
+}
+
+function xpForLevel(level: number): number {
+  return (level - 1) * 200;
+}
+
+function xpForNextLevel(level: number): number {
+  return level * 200;
+}
+
+export const useGamificationStore = create<GamificationState>((set, get) => ({
+  xp: 0,
+  level: 1,
+  achievements: [],
+
+  loadGamification: () => {
+    const xp = getValue<number>('xp', 0);
+    const level = levelFromXP(xp);
+    const achievements = getValue<Achievement[]>('achievements', []);
+    set({ xp, level, achievements });
+  },
+
+  addXP: (amount) => set((s) => {
+    const xp = s.xp + amount;
+    const level = levelFromXP(xp);
+    setValue('xp', xp);
+    return { xp, level };
+  }),
+
+  checkAchievements: (stats) => {
+    const { achievements } = get();
+    const unlockedIds = new Set(achievements.filter(a => a.unlockedAt).map(a => a.id));
+    const newUnlocks: Achievement[] = [];
+
+    achievementDefinitions.forEach(def => {
+      if (unlockedIds.has(def.id)) return;
+      let unlocked = false;
+
+      if (def.condition === 'pomodoros >= 1' && stats.pomodoros >= 1) unlocked = true;
+      if (def.condition === 'pomodoros >= 10' && stats.pomodoros >= 10) unlocked = true;
+      if (def.condition === 'pomodoros >= 50' && stats.pomodoros >= 50) unlocked = true;
+      if (def.condition === 'pomodoros >= 100' && stats.pomodoros >= 100) unlocked = true;
+      if (def.condition === 'tasks >= 1' && stats.tasks >= 1) unlocked = true;
+      if (def.condition === 'tasks >= 10' && stats.tasks >= 10) unlocked = true;
+      if (def.condition === 'tasks >= 50' && stats.tasks >= 50) unlocked = true;
+      if (def.condition === 'tasks >= 100' && stats.tasks >= 100) unlocked = true;
+      if (def.condition === 'streak >= 7' && stats.streak >= 7) unlocked = true;
+      if (def.condition === 'streak >= 30' && stats.streak >= 30) unlocked = true;
+      if (def.condition === 'streak >= 100' && stats.streak >= 100) unlocked = true;
+      if (def.condition === 'focusHours >= 100' && stats.focusHours >= 100) unlocked = true;
+      if (def.condition === 'dailyPrayers >= 5' && stats.dailyPrayers >= 5) unlocked = true;
+      if (def.condition === 'dailyHabits >= all' && stats.dailyHabits >= stats.totalHabits && stats.totalHabits > 0) unlocked = true;
+
+      if (unlocked) {
+        newUnlocks.push({ ...def, unlockedAt: new Date().toISOString() });
+      }
+    });
+
+    if (newUnlocks.length > 0) {
+      const all = [...achievements.filter(a => a.unlockedAt), ...newUnlocks];
+      // Add missing definitions as locked
+      const allWithLocked = achievementDefinitions.map(def => {
+        const found = all.find(a => a.id === def.id);
+        return found || def;
+      });
+      setValue('achievements', allWithLocked);
+      set({ achievements: allWithLocked });
+
+      // Add XP for new achievements
+      const totalXP = newUnlocks.reduce((sum, a) => sum + a.xpReward, 0);
+      if (totalXP > 0) get().addXP(totalXP);
+    }
+  },
+
+  getXPForNextLevel: () => {
+    const { level } = get();
+    return xpForNextLevel(level);
+  },
+
+  getXPProgress: () => {
+    const { xp, level } = get();
+    const currentLevelXP = xpForLevel(level);
+    const nextLevelXP = xpForNextLevel(level);
+    return ((xp - currentLevelXP) / (nextLevelXP - currentLevelXP)) * 100;
+  },
+}));
