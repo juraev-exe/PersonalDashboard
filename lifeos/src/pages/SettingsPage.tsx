@@ -249,7 +249,7 @@ export default function SettingsPage() {
                 <CalendarDays size={14} /> Google Services Integration (Calendar & Sheets)
               </label>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                <div style={{ display: 'flex', gap: 8 }}>
+                <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                   <input
                     type="password"
                     placeholder="Google OAuth Token (Populated via OAuth or paste manually)"
@@ -258,12 +258,26 @@ export default function SettingsPage() {
                     className="input"
                     style={{ flex: 1 }}
                   />
+                  {googleCalendarToken && (
+                    <span style={{
+                      fontSize: 11,
+                      padding: '8px 12px',
+                      borderRadius: 'var(--radius-md)',
+                      background: 'rgba(63, 185, 80, 0.1)',
+                      color: '#3fb950',
+                      border: '1px solid rgba(63, 185, 80, 0.2)',
+                      fontWeight: 600,
+                      whiteSpace: 'nowrap'
+                    }}>
+                      Connected
+                    </span>
+                  )}
                   <button 
-                    onClick={handleConnectGoogle}
-                    className="btn btn-secondary" 
+                    onClick={googleCalendarToken ? () => setIntegrationKey('googleCalendarToken', '') : handleConnectGoogle}
+                    className={`btn ${googleCalendarToken ? 'btn-danger' : 'btn-secondary'}`}
                     style={{ whiteSpace: 'nowrap' }}
                   >
-                    Connect Google
+                    {googleCalendarToken ? 'Disconnect' : 'Connect Google'}
                   </button>
                 </div>
                 

@@ -6,6 +6,9 @@ import { create } from 'zustand';
 import type { PomodoroSession } from '../types';
 import { PomodoroCategory, TimerMode } from '../types';
 import * as storage from '../services/storage';
+import { supabase, isSupabaseConfigured } from '../services/supabase';
+import { useAuthStore } from './authStore';
+import { mapPomodoroFromDB, mapPomodoroToDB } from '../services/dbMapper';
 import { v4 as uuid } from 'uuid';
 import { format } from 'date-fns';
 
@@ -25,8 +28,8 @@ interface PomodoroState {
   currentSessionStart: string | null;
 
   // Actions
-  loadSessions: () => void;
-  addSession: (session: PomodoroSession) => void;
+  loadSessions: () => Promise<void>;
+  addSession: (session: PomodoroSession) => Promise<void>;
   setCategory: (category: PomodoroCategory) => void;
   setNotes: (notes: string) => void;
   startTimer: (totalSeconds: number) => void;
@@ -54,13 +57,41 @@ export const usePomodoroStore = create<PomodoroState>((set, get) => ({
   sessionCount: 0,
   currentSessionStart: null,
 
-  loadSessions: () => {
+  loadSessions: async () => {
+    const { user, isGuest } = useAuthStore.getState();
+    if (isSupabaseConfigured && !isGuest && user) {
+      try {
+        const { data, error } = await supabase!
+          .from('pomodoro_sessions')
+          .select('*')
+          .eq('user_id', user.id);
+        if (!error && data) {
+          set({ sessions: data.map(mapPomodoroFromDB) });
+          return;
+        }
+      } catch (e) {
+        console.error('Error loading pomodoro sessions from Supabase:', e);
+      }
+    }
     const sessions = storage.getAll<PomodoroSession>(COLLECTION);
     set({ sessions });
   },
 
-  addSession: (session) => {
-    storage.create(COLLECTION, session);
+  addSession: async (session) => {
+    const { user, isGuest } = useAuthStore.getState();
+    if (isSupabaseConfigured && !isGuest && user) {
+      try {
+        const { error } = await supabase!
+          .from('pomodoro_sessions')
+          .insert(mapPomodoroToDB(session, user.id));
+        if (error) throw error;
+      } catch (e) {
+        console.error('Error saving pomodoro session to Supabase:', e);
+        throw e;
+      }
+    } else {
+      storage.create(COLLECTION, session);
+    }
     set((s) => ({ sessions: [...s.sessions, session] }));
   },
 

@@ -156,6 +156,41 @@ CREATE TABLE IF NOT EXISTS public.calendar_events (
 );
 
 -- ==========================================
+-- 9b. Journal Entries Table
+-- ==========================================
+CREATE TABLE IF NOT EXISTS public.journal_entries (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
+    date DATE NOT NULL,
+    content TEXT DEFAULT ''::text NOT NULL,
+    mood TEXT,
+    tags TEXT[] DEFAULT '{}'::TEXT[] NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT NOW() NOT NULL,
+    updated_at TIMESTAMPTZ DEFAULT NOW() NOT NULL,
+    CONSTRAINT journal_entry_user_date_unique UNIQUE (user_id, date)
+);
+
+-- ==========================================
+-- 9c. Goals Table
+-- ==========================================
+CREATE TABLE IF NOT EXISTS public.goals (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
+    title TEXT NOT NULL,
+    description TEXT DEFAULT ''::text NOT NULL,
+    target_value INTEGER NOT NULL,
+    current_value INTEGER DEFAULT 0 NOT NULL,
+    unit TEXT NOT NULL,
+    deadline DATE,
+    category TEXT NOT NULL,
+    status TEXT DEFAULT 'active'::text NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT NOW() NOT NULL,
+    updated_at TIMESTAMPTZ DEFAULT NOW() NOT NULL,
+    CONSTRAINT check_status CHECK (status IN ('active', 'completed', 'archived')),
+    CONSTRAINT target_value_positive CHECK (target_value > 0)
+);
+
+-- ==========================================
 -- 10. Achievements Definitions Table
 -- ==========================================
 CREATE TABLE IF NOT EXISTS public.achievements (
@@ -205,6 +240,8 @@ CREATE INDEX IF NOT EXISTS idx_prayer_logs_user ON public.prayer_logs(user_id, d
 CREATE INDEX IF NOT EXISTS idx_projects_user ON public.projects(user_id, status);
 CREATE INDEX IF NOT EXISTS idx_notes_user ON public.notes(user_id, pinned, archived);
 CREATE INDEX IF NOT EXISTS idx_calendar_user ON public.calendar_events(user_id, date);
+CREATE INDEX IF NOT EXISTS idx_journal_entries_user ON public.journal_entries(user_id, date);
+CREATE INDEX IF NOT EXISTS idx_goals_user ON public.goals(user_id, status);
 CREATE INDEX IF NOT EXISTS idx_user_achievements_user ON public.user_achievements(user_id);
 
 -- ==============================================================
@@ -219,6 +256,8 @@ ALTER TABLE public.prayer_logs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.projects ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.notes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.calendar_events ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.journal_entries ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.goals ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.achievements ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.user_achievements ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.user_statistics ENABLE ROW LEVEL SECURITY;
@@ -279,6 +318,14 @@ CREATE POLICY "Users can manage their unlocked achievements" ON public.user_achi
 
 -- 12. User Statistics policies
 CREATE POLICY "Users can manage their own statistics" ON public.user_statistics
+    FOR ALL USING (auth.uid() = user_id);
+
+-- 13. Journal Entries policies
+CREATE POLICY "Users can manage their own journal entries" ON public.journal_entries
+    FOR ALL USING (auth.uid() = user_id);
+
+-- 14. Goals policies
+CREATE POLICY "Users can manage their own goals" ON public.goals
     FOR ALL USING (auth.uid() = user_id);
 
 -- ==============================================================

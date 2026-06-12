@@ -58,6 +58,80 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       
       if (error) throw error;
 
+      // Extract Google provider token if available on load
+      if (session?.provider_token) {
+        try {
+          const { useSettingsStore } = await import('./settingsStore');
+          useSettingsStore.getState().setIntegrationKey('googleCalendarToken', session.provider_token);
+        } catch (e) {
+          console.error('Error setting provider token on init:', e);
+        }
+      }
+
+      // Listen for auth state changes
+      supabase!.auth.onAuthStateChange(async (event, currentSession) => {
+        if (currentSession?.user) {
+          if (currentSession.provider_token) {
+            try {
+              const { useSettingsStore } = await import('./settingsStore');
+              useSettingsStore.getState().setIntegrationKey('googleCalendarToken', currentSession.provider_token);
+            } catch (e) {
+              console.error('Error setting provider token on auth change:', e);
+            }
+          }
+          
+          // Fetch user profile from public.users table if session changes
+          const { data: profile, error: profileError } = await supabase!
+            .from('users')
+            .select('*')
+            .eq('id', currentSession.user.id)
+            .single();
+
+          if (profileError && profileError.code === 'PGRST116') {
+            const newProfile: User = {
+              id: currentSession.user.id,
+              name: currentSession.user.user_metadata.name || 'User',
+              email: currentSession.user.email || '',
+              level: 1,
+              xp: 0,
+              totalXp: 0,
+              createdAt: new Date().toISOString(),
+            };
+
+            const { error: insertError } = await supabase!
+              .from('users')
+              .insert({
+                id: newProfile.id,
+                name: newProfile.name,
+                email: newProfile.email,
+                level: newProfile.level,
+                xp: newProfile.xp,
+                total_xp: newProfile.totalXp,
+                created_at: newProfile.createdAt,
+              });
+
+            if (!insertError) {
+              set({ user: newProfile, session: currentSession, isGuest: false, loading: false, initialized: true });
+            }
+          } else if (!profileError && profile) {
+            const formattedProfile: User = {
+              id: profile.id,
+              name: profile.name,
+              email: profile.email,
+              avatar: profile.avatar || undefined,
+              level: profile.level,
+              xp: profile.xp,
+              totalXp: profile.total_xp,
+              createdAt: profile.created_at,
+            };
+            set({ user: formattedProfile, session: currentSession, isGuest: false, loading: false, initialized: true });
+          }
+        } else {
+          // Signed out
+          set({ user: null, session: null, isGuest: false, loading: false, initialized: true });
+        }
+      });
+
       if (session?.user) {
         // Fetch user profile from public.users table
         const { data: profile, error: profileError } = await supabase!

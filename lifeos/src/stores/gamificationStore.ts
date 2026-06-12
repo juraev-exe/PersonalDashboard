@@ -6,14 +6,16 @@ import { create } from 'zustand';
 import type { Achievement } from '../types';
 import { getValue, setValue } from '../services/storage';
 import { achievementDefinitions } from '../data/seed';
+import { supabase, isSupabaseConfigured } from '../services/supabase';
+import { useAuthStore } from './authStore';
 
 interface GamificationState {
   xp: number;
   level: number;
   achievements: Achievement[];
-  addXP: (amount: number) => void;
-  checkAchievements: (stats: { pomodoros: number; tasks: number; streak: number; focusHours: number; dailyPrayers: number; dailyHabits: number; totalHabits: number }) => void;
-  loadGamification: () => void;
+  addXP: (amount: number) => Promise<void>;
+  checkAchievements: (stats: { pomodoros: number; tasks: number; streak: number; focusHours: number; dailyPrayers: number; dailyHabits: number; totalHabits: number }) => Promise<void>;
+  loadGamification: () => Promise<void>;
   getXPForNextLevel: () => number;
   getXPProgress: () => number;
 }
@@ -35,21 +37,60 @@ export const useGamificationStore = create<GamificationState>((set, get) => ({
   level: 1,
   achievements: [],
 
-  loadGamification: () => {
-    const xp = getValue<number>('xp', 0);
-    const level = levelFromXP(xp);
-    const achievements = getValue<Achievement[]>('achievements', []);
+  loadGamification: async () => {
+    const { user, isGuest } = useAuthStore.getState();
+    let xp = getValue<number>('xp', 0);
+    let level = levelFromXP(xp);
+    let achievements = getValue<Achievement[]>('achievements', []);
+
+    if (isSupabaseConfigured && !isGuest && user) {
+      try {
+        xp = user.xp;
+        level = user.level;
+        
+        // Fetch unlocked achievements
+        const { data, error } = await supabase!
+          .from('user_achievements')
+          .select('achievement_id, unlocked_at')
+          .eq('user_id', user.id);
+        
+        if (!error && data) {
+          const unlockedSet = new Set(data.map(row => row.achievement_id));
+          const unlockDates = new Map(data.map(row => [row.achievement_id, row.unlocked_at]));
+          
+          achievements = achievementDefinitions.map(def => {
+            if (unlockedSet.has(def.id)) {
+              return { ...def, unlockedAt: unlockDates.get(def.id) };
+            }
+            return def;
+          });
+        }
+      } catch (e) {
+        console.error('Error loading gamification from Supabase:', e);
+      }
+    }
     set({ xp, level, achievements });
   },
 
-  addXP: (amount) => set((s) => {
-    const xp = s.xp + amount;
-    const level = levelFromXP(xp);
-    setValue('xp', xp);
-    return { xp, level };
-  }),
+  addXP: async (amount) => {
+    const { user, isGuest } = useAuthStore.getState();
+    const nextXp = get().xp + amount;
+    const nextLevel = levelFromXP(nextXp);
+    
+    setValue('xp', nextXp);
+    set({ xp: nextXp, level: nextLevel });
 
-  checkAchievements: (stats) => {
+    if (isSupabaseConfigured && !isGuest && user) {
+      try {
+        await useAuthStore.getState().updateUserXp(nextLevel, nextXp);
+      } catch (e) {
+        console.error('Error syncing XP to Supabase:', e);
+      }
+    }
+  },
+
+  checkAchievements: async (stats) => {
+    const { user, isGuest } = useAuthStore.getState();
     const { achievements } = get();
     const unlockedIds = new Set(achievements.filter(a => a.unlockedAt).map(a => a.id));
     const newUnlocks: Achievement[] = [];
@@ -80,17 +121,33 @@ export const useGamificationStore = create<GamificationState>((set, get) => ({
 
     if (newUnlocks.length > 0) {
       const all = [...achievements.filter(a => a.unlockedAt), ...newUnlocks];
-      // Add missing definitions as locked
       const allWithLocked = achievementDefinitions.map(def => {
         const found = all.find(a => a.id === def.id);
         return found || def;
       });
+      
       setValue('achievements', allWithLocked);
       set({ achievements: allWithLocked });
 
+      // Persist unlocks to Supabase if configured
+      if (isSupabaseConfigured && !isGuest && user) {
+        try {
+          const rows = newUnlocks.map(ach => ({
+            user_id: user.id,
+            achievement_id: ach.id,
+            unlocked_at: ach.unlockedAt
+          }));
+          await supabase!
+            .from('user_achievements')
+            .insert(rows);
+        } catch (e) {
+          console.error('Error saving user achievements to Supabase:', e);
+        }
+      }
+
       // Add XP for new achievements
       const totalXP = newUnlocks.reduce((sum, a) => sum + a.xpReward, 0);
-      if (totalXP > 0) get().addXP(totalXP);
+      if (totalXP > 0) await get().addXP(totalXP);
     }
   },
 

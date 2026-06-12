@@ -6,16 +6,22 @@ import { create } from 'zustand';
 import type { PrayerLog } from '../types';
 import { PrayerName } from '../types';
 import * as storage from '../services/storage';
+import { supabase, isSupabaseConfigured } from '../services/supabase';
+import { useAuthStore } from './authStore';
+import { mapPrayerLogFromDB, mapPrayerLogToDB } from '../services/dbMapper';
 import { v4 as uuid } from 'uuid';
 import { format } from 'date-fns';
 import { useGamificationStore } from './gamificationStore';
+import { usePomodoroStore } from './pomodoroStore';
+import { useTaskStore } from './taskStore';
+import { useHabitStore } from './habitStore';
 
 const COLLECTION = 'prayer_logs';
 
 interface PrayerState {
   logs: PrayerLog[];
-  loadPrayers: () => void;
-  togglePrayer: (prayer: PrayerName, date: string) => void;
+  loadPrayers: () => Promise<void>;
+  togglePrayer: (prayer: PrayerName, date: string) => Promise<void>;
   isPrayerCompleted: (prayer: PrayerName, date: string) => boolean;
   getDailyCompletion: (date: string) => number;
   getStreak: () => number;
@@ -24,26 +30,72 @@ interface PrayerState {
 export const usePrayerStore = create<PrayerState>((set, get) => ({
   logs: [],
 
-  loadPrayers: () => {
+  loadPrayers: async () => {
+    const { user, isGuest } = useAuthStore.getState();
+    if (isSupabaseConfigured && !isGuest && user) {
+      try {
+        const { data, error } = await supabase!
+          .from('prayer_logs')
+          .select('*')
+          .eq('user_id', user.id);
+        if (!error && data) {
+          set({ logs: data.map(mapPrayerLogFromDB) });
+          return;
+        }
+      } catch (e) {
+        console.error('Error loading prayer logs from Supabase:', e);
+      }
+    }
     const logs = storage.getAll<PrayerLog>(COLLECTION);
     set({ logs });
   },
 
-  togglePrayer: (prayer, date) => {
+  togglePrayer: async (prayer, date) => {
+    const { user, isGuest } = useAuthStore.getState();
     const { logs } = get();
     const existing = logs.find((l) => l.prayer === prayer && l.date === date);
     let isCompletedNow = false;
+    let nextLog: PrayerLog;
 
     if (existing) {
       isCompletedNow = !existing.completed;
-      const updated = { ...existing, completed: isCompletedNow };
-      storage.update<PrayerLog>(COLLECTION, existing.id, updated);
-      set((s) => ({ logs: s.logs.map((l) => (l.id === existing.id ? updated : l)) }));
+      nextLog = { ...existing, completed: isCompletedNow };
+      
+      if (isSupabaseConfigured && !isGuest && user) {
+        try {
+          const { error } = await supabase!
+            .from('prayer_logs')
+            .update(mapPrayerLogToDB(nextLog, user.id))
+            .eq('id', existing.id);
+          if (error) throw error;
+        } catch (e) {
+          console.error('Error updating prayer log in Supabase:', e);
+          throw e;
+        }
+      } else {
+        storage.update<PrayerLog>(COLLECTION, existing.id, nextLog);
+      }
+      
+      set((s) => ({ logs: s.logs.map((l) => (l.id === existing.id ? nextLog : l)) }));
     } else {
       isCompletedNow = true;
-      const log: PrayerLog = { id: uuid(), date, prayer, completed: true, time: new Date().toISOString() };
-      storage.create(COLLECTION, log);
-      set((s) => ({ logs: [...s.logs, log] }));
+      nextLog = { id: uuid(), date, prayer, completed: true, time: new Date().toISOString() };
+      
+      if (isSupabaseConfigured && !isGuest && user) {
+        try {
+          const { error } = await supabase!
+            .from('prayer_logs')
+            .insert(mapPrayerLogToDB(nextLog, user.id));
+          if (error) throw error;
+        } catch (e) {
+          console.error('Error inserting prayer log in Supabase:', e);
+          throw e;
+        }
+      } else {
+        storage.create(COLLECTION, nextLog);
+      }
+      
+      set((s) => ({ logs: [...s.logs, nextLog] }));
     }
 
     if (isCompletedNow) {
@@ -53,11 +105,11 @@ export const usePrayerStore = create<PrayerState>((set, get) => ({
           gamification.addXP(5);
 
           // Trigger achievements
-          const sessions = storage.getAll<any>('pomodoro_sessions');
-          const tasks = storage.getAll<any>('tasks');
-          const habits = storage.getAll<any>('habits');
-          const habitLogs = storage.getAll<any>('habit_logs');
-          const nextPrayerLogs = storage.getAll<PrayerLog>('prayer_logs');
+          const sessions = usePomodoroStore.getState().sessions;
+          const tasks = useTaskStore.getState().tasks;
+          const habits = useHabitStore.getState().habits;
+          const habitLogs = useHabitStore.getState().logs;
+          const nextPrayerLogs = get().logs;
           const todayStr = format(new Date(), 'yyyy-MM-dd');
 
           const completedTasksCount = tasks.filter((t: any) => t.status === 'completed').length;

@@ -11,7 +11,9 @@ import type {
   Project,
   Note,
   CalendarEvent,
-  Achievement
+  Achievement,
+  JournalEntry,
+  Goal
 } from '../types';
 
 // --- Task Mappers ---
@@ -234,3 +236,64 @@ export function mapCalendarEventToDB(event: CalendarEvent, userId: string): any 
     color: event.color,
   };
 }
+
+// --- Journal Mappers ---
+export function mapJournalFromDB(row: any): JournalEntry {
+  return {
+    id: row.id,
+    date: row.date,
+    content: row.content,
+    mood: row.mood || undefined,
+    tags: row.tags || [],
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
+
+export function mapJournalToDB(entry: JournalEntry, userId: string): any {
+  return {
+    id: entry.id,
+    user_id: userId,
+    date: entry.date,
+    content: entry.content,
+    mood: entry.mood || null,
+    tags: entry.tags,
+    created_at: entry.createdAt,
+    updated_at: entry.updatedAt,
+  };
+}
+
+// --- Goal Mappers ---
+export function mapGoalFromDB(row: any): Goal {
+  return {
+    id: row.id,
+    title: row.title,
+    description: row.description,
+    targetValue: row.target_value,
+    currentValue: row.current_value,
+    unit: row.unit,
+    deadline: row.deadline || undefined,
+    category: row.category,
+    status: row.status,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
+
+export function mapGoalToDB(goal: Goal, userId: string): any {
+  return {
+    id: goal.id,
+    user_id: userId,
+    title: goal.title,
+    description: goal.description,
+    target_value: goal.targetValue,
+    current_value: goal.currentValue,
+    unit: goal.unit,
+    deadline: goal.deadline || null,
+    category: goal.category,
+    status: goal.status,
+    created_at: goal.createdAt,
+    updated_at: goal.updatedAt,
+  };
+}
+

@@ -10,11 +10,14 @@ import { TaskStatus, ProjectStatus } from '../types';
 import { format, subDays } from 'date-fns';
 import { Timer, CheckSquare, Flame, Target, BookOpen, Clock, CalendarDays, Plus, Activity, BookText } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Legend } from 'recharts';
+import { useNavigate } from 'react-router-dom';
 
 const container = { hidden: {}, show: { transition: { staggerChildren: 0.05 } } };
 const item = { hidden: { opacity: 0, y: 10 }, show: { opacity: 1, y: 0, transition: { duration: 0.3 } } };
 
 export default function DashboardPage() {
+  const navigate = useNavigate();
   const today = format(new Date(), 'yyyy-MM-dd');
   const sessions = usePomodoroStore((s) => s.sessions);
   const tasks = useTaskStore((s) => s.tasks);
@@ -22,6 +25,49 @@ export default function DashboardPage() {
   const habitLogs = useHabitStore((s) => s.logs);
   const projects = useProjectStore((s) => s.projects);
   const notes = useNoteStore((s) => s.notes);
+
+  const activeHabits = useMemo(() => habits.filter((h) => !h.archived), [habits]);
+
+  // Compute stats for last 7 days dynamically
+  const weeklyStatsData = useMemo(() => {
+    const data = [];
+    const todayObj = new Date();
+    
+    for (let i = 6; i >= 0; i--) {
+      const d = subDays(todayObj, i);
+      const dateStr = format(d, 'yyyy-MM-dd');
+      const dayLabel = format(d, 'EEE'); // E.g. 'Mon', 'Tue'
+      
+      // Focus hours for this day
+      const daySessions = sessions.filter(s => s.date === dateStr);
+      const focusMins = daySessions.reduce((sum, s) => sum + s.duration, 0);
+      const focusHrs = parseFloat((focusMins / 60).toFixed(1));
+      
+      // Tasks completed on this day
+      const dayCompletedTasks = tasks.filter(t => {
+        if (!t.completedAt || t.status !== TaskStatus.COMPLETED) return false;
+        try {
+          return format(new Date(t.completedAt), 'yyyy-MM-dd') === dateStr;
+        } catch {
+          return false;
+        }
+      }).length;
+      
+      // Habits completed on this day
+      const dayCompletedHabits = activeHabits.filter(h =>
+        habitLogs.some(l => l.habitId === h.id && l.date === dateStr && l.completed)
+      ).length;
+      
+      data.push({
+        name: dayLabel,
+        'Focus Hours': focusHrs,
+        'Tasks Done': dayCompletedTasks,
+        'Habits Done': dayCompletedHabits,
+      });
+    }
+    
+    return data;
+  }, [sessions, tasks, activeHabits, habitLogs]);
 
   const googleCalendarToken = useSettingsStore((s) => s.googleCalendarToken);
   const [upcomingGoogleEvents, setUpcomingGoogleEvents] = useState<any[]>([]);
@@ -40,7 +86,6 @@ export default function DashboardPage() {
   const todayTasks = tasks.filter((t) => t.dueDate === today || t.status === TaskStatus.IN_PROGRESS);
   const completedTasks = tasks.filter((t) => t.status === TaskStatus.COMPLETED).length;
 
-  const activeHabits = habits.filter((h) => !h.archived);
   const habitsCompletedToday = activeHabits.filter((h) =>
     habitLogs.some((l) => l.habitId === h.id && l.date === today && l.completed)
   ).length;
@@ -97,7 +142,7 @@ export default function DashboardPage() {
         </div>
         
         <div style={{ display: 'flex', gap: 12 }}>
-          <button className="btn btn-secondary">
+          <button onClick={() => navigate('/settings')} className="btn btn-secondary">
             <CalendarDays size={14} />
             Connect Calendar
           </button>
@@ -263,22 +308,47 @@ export default function DashboardPage() {
             </div>
           </motion.div>
 
-          {/* Study / Coding Statistics (Mock for now, to be populated later) */}
+          {/* Study / Coding Statistics */}
           <motion.div variants={item} className="glass-card" style={{ padding: 20 }}>
-            <h3 style={{ fontSize: 13, fontWeight: 600, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 6 }}>
+            <h3 style={{ fontSize: 13, fontWeight: 600, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 6, color: 'var(--color-text-primary)' }}>
               <BookText size={14} /> Weekly Statistics
             </h3>
-            <div style={{ 
-              height: 160, 
-              border: '1px dashed var(--color-border)', 
-              borderRadius: 'var(--radius-md)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: 'var(--color-text-muted)',
-              fontSize: 13
-            }}>
-              Chart Data (Connect Integrations)
+            <div style={{ height: 200, width: '100%' }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={weeklyStatsData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                  <XAxis 
+                    dataKey="name" 
+                    stroke="var(--color-text-muted)" 
+                    fontSize={11} 
+                    tickLine={false} 
+                    axisLine={false} 
+                  />
+                  <YAxis 
+                    stroke="var(--color-text-muted)" 
+                    fontSize={11} 
+                    tickLine={false} 
+                    axisLine={false} 
+                  />
+                  <Tooltip 
+                    contentStyle={{ 
+                      background: 'var(--color-bg-secondary)', 
+                      border: '1px solid var(--color-border)',
+                      borderRadius: 'var(--radius-md)',
+                      fontSize: 12,
+                      color: 'var(--color-text-primary)'
+                    }} 
+                    labelStyle={{ color: 'var(--color-text-primary)', fontWeight: 600 }}
+                  />
+                  <Legend 
+                    wrapperStyle={{ fontSize: 11, paddingTop: 10 }} 
+                    verticalAlign="bottom" 
+                    height={36} 
+                  />
+                  <Bar dataKey="Focus Hours" fill="#3fb950" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="Tasks Done" fill="#58a6ff" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="Habits Done" fill="#a371f7" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
             </div>
           </motion.div>
 
