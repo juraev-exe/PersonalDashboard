@@ -146,24 +146,24 @@ export default function TasksPage() {
   };
 
   return (
-    <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+    <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
       {/* Header bar */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
           <h1 style={{ fontSize: 28, fontWeight: 800, marginBottom: 4, letterSpacing: '-0.03em' }}>Tasks</h1>
           <p style={{ fontSize: 14, color: 'var(--color-text-muted)' }}>Organize, schedule, and execute your study and work items.</p>
         </div>
-        <button onClick={handleOpenAddModal} className="btn btn-primary" style={{ gap: 6 }}>
+        <button onClick={handleOpenAddModal} className="btn btn-primary" style={{ gap: '6px' }}>
           <Plus size={18} /> New Task
         </button>
       </div>
 
       {/* Filter and View toolbar */}
-      <div className="glass-card" style={{ padding: '16px', display: 'flex', flexWrap: 'wrap', gap: 16, alignItems: 'center', justifyContent: 'space-between' }}>
+      <div className="glass-card" style={{ padding: '16px', display: 'flex', flexWrap: 'wrap', gap: '16px', alignItems: 'center', justifyContent: 'space-between' }}>
         
         {/* Filters */}
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, flexGrow: 1 }}>
-          <div style={{ position: 'relative', minWidth: 200, flexGrow: 1, maxWidth: 300 }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', flexGrow: 1 }}>
+          <div style={{ position: 'relative', minWidth: '200px', flexGrow: 1, maxWidth: '300px' }}>
             <Search size={16} style={{ position: 'absolute', left: 12, top: 12, color: 'var(--color-text-muted)' }} />
             <input
               type="text"
@@ -179,7 +179,7 @@ export default function TasksPage() {
             value={categoryFilter}
             onChange={(e) => setCategoryFilter(e.target.value)}
             className="input"
-            style={{ width: 'auto', minWidth: 130 }}
+            style={{ width: 'auto', minWidth: '130px' }}
           >
             <option value="all">All Categories</option>
             {Object.values(TaskCategory).map((cat) => (
@@ -191,7 +191,7 @@ export default function TasksPage() {
             value={priorityFilter}
             onChange={(e) => setPriorityFilter(e.target.value)}
             className="input"
-            style={{ width: 'auto', minWidth: 120 }}
+            style={{ width: 'auto', minWidth: '120px' }}
           >
             <option value="all">All Priorities</option>
             {Object.values(TaskPriority).map((p) => (
@@ -204,7 +204,7 @@ export default function TasksPage() {
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
               className="input"
-              style={{ width: 'auto', minWidth: 120 }}
+              style={{ width: 'auto', minWidth: '120px' }}
             >
               <option value="all">All Statuses</option>
               <option value="todo">To Do</option>
@@ -217,7 +217,7 @@ export default function TasksPage() {
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value as any)}
             className="input"
-            style={{ width: 'auto', minWidth: 120 }}
+            style={{ width: 'auto', minWidth: '120px' }}
           >
             <option value="dueDate">Due Date</option>
             <option value="priority">Priority</option>
@@ -308,10 +308,10 @@ export default function TasksPage() {
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         key={task.id}
+                        className="transition-colors duration-200"
                         style={{
                           borderBottom: '1px solid var(--color-border)',
                           background: task.status === TaskStatus.COMPLETED ? 'rgba(0, 0, 0, 0.05)' : 'transparent',
-                          transition: 'background 0.2s',
                         }}
                       >
                         <td style={{ padding: '14px 16px' }}>
@@ -395,7 +395,7 @@ export default function TasksPage() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 20, minHeight: 500 }}
+            style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '20px', minHeight: 500 }}
           >
             {/* Columns */}
             {[
@@ -413,7 +413,7 @@ export default function TasksPage() {
                   background: 'var(--color-bg-secondary)',
                   display: 'flex',
                   flexDirection: 'column',
-                  gap: 12,
+                  gap: '12px',
                   minHeight: 450,
                   borderTop: `4px solid ${col.color}`,
                 }}
@@ -428,7 +428,7 @@ export default function TasksPage() {
                   </span>
                 </div>
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 10, overflowY: 'auto', flexGrow: 1, maxHeight: 600, paddingRight: 2 }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', overflowY: 'auto', flexGrow: 1, maxHeight: 600, paddingRight: 2 }}>
                   {col.tasks.length === 0 ? (
                     <div style={{ border: '2px dashed var(--color-border)', borderRadius: 'var(--radius-lg)', padding: '30px 16px', textAlign: 'center', color: 'var(--color-text-muted)', fontSize: 13 }}>
                       Drag tasks here
@@ -451,7 +451,7 @@ export default function TasksPage() {
                           opacity: task.status === TaskStatus.COMPLETED ? 0.75 : 1,
                         }}
                       >
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8, gap: 10 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8, gap: '10px' }}>
                           <div style={{
                             fontSize: 13,
                             fontWeight: 600,
@@ -477,7 +477,7 @@ export default function TasksPage() {
                           </div>
                         )}
 
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 }}>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: 10 }}>
                           <span className="badge badge-accent" style={{ fontSize: 9 }}>
                             {task.category}
                           </span>
@@ -487,11 +487,11 @@ export default function TasksPage() {
                         </div>
 
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid var(--color-border)', paddingTop: 8, marginTop: 4 }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, color: 'var(--color-text-muted)' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: 10, color: 'var(--color-text-muted)' }}>
                             <Calendar size={12} />
                             {task.dueDate ? format(new Date(task.dueDate), 'MMM d') : 'No date'}
                           </div>
-                          <div style={{ display: 'flex', gap: 4 }}>
+                          <div style={{ display: 'flex', gap: '4px' }}>
                             <button onClick={() => handleOpenEditModal(task)} className="btn btn-ghost btn-icon btn-sm" style={{ width: 22, height: 22 }} title="Edit">
                               <Edit3 size={11} />
                             </button>
@@ -519,7 +519,7 @@ export default function TasksPage() {
               <button onClick={() => setIsModalOpen(false)} style={{ background: 'transparent', border: 'none', color: 'var(--color-text-muted)', cursor: 'pointer', fontSize: 18 }}>×</button>
             </div>
             <form onSubmit={handleSave}>
-              <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+              <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
                 
                 <div>
                   <label style={{ display: 'block', fontSize: 12, fontWeight: 500, color: 'var(--color-text-secondary)', marginBottom: 6 }}>Title</label>
@@ -582,7 +582,7 @@ export default function TasksPage() {
                     />
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                    <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: 'var(--color-text-primary)', cursor: 'pointer', marginTop: 16 }}>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: 13, color: 'var(--color-text-primary)', cursor: 'pointer', marginTop: 16 }}>
                       <input
                         type="checkbox"
                         checked={recurring}

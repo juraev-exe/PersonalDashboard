@@ -113,26 +113,26 @@ export default function HabitsPage() {
   };
 
   return (
-    <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+    <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
       {/* Header bar */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
           <h1 style={{ fontSize: 28, fontWeight: 800, marginBottom: 4, letterSpacing: '-0.03em' }}>Habit Tracker</h1>
           <p style={{ fontSize: 14, color: 'var(--color-text-muted)' }}>Build routines, track streaks, and levels up your discipline.</p>
         </div>
-        <button onClick={handleOpenAddModal} className="btn btn-primary" style={{ gap: 6 }}>
+        <button onClick={handleOpenAddModal} className="btn btn-primary" style={{ gap: '6px' }}>
           <Plus size={18} /> New Habit
         </button>
       </div>
 
       {/* Progress Card */}
-      <div className="glass-card" style={{ padding: '24px', display: 'flex', flexWrap: 'wrap', gap: 24, alignItems: 'center' }}>
+      <div className="glass-card" style={{ padding: '24px', display: 'flex', flexWrap: 'wrap', gap: '24px', alignItems: 'center' }}>
         <div style={{ flex: '1 1 200px' }}>
           <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 6 }}>Today's Performance</h3>
           <p style={{ fontSize: 13, color: 'var(--color-text-muted)', marginBottom: 16 }}>
             {todayProgress === 100 ? "Amazing! You completed all active habits today! 🌟" : todayProgress > 50 ? "Over halfway there! Keep it up! 💪" : "Start completing habits to build your streaks! 🔥"}
           </p>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <div className="progress-bar" style={{ height: 10, flex: 1 }}>
               <div className="progress-bar-fill" style={{ width: `${todayProgress}%`, background: 'linear-gradient(90deg, var(--color-accent), var(--color-emerald))' }} />
             </div>
@@ -140,7 +140,7 @@ export default function HabitsPage() {
           </div>
         </div>
 
-        <div style={{ display: 'flex', gap: 16, flexShrink: 0 }}>
+        <div style={{ display: 'flex', gap: '16px', flexShrink: 0 }}>
           <div style={{ background: 'var(--color-bg-tertiary)', padding: '14px 20px', borderRadius: 'var(--radius-lg)', textAlign: 'center', minWidth: 120 }}>
             <div style={{ fontSize: 11, color: 'var(--color-text-muted)', marginBottom: 4 }}>Completed Today</div>
             <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--color-text-primary)' }}>
@@ -149,7 +149,7 @@ export default function HabitsPage() {
           </div>
           <div style={{ background: 'var(--color-bg-tertiary)', padding: '14px 20px', borderRadius: 'var(--radius-lg)', textAlign: 'center', minWidth: 120 }}>
             <div style={{ fontSize: 11, color: 'var(--color-text-muted)', marginBottom: 4 }}>Longest Streak</div>
-            <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--color-amber)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
+            <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--color-amber)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
               <Flame size={20} fill="currentColor" />
               {Math.max(...habits.map((h) => getStreak(h.id)), 0)}
             </div>
@@ -182,7 +182,7 @@ export default function HabitsPage() {
                 }
               }
             }}
-            style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(360px, 1fr))', gap: 20 }}
+            style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(360px, 1fr))', gap: '20px' }}
           >
             {activeHabits.map((habit) => {
               const Icon = getIconComponent(habit.icon);
@@ -197,12 +197,12 @@ export default function HabitsPage() {
                   }}
                   key={habit.id} 
                   className="glass-card" 
-                  style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: 16 }}
+                  style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}
                 >
                   
                   {/* Top header of Card */}
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                    <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+                    <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
                       <div style={{
                         width: 42, height: 42, borderRadius: 'var(--radius-md)',
                         background: `${habit.color}20`, display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -211,14 +211,14 @@ export default function HabitsPage() {
                       </div>
                       <div>
                         <h4 style={{ fontSize: 15, fontWeight: 700, color: 'var(--color-text-primary)' }}>{habit.name}</h4>
-                        <div style={{ fontSize: 11, color: 'var(--color-text-muted)', display: 'flex', alignItems: 'center', gap: 4, textTransform: 'capitalize' }}>
+                        <div style={{ fontSize: 11, color: 'var(--color-text-muted)', display: 'flex', alignItems: 'center', gap: '4px', textTransform: 'capitalize' }}>
                           <Repeat size={10} /> {habit.frequency}
                         </div>
                       </div>
                     </div>
 
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, fontWeight: 700, color: 'var(--color-amber)', background: 'rgba(245, 158, 11, 0.1)', padding: '2px 8px', borderRadius: 12 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: 12, fontWeight: 700, color: 'var(--color-amber)', background: 'rgba(245, 158, 11, 0.1)', padding: '2px 8px', borderRadius: 12 }}>
                         <Flame size={14} fill="currentColor" /> {streak}d
                       </div>
                       <button onClick={() => handleOpenEditModal(habit)} className="btn btn-ghost btn-icon btn-sm" style={{ width: 28, height: 28 }} title="Edit">
@@ -232,14 +232,14 @@ export default function HabitsPage() {
 
                   {/* 7-day Tracker Grid */}
                   <div style={{ background: 'var(--color-bg-secondary)', padding: '12px', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', gap: 6, marginBottom: 8, fontSize: 10, color: 'var(--color-text-muted)', fontWeight: 600 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', gap: '6px', marginBottom: 8, fontSize: 10, color: 'var(--color-text-muted)', fontWeight: 600 }}>
                       {last7Days.map((d) => (
                         <div key={d.toISOString()} style={{ width: 24, textAlign: 'center' }}>
                           {format(d, 'EE').charAt(0)}
                         </div>
                       ))}
                     </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', gap: 6 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', gap: '6px' }}>
                       {last7Days.map((d) => {
                         const formattedD = format(d, 'yyyy-MM-dd');
                         const isDone = getHabitCompletionForDate(habit.id, formattedD);
@@ -275,7 +275,7 @@ export default function HabitsPage() {
                       color: completedToday ? 'var(--color-text-secondary)' : 'white',
                       border: completedToday ? '1px solid var(--color-border)' : 'none',
                       fontWeight: 600,
-                      gap: 6,
+                      gap: '6px',
                     }}
                   >
                     {completedToday ? (
@@ -300,11 +300,11 @@ export default function HabitsPage() {
       {archivedHabits.length > 0 && (
         <div style={{ marginTop: 12 }}>
           <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 16, color: 'var(--color-text-muted)' }}>Archived Habits</h3>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 16 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '16px' }}>
             {archivedHabits.map((habit) => (
               <div key={habit.id} className="glass-card" style={{ padding: '14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', opacity: 0.6 }}>
                 <span style={{ fontSize: 13, fontWeight: 600 }}>{habit.name}</span>
-                <div style={{ display: 'flex', gap: 6 }}>
+                <div style={{ display: 'flex', gap: '6px' }}>
                   <button onClick={() => updateHabit(habit.id, { archived: false })} className="btn btn-secondary btn-sm" style={{ padding: '4px 10px', fontSize: 11 }}>
                     Restore
                   </button>
@@ -327,7 +327,7 @@ export default function HabitsPage() {
               <button onClick={() => setIsModalOpen(false)} style={{ background: 'transparent', border: 'none', color: 'var(--color-text-muted)', cursor: 'pointer', fontSize: 18 }}>×</button>
             </div>
             <form onSubmit={handleSave}>
-              <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+              <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 
                 <div>
                   <label style={{ display: 'block', fontSize: 12, fontWeight: 500, color: 'var(--color-text-secondary)', marginBottom: 6 }}>Habit Name</label>
@@ -343,7 +343,7 @@ export default function HabitsPage() {
 
                 <div>
                   <label style={{ display: 'block', fontSize: 12, fontWeight: 500, color: 'var(--color-text-secondary)', marginBottom: 8 }}>Choose Icon</label>
-                  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                     {PRESET_ICONS.map((pi) => {
                       const IconComp = pi.component;
                       return (
@@ -373,7 +373,7 @@ export default function HabitsPage() {
 
                 <div>
                   <label style={{ display: 'block', fontSize: 12, fontWeight: 500, color: 'var(--color-text-secondary)', marginBottom: 8 }}>Choose Theme Color</label>
-                  <div style={{ display: 'flex', gap: 8 }}>
+                  <div style={{ display: 'flex', gap: '8px' }}>
                     {PRESET_COLORS.map((pc) => (
                       <button
                         key={pc.name}
@@ -394,7 +394,7 @@ export default function HabitsPage() {
                   </div>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
                   <div>
                     <label style={{ display: 'block', fontSize: 12, fontWeight: 500, color: 'var(--color-text-secondary)', marginBottom: 6 }}>Frequency</label>
                     <select
