@@ -134,6 +134,34 @@ export const useTaskStore = create<TaskState>((set, get) => ({
     const { user, isGuest } = useAuthStore.getState();
     const updates = { status: TaskStatus.COMPLETED, completedAt: new Date().toISOString() };
     
+    // Auto-reschedule recurring task
+    const targetTask = get().tasks.find((t) => t.id === id);
+    if (targetTask?.recurring && targetTask.recurringPattern) {
+      const currentDate = targetTask.dueDate ? new Date(targetTask.dueDate) : new Date();
+      const nextDate = new Date(currentDate);
+      if (targetTask.recurringPattern === 'daily') {
+        nextDate.setDate(nextDate.getDate() + 1);
+      } else if (targetTask.recurringPattern === 'weekly') {
+        nextDate.setDate(nextDate.getDate() + 7);
+      } else if (targetTask.recurringPattern === 'monthly') {
+        nextDate.setMonth(nextDate.getMonth() + 1);
+      }
+      const nextDateStr = nextDate.toISOString().split('T')[0];
+      
+      setTimeout(() => {
+        get().addTask({
+          title: targetTask.title,
+          description: targetTask.description,
+          status: TaskStatus.TODO,
+          priority: targetTask.priority,
+          category: targetTask.category,
+          dueDate: nextDateStr,
+          recurring: true,
+          recurringPattern: targetTask.recurringPattern
+        });
+      }, 300);
+    }
+
     if (isSupabaseConfigured && !isGuest && user) {
       try {
         const { error } = await supabase!

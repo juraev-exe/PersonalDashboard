@@ -12,6 +12,7 @@ import { Timer, CheckSquare, Flame, Target, BookOpen, Clock, CalendarDays, Plus,
 import { motion } from 'framer-motion';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Legend } from 'recharts';
 import { useNavigate } from 'react-router-dom';
+import { getRandomQuote } from '../data/quotes';
 
 const container = { hidden: {}, show: { transition: { staggerChildren: 0.05 } } };
 const item = { hidden: { opacity: 0, y: 10 }, show: { opacity: 1, y: 0, transition: { duration: 0.3 } } };
@@ -68,6 +69,36 @@ export default function DashboardPage() {
     
     return data;
   }, [sessions, tasks, activeHabits, habitLogs]);
+
+  const [weather, setWeather] = useState<{ temp: number; text: string; emoji: string } | null>(null);
+  const [loadingWeather, setLoadingWeather] = useState(true);
+
+  useEffect(() => {
+    fetch('https://api.open-meteo.com/v1/forecast?latitude=38.56&longitude=68.79&current_weather=true')
+      .then(res => res.json())
+      .then(data => {
+        if (data?.current_weather) {
+          const temp = data.current_weather.temperature;
+          const code = data.current_weather.weathercode;
+          let text = 'Sunny';
+          let emoji = '☀️';
+          if (code === 0) { text = 'Clear Sky'; emoji = '☀️'; }
+          else if ([1,2,3].includes(code)) { text = 'Partly Cloudy'; emoji = '⛅'; }
+          else if ([45,48].includes(code)) { text = 'Foggy'; emoji = '🌫️'; }
+          else if ([51,53,55,61,63,65,80,81,82].includes(code)) { text = 'Rainy'; emoji = '🌧️'; }
+          else if ([71,73,75,77,85,86].includes(code)) { text = 'Snowy'; emoji = '❄️'; }
+          else if ([95,96,99].includes(code)) { text = 'Thunderstorm'; emoji = '⛈️'; }
+          
+          setWeather({ temp, text, emoji });
+        }
+      })
+      .catch(err => console.error('Failed to load weather:', err))
+      .finally(() => setLoadingWeather(false));
+  }, []);
+
+  const randomQuote = useMemo(() => {
+    return getRandomQuote();
+  }, []);
 
   const googleCalendarToken = useSettingsStore((s) => s.googleCalendarToken);
   const [upcomingGoogleEvents, setUpcomingGoogleEvents] = useState<any[]>([]);
@@ -151,6 +182,34 @@ export default function DashboardPage() {
             Quick Add
           </button>
         </div>
+      </motion.div>
+
+      {/* Top Widgets Panel: Weather & Quote */}
+      <motion.div variants={item} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 16, marginBottom: 24 }}>
+        
+        {/* Weather Widget */}
+        <div className="glass-card" style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 16, background: 'rgba(13, 17, 23, 0.35)' }}>
+          <div style={{ fontSize: 32 }}>{loadingWeather ? '⏳' : weather?.emoji || '🌤️'}</div>
+          <div>
+            <div style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--color-text-muted)' }}>
+              Dushanbe weather
+            </div>
+            <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--color-text-primary)', marginTop: 2 }}>
+              {loadingWeather ? 'Loading weather...' : weather ? `${weather.temp}°C · ${weather.text}` : 'Weather Offline'}
+            </div>
+          </div>
+        </div>
+
+        {/* Motivational Quotes Widget */}
+        <div className="glass-card" style={{ padding: '16px 20px', display: 'flex', flexDirection: 'column', justifyContent: 'center', background: 'rgba(13, 17, 23, 0.35)', borderLeft: '3px solid var(--color-accent)' }}>
+          <div style={{ fontSize: 12, fontStyle: 'italic', color: 'var(--color-text-primary)', lineHeight: 1.4 }}>
+            "{randomQuote?.text}"
+          </div>
+          <div style={{ fontSize: 10, fontWeight: 600, color: 'var(--color-text-muted)', marginTop: 4, textAlign: 'right', fontFamily: 'var(--font-mono)' }}>
+            — {randomQuote?.author} ({randomQuote?.category.toUpperCase()})
+          </div>
+        </div>
+
       </motion.div>
 
       {/* Main Grid Layout */}

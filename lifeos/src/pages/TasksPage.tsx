@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { useTaskStore } from '../stores/taskStore';
 import { TaskStatus, TaskPriority, TaskCategory, type Task } from '../types';
-import { Plus, List, Kanban, Search, Filter, ArrowUpDown, Calendar, Trash2, Edit3, CheckCircle, Clock, AlertTriangle, RefreshCw } from 'lucide-react';
+import { Plus, List, Kanban, Search, Filter, ArrowUpDown, Calendar, Trash2, Edit3, CheckCircle, Clock, AlertTriangle, RefreshCw, Mic, MicOff } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { format } from 'date-fns';
 
@@ -366,9 +366,9 @@ export default function TasksPage() {
                           </span>
                         </td>
                         <td style={{ padding: '14px 16px' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: task.dueDate && new Date(task.dueDate) < new Date() && task.status !== TaskStatus.COMPLETED ? 'var(--color-rose)' : 'var(--color-text-secondary)' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: task.dueDate && !isNaN(new Date(task.dueDate).getTime()) && new Date(task.dueDate) < new Date() && task.status !== TaskStatus.COMPLETED ? 'var(--color-rose)' : 'var(--color-text-secondary)' }}>
                             <Calendar size={14} />
-                            {task.dueDate ? format(new Date(task.dueDate), 'MMM d, yyyy') : 'No Date'}
+                            {task.dueDate && !isNaN(new Date(task.dueDate).getTime()) ? format(new Date(task.dueDate), 'MMM d, yyyy') : 'No Date'}
                           </div>
                         </td>
                         <td style={{ padding: '14px 16px', textAlign: 'right' }}>

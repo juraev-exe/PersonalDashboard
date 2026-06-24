@@ -8,6 +8,11 @@ import type { CalendarEvent } from '../types';
 import { Plus, ChevronLeft, ChevronRight, Calendar, Clock, Bookmark, List, Trash2, CheckCircle, RefreshCw } from 'lucide-react';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, startOfWeek, endOfWeek, isSameDay, isSameMonth, addMonths, subMonths } from 'date-fns';
 
+const parseLocalDate = (dateStr: string) => {
+  const [year, month, day] = dateStr.split('-').map(Number);
+  return new Date(year, month - 1, day);
+};
+
 export default function CalendarPage() {
   const customEvents = useCalendarStore((s) => s.events);
   const addEvent = useCalendarStore((s) => s.addEvent);
@@ -128,7 +133,7 @@ export default function CalendarPage() {
   };
 
   const getEventsForDate = (date: Date) => {
-    return allEvents.filter(e => isSameDay(new Date(e.date), date));
+    return allEvents.filter(e => isSameDay(parseLocalDate(e.date), date));
   };
 
   const selectedDayEvents = useMemo(() => {
