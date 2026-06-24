@@ -32,6 +32,64 @@ export default function TasksPage() {
   const [recurring, setRecurring] = useState(false);
   const [recurringPattern, setRecurringPattern] = useState<'daily' | 'weekly' | 'monthly'>('weekly');
 
+  const [isListening, setIsListening] = useState(false);
+
+  const startListening = () => {
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      alert('Speech Recognition is not supported in this browser. Please use Chrome, Edge, or Safari.');
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.continuous = false;
+    recognition.lang = 'en-US';
+    recognition.interimResults = false;
+
+    recognition.onstart = () => {
+      setIsListening(true);
+    };
+
+    recognition.onend = () => {
+      setIsListening(false);
+    };
+
+    recognition.onerror = (event: any) => {
+      console.error('Speech recognition error:', event.error);
+      setIsListening(false);
+    };
+
+    recognition.onresult = (event: any) => {
+      const transcript = event.results[0][0].transcript;
+      if (transcript) {
+        setTitle((prev) => (prev ? `${prev} ${transcript}` : transcript));
+
+        const lowerTranscript = transcript.toLowerCase();
+        if (lowerTranscript.includes('urgent')) {
+          setPriority(TaskPriority.URGENT);
+        } else if (lowerTranscript.includes('high')) {
+          setPriority(TaskPriority.HIGH);
+        } else if (lowerTranscript.includes('medium')) {
+          setPriority(TaskPriority.MEDIUM);
+        } else if (lowerTranscript.includes('low')) {
+          setPriority(TaskPriority.LOW);
+        }
+
+        if (lowerTranscript.includes('programming') || lowerTranscript.includes('coding')) {
+          setCategory(TaskCategory.PROGRAMMING);
+        } else if (lowerTranscript.includes('security') || lowerTranscript.includes('cybersecurity')) {
+          setCategory(TaskCategory.CYBERSECURITY);
+        } else if (lowerTranscript.includes('math') || lowerTranscript.includes('logic')) {
+          setCategory(TaskCategory.MATH);
+        } else if (lowerTranscript.includes('study') || lowerTranscript.includes('read')) {
+          setCategory(TaskCategory.STUDY_PLAN);
+        }
+      }
+    };
+
+    recognition.start();
+  };
+
   // Reset form
   const resetForm = () => {
     setTitle('');
@@ -522,7 +580,38 @@ export default function TasksPage() {
               <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
                 
                 <div>
-                  <label style={{ display: 'block', fontSize: 12, fontWeight: 500, color: 'var(--color-text-secondary)', marginBottom: 6 }}>Title</label>
+                  <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 12, fontWeight: 500, color: 'var(--color-text-secondary)', marginBottom: 6 }}>
+                    Title
+                    <button
+                      type="button"
+                      onClick={startListening}
+                      style={{
+                        background: 'transparent',
+                        border: 'none',
+                        color: isListening ? 'var(--color-rose)' : 'var(--color-text-muted)',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 4,
+                        fontSize: 11,
+                        fontWeight: 600,
+                        padding: 0
+                      }}
+                      title="Dictate title and keywords using voice input"
+                    >
+                      {isListening ? (
+                        <>
+                          <MicOff size={12} className="animate-pulse" />
+                          <span style={{ color: 'var(--color-rose)' }}>Listening...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Mic size={12} />
+                          <span>Voice Input</span>
+                        </>
+                      )}
+                    </button>
+                  </label>
                   <input
                     type="text"
                     required

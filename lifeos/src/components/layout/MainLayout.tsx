@@ -6,6 +6,7 @@ import React from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import TopNav from './TopNav';
+import XpToastContainer from './XpToastContainer';
 import { useSettingsStore } from '../../stores/settingsStore';
 import { useKeyboardShortcuts } from '../../hooks/useKeyboardShortcuts';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -18,6 +19,7 @@ export default function MainLayout() {
   return (
     <div style={{ display: 'flex', minHeight: '100vh' }}>
       <Sidebar />
+      <XpToastContainer />
       <div
         style={{
           flex: 1,

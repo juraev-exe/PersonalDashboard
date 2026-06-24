@@ -8,6 +8,7 @@ import { getValue, setValue } from '../services/storage';
 import { achievementDefinitions } from '../data/seed';
 import { supabase, isSupabaseConfigured } from '../services/supabase';
 import { useAuthStore } from './authStore';
+import { useXpToastStore } from './xpToastStore';
 
 interface GamificationState {
   xp: number;
@@ -74,6 +75,7 @@ export const useGamificationStore = create<GamificationState>((set, get) => ({
 
   addXP: async (amount) => {
     const { user, isGuest } = useAuthStore.getState();
+    const currentLevel = get().level;
     const nextXp = get().xp + amount;
     const nextLevel = levelFromXP(nextXp);
     
@@ -86,6 +88,12 @@ export const useGamificationStore = create<GamificationState>((set, get) => ({
       } catch (e) {
         console.error('Error syncing XP to Supabase:', e);
       }
+    }
+
+    // Trigger toast notification
+    useXpToastStore.getState().addXpToast(amount);
+    if (nextLevel > currentLevel) {
+      useXpToastStore.getState().addLevelUpToast(nextLevel);
     }
   },
 
