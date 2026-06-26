@@ -18,7 +18,11 @@ interface SettingsState extends AppSettings {
   setSidebarCollapsed: (v: boolean) => void;
   toggleSidebar: () => void;
   setIntegrationKey: (key: keyof AppSettings, value: string) => void;
+  /** Called after OAuth redirect — stores the provider token + email */
+  setGoogleSession: (token: string, email: string) => void;
+  clearGoogleSession: () => void;
 }
+
 
 const defaultSettings: AppSettings = {
   theme: 'dark',
@@ -99,5 +103,17 @@ export const useSettingsStore = create<SettingsState>((set) => ({
     const next = { ...s, [key]: value };
     setValue('settings', next);
     return { [key]: value } as Partial<SettingsState>;
+  }),
+
+  setGoogleSession: (token, email) => set((s) => {
+    const next = { ...s, googleCalendarToken: token, googleUserEmail: email };
+    setValue('settings', next);
+    return { googleCalendarToken: token, googleUserEmail: email };
+  }),
+
+  clearGoogleSession: () => set((s) => {
+    const next = { ...s, googleCalendarToken: '', googleUserEmail: '' };
+    setValue('settings', next);
+    return { googleCalendarToken: '', googleUserEmail: '' };
   }),
 }));

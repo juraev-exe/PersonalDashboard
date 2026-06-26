@@ -6,8 +6,11 @@ import MainLayout from './components/layout/MainLayout';
 import DashboardPage from './pages/DashboardPage';
 import { useInitData } from './hooks/useInitData';
 import { useAuthStore } from './stores/authStore';
+import { useSettingsStore } from './stores/settingsStore';
+import { supabase } from './services/supabase';
 import AuthPage from './pages/AuthPage';
 import './index.css';
+
 
 // Import pages
 import PomodoroPage from './pages/PomodoroPage';
@@ -36,6 +39,7 @@ function App() {
   const initializeAuth = useAuthStore((s) => s.initializeAuth);
   const user = useAuthStore((s) => s.user);
   const loading = useAuthStore((s) => s.loading);
+  const setGoogleSession = useSettingsStore((s) => s.setGoogleSession);
 
   // Initialize data stores after auth is ready
   useInitData();
@@ -43,6 +47,27 @@ function App() {
   useEffect(() => {
     initializeAuth();
   }, [initializeAuth]);
+
+  // ── Capture Google provider_token after OAuth redirect ─────────────────────
+  useEffect(() => {
+    if (!supabase) return;
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        if (
+          session?.provider_token &&
+          session.user?.app_metadata?.provider === 'google'
+        ) {
+          const email = session.user.email ?? '';
+          setGoogleSession(session.provider_token, email);
+        }
+      }
+    );
+
+    return () => subscription.unsubscribe();
+  }, [setGoogleSession]);
+  // ──────────────────────────────────────────────────────────────────────────
+
 
   if (loading) {
     return (

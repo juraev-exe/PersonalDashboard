@@ -2,9 +2,12 @@ import React, { useRef, useState } from 'react';
 import { useSettingsStore } from '../stores/settingsStore';
 import { pomodoroPresets } from '../data/seed';
 import { exportAllData, importAllData, clearAllData } from '../services/storage';
-import { Settings, Sun, Moon, Bell, Volume2, Download, Upload, Trash2, ShieldAlert, Plug, GitBranch, Code, CalendarDays, FileSpreadsheet } from 'lucide-react';
+import { Settings, Sun, Moon, Bell, Volume2, Download, Upload, Trash2, ShieldAlert, Plug, GitBranch, Code, CalendarDays, FileSpreadsheet, CheckCircle2 } from 'lucide-react';
+
 import type { AppSettings } from '../types';
 import { supabase } from '../services/supabase';
+import { connectGoogleCalendar } from '../services/googleAuth';
+
 import { exportToGoogleSheets } from '../services/googleSheetsService';
 import { useTaskStore } from '../stores/taskStore';
 import { useHabitStore } from '../stores/habitStore';
@@ -27,6 +30,10 @@ export default function SettingsPage() {
   const wakatimeApiKey = useSettingsStore((s) => s.wakatimeApiKey) || '';
   const notionApiKey = useSettingsStore((s) => s.notionApiKey) || '';
   const googleCalendarToken = useSettingsStore((s) => s.googleCalendarToken) || '';
+  const googleUserEmail = useSettingsStore((s) => s.googleUserEmail as string | undefined) || '';
+
+  const clearGoogleSession = useSettingsStore((s) => s.clearGoogleSession);
+
 
   const setTheme = useSettingsStore((s) => s.setTheme);
   const setPreset = useSettingsStore((s) => s.setPomodoroPreset);
@@ -45,20 +52,15 @@ export default function SettingsPage() {
       alert('Supabase is not configured. Google integration requires a live Supabase instance.');
       return;
     }
-
-    try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          scopes: 'https://www.googleapis.com/auth/calendar.events https://www.googleapis.com/auth/calendar.readonly https://www.googleapis.com/auth/spreadsheets',
-          redirectTo: `${window.location.origin}/settings`,
-        },
-      });
-      if (error) throw error;
-    } catch (e: any) {
-      alert(`Connection failed: ${e.message}`);
-    }
+    const { error } = await connectGoogleCalendar();
+    if (error) alert(`Connection failed: ${error}`);
+    // On success, the page redirects to /settings and main.tsx captures the token automatically.
   };
+
+  const handleDisconnectGoogle = () => {
+    clearGoogleSession();
+  };
+
 
   const handleExportToGoogleSheets = async () => {
     if (!googleCalendarToken) {
@@ -245,55 +247,77 @@ export default function SettingsPage() {
 
             {/* Google Services */}
             <div>
-              <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 500, color: 'var(--color-text-secondary)', marginBottom: 6 }}>
-                <CalendarDays size={14} /> Google Services Integration (Calendar & Sheets)
+              <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 500, color: 'var(--color-text-secondary)', marginBottom: 10 }}>
+                <CalendarDays size={14} /> Google Calendar &amp; Sheets
               </label>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                  <input
-                    type="password"
-                    placeholder="Google OAuth Token (Populated via OAuth or paste manually)"
-                    value={googleCalendarToken}
-                    onChange={(e) => setIntegrationKey('googleCalendarToken', e.target.value)}
-                    className="input"
-                    style={{ flex: 1 }}
-                  />
-                  {googleCalendarToken && (
-                    <span style={{
-                      fontSize: 11,
-                      padding: '8px 12px',
-                      borderRadius: 'var(--radius-md)',
-                      background: 'rgba(63, 185, 80, 0.1)',
-                      color: '#3fb950',
-                      border: '1px solid rgba(63, 185, 80, 0.2)',
-                      fontWeight: 600,
-                      whiteSpace: 'nowrap'
-                    }}>
-                      Connected
-                    </span>
-                  )}
-                  <button 
-                    onClick={googleCalendarToken ? () => setIntegrationKey('googleCalendarToken', '') : handleConnectGoogle}
-                    className={`btn ${googleCalendarToken ? 'btn-danger' : 'btn-secondary'}`}
-                    style={{ whiteSpace: 'nowrap' }}
-                  >
-                    {googleCalendarToken ? 'Disconnect' : 'Connect Google'}
-                  </button>
-                </div>
-                
-                {googleCalendarToken && (
+
+              {googleCalendarToken ? (
+                // ── Connected state ──────────────────────────────────────────
+                <div style={{
+                  padding: '14px 16px',
+                  background: 'rgba(63, 185, 80, 0.06)',
+                  border: '1px solid rgba(63, 185, 80, 0.25)',
+                  borderRadius: 'var(--radius-md)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 12,
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                      <CheckCircle2 size={16} style={{ color: '#3fb950', flexShrink: 0 }} />
+                      <div>
+                        <p style={{ fontSize: 13, fontWeight: 600, color: '#3fb950', margin: 0 }}>Google Connected</p>
+                        {googleUserEmail && (
+                          <p style={{ fontSize: 11, color: 'var(--color-text-muted)', margin: 0 }}>{googleUserEmail}</p>
+                        )}
+                      </div>
+                    </div>
+                    <button
+                      onClick={handleDisconnectGoogle}
+                      className="btn btn-danger btn-sm"
+                      style={{ whiteSpace: 'nowrap' }}
+                    >
+                      Disconnect
+                    </button>
+                  </div>
+
                   <button
                     onClick={handleExportToGoogleSheets}
-                    className="btn btn-secondary"
+                    className="btn btn-secondary btn-sm"
                     disabled={exportingSheets}
                     style={{ display: 'flex', alignItems: 'center', gap: 8, alignSelf: 'flex-start' }}
                   >
-                    <FileSpreadsheet size={14} /> 
-                    {exportingSheets ? 'Exporting to Sheets...' : 'Export Dashboard to Google Sheets'}
+                    <FileSpreadsheet size={14} />
+                    {exportingSheets ? 'Exporting...' : 'Export Dashboard to Google Sheets'}
                   </button>
-                )}
-              </div>
+                </div>
+              ) : (
+                // ── Disconnected state ───────────────────────────────────────
+                <div style={{
+                  padding: '14px 16px',
+                  background: 'var(--color-bg-tertiary)',
+                  border: '1px solid var(--color-border)',
+                  borderRadius: 'var(--radius-md)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 10,
+                }}>
+                  <p style={{ fontSize: 12, color: 'var(--color-text-muted)', margin: 0 }}>
+                    Connect your Google account to sync calendar events and export data to Sheets.
+                    Grants access to Calendar read/write and Sheets.
+                  </p>
+                  <button
+                    onClick={handleConnectGoogle}
+                    className="btn btn-secondary"
+                    style={{ display: 'flex', alignItems: 'center', gap: 8, alignSelf: 'flex-start' }}
+                  >
+                    <CalendarDays size={14} />
+                    Connect Google Account
+                  </button>
+                </div>
+              )}
             </div>
+
           </div>
         </motion.div>
 

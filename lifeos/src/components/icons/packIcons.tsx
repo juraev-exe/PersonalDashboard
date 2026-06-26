@@ -2,6 +2,7 @@ import React from 'react';
 
 type PackIconName =
   | 'activity'
+  | 'alert-triangle'
   | 'archive'
   | 'angle-left'
   | 'angle-right'
@@ -42,6 +43,7 @@ type PackIconName =
   | 'lock'
   | 'mail'
   | 'maximize'
+  | 'message-square'
   | 'minimize'
   | 'moon'
   | 'pause'
@@ -84,12 +86,24 @@ export type LucideProps = Omit<React.HTMLAttributes<HTMLSpanElement>, 'color'> &
   size?: number | string;
   color?: string;
   fill?: string;
+  stroke?: string;
   strokeWidth?: number;
 };
 
 const iconPath = (name: PackIconName) => `/icons/app/${name}.svg`;
 
-function PackIcon({ name, size = 24, color, className, style, title, ...rest }: LucideProps & { name: PackIconName }) {
+function PackIcon({
+  name,
+  size = 24,
+  color,
+  className,
+  style,
+  title,
+  fill: _fill,
+  stroke: _stroke,
+  strokeWidth: _strokeWidth,
+  ...rest
+}: LucideProps & { name: PackIconName }) {
   const iconSize = typeof size === 'number' ? `${size}px` : size;
 
   return (
@@ -124,6 +138,7 @@ const createIcon = (name: PackIconName) => function Icon(props: LucideProps) {
 };
 
 export const Activity = createIcon('activity');
+export const AlertTriangle = createIcon('alert-triangle');
 export const Archive = createIcon('archive');
 export const ArrowRight = createIcon('arrow-right');
 export const ArrowUpDown = createIcon('arrow-up-down');
@@ -167,6 +182,7 @@ export const Lock = createIcon('lock');
 export const Mail = createIcon('mail');
 export const Maximize2 = createIcon('maximize');
 export const Meh = createIcon('status-neutral');
+export const MessageSquare = createIcon('message-square');
 export const Mic = createIcon('mic');
 export const MicOff = createIcon('mic-off');
 export const Minimize2 = createIcon('minimize');
