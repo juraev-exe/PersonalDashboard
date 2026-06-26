@@ -79,8 +79,8 @@ export default function NotesPage() {
     }
   }, [activeNoteId]);
 
-  const handleCreateNote = () => {
-    const newNote = addNote({
+  const handleCreateNote = async () => {
+    const newNote = await addNote({
       title: 'Untitled Note',
       content: '',
       tags: []

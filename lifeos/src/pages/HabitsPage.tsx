@@ -130,7 +130,7 @@ export default function HabitsPage() {
         <div style={{ flex: '1 1 200px' }}>
           <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 6 }}>Today's Performance</h3>
           <p style={{ fontSize: 13, color: 'var(--color-text-muted)', marginBottom: 16 }}>
-            {todayProgress === 100 ? "Amazing! You completed all active habits today! 🌟" : todayProgress > 50 ? "Over halfway there! Keep it up! 💪" : "Start completing habits to build your streaks! 🔥"}
+            {todayProgress === 100 ? "All active habits completed today." : todayProgress > 50 ? "Over halfway there. Keep going." : "Start completing habits to build your streaks."}
           </p>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <div className="progress-bar" style={{ height: 10, flex: 1 }}>

@@ -80,9 +80,9 @@ export default function TasksPage() {
         } else if (lowerTranscript.includes('security') || lowerTranscript.includes('cybersecurity')) {
           setCategory(TaskCategory.CYBERSECURITY);
         } else if (lowerTranscript.includes('math') || lowerTranscript.includes('logic')) {
-          setCategory(TaskCategory.MATH);
+          setCategory(TaskCategory.UNIVERSITY);
         } else if (lowerTranscript.includes('study') || lowerTranscript.includes('read')) {
-          setCategory(TaskCategory.STUDY_PLAN);
+          setCategory(TaskCategory.STUDY);
         }
       }
     };
@@ -119,7 +119,7 @@ export default function TasksPage() {
     setIsModalOpen(true);
   };
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim()) return;
 
@@ -134,14 +134,17 @@ export default function TasksPage() {
       recurringPattern: recurring ? recurringPattern : undefined,
     };
 
-    if (editingTask) {
-      updateTask(editingTask.id, taskData);
-    } else {
-      addTask(taskData);
+    try {
+      if (editingTask) {
+        await updateTask(editingTask.id, taskData);
+      } else {
+        await addTask(taskData);
+      }
+      setIsModalOpen(false);
+      resetForm();
+    } catch (err: any) {
+      alert(`Failed to save task: ${err.message || err}`);
     }
-
-    setIsModalOpen(false);
-    resetForm();
   };
 
   // Drag and Drop
@@ -153,14 +156,34 @@ export default function TasksPage() {
     e.preventDefault();
   };
 
-  const handleDrop = (e: React.DragEvent, status: TaskStatus) => {
+  const handleDrop = async (e: React.DragEvent, status: TaskStatus) => {
     const taskId = e.dataTransfer.getData('text/plain');
     if (taskId) {
-      if (status === TaskStatus.COMPLETED) {
-        completeTask(taskId);
-      } else {
-        updateTask(taskId, { status });
+      try {
+        if (status === TaskStatus.COMPLETED) {
+          await completeTask(taskId);
+        } else {
+          await updateTask(taskId, { status });
+        }
+      } catch (err: any) {
+        alert(`Failed to update task status: ${err.message || err}`);
       }
+    }
+  };
+
+  const handleCompleteTask = async (id: string) => {
+    try {
+      await completeTask(id);
+    } catch (err: any) {
+      alert(`Failed to complete task: ${err.message || err}`);
+    }
+  };
+
+  const handleDeleteTask = async (id: string) => {
+    try {
+      await deleteTask(id);
+    } catch (err: any) {
+      alert(`Failed to delete task: ${err.message || err}`);
     }
   };
 
@@ -374,7 +397,7 @@ export default function TasksPage() {
                       >
                         <td style={{ padding: '14px 16px' }}>
                           <button
-                            onClick={() => task.status !== TaskStatus.COMPLETED && completeTask(task.id)}
+                            onClick={() => task.status !== TaskStatus.COMPLETED && handleCompleteTask(task.id)}
                             style={{
                               background: 'transparent',
                               border: 'none',
@@ -434,7 +457,7 @@ export default function TasksPage() {
                             <button onClick={() => handleOpenEditModal(task)} className="btn btn-ghost btn-icon btn-sm" title="Edit Task">
                               <Edit3 size={14} />
                             </button>
-                            <button onClick={() => deleteTask(task.id)} className="btn btn-ghost btn-icon btn-sm" style={{ color: 'var(--color-rose)' }} title="Delete Task">
+                            <button onClick={() => handleDeleteTask(task.id)} className="btn btn-ghost btn-icon btn-sm" style={{ color: 'var(--color-rose)' }} title="Delete Task">
                               <Trash2 size={14} />
                             </button>
                           </div>
@@ -520,7 +543,7 @@ export default function TasksPage() {
                           </div>
                           {task.status !== TaskStatus.COMPLETED && (
                             <button
-                              onClick={() => completeTask(task.id)}
+                              onClick={() => handleCompleteTask(task.id)}
                               style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--color-text-muted)' }}
                               title="Mark Complete"
                             >
@@ -547,13 +570,13 @@ export default function TasksPage() {
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid var(--color-border)', paddingTop: 8, marginTop: 4 }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: 10, color: 'var(--color-text-muted)' }}>
                             <Calendar size={12} />
-                            {task.dueDate ? format(new Date(task.dueDate), 'MMM d') : 'No date'}
+                            {task.dueDate && !isNaN(new Date(task.dueDate).getTime()) ? format(new Date(task.dueDate), 'MMM d') : 'No date'}
                           </div>
                           <div style={{ display: 'flex', gap: '4px' }}>
                             <button onClick={() => handleOpenEditModal(task)} className="btn btn-ghost btn-icon btn-sm" style={{ width: 22, height: 22 }} title="Edit">
                               <Edit3 size={11} />
                             </button>
-                            <button onClick={() => deleteTask(task.id)} className="btn btn-ghost btn-icon btn-sm" style={{ width: 22, height: 22, color: 'var(--color-rose)' }} title="Delete">
+                            <button onClick={() => handleDeleteTask(task.id)} className="btn btn-ghost btn-icon btn-sm" style={{ width: 22, height: 22, color: 'var(--color-rose)' }} title="Delete">
                               <Trash2 size={11} />
                             </button>
                           </div>

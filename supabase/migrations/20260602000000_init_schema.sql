@@ -332,12 +332,20 @@ CREATE POLICY "Users can manage their own goals" ON public.goals
 -- Database Seed Data (Pre-defined Achievements)
 -- ==============================================================
 INSERT INTO public.achievements (id, title, description, icon, xp_reward, condition) VALUES
-('first_pomo', 'First Focus Session', 'Completed your first 25-minute focus session.', 'Timer', 100, 'Complete 1 Pomodoro session'),
-('seven_day_streak', 'Habit Warrior', 'Maintained a habit streak for 7 consecutive days.', 'Flame', 250, 'Maintain any habit streak of 7 days'),
-('thirty_day_streak', 'Relentless Discipline', 'Maintained a habit streak for 30 consecutive days.', 'Trophy', 1000, 'Maintain any habit streak of 30 days'),
-('focus_100_hours', 'Deep Work Master', 'Focused for a total of 100 hours using Pomodoro.', 'Clock', 500, 'Accumulate 100 hours of focus'),
-('tasks_100_completed', 'Getting Things Done', 'Completed a total of 100 tasks.', 'CheckSquare', 500, 'Complete 100 tasks'),
-('perfect_prayers_day', 'Spiritual Alignment', 'Completed all 5 daily prayers in a single day.', 'Moon', 150, 'Mark all 5 prayers done in one day')
+('first_pomodoro', 'First Focus', 'Complete your first Pomodoro session', '🎯', 50, 'pomodoros >= 1'),
+('ten_pomodoros', 'Getting Focused', 'Complete 10 Pomodoro sessions', '🔥', 100, 'pomodoros >= 10'),
+('fifty_pomodoros', 'Focus Master', 'Complete 50 Pomodoro sessions', '⚡', 250, 'pomodoros >= 50'),
+('hundred_pomodoros', 'Unstoppable', 'Complete 100 Pomodoro sessions', '💎', 500, 'pomodoros >= 100'),
+('first_task', 'Task Starter', 'Complete your first task', '✅', 25, 'tasks >= 1'),
+('ten_tasks', 'Productive', 'Complete 10 tasks', '📋', 100, 'tasks >= 10'),
+('fifty_tasks', 'Task Machine', 'Complete 50 tasks', '🏆', 250, 'tasks >= 50'),
+('hundred_tasks', 'Centurion', 'Complete 100 tasks', '👑', 500, 'tasks >= 100'),
+('streak_7', 'Week Warrior', 'Maintain a 7-day streak', '🔥', 150, 'streak >= 7'),
+('streak_30', 'Monthly Champion', 'Maintain a 30-day streak', '🏅', 500, 'streak >= 30'),
+('streak_100', 'Legend', 'Maintain a 100-day streak', '🌟', 1000, 'streak >= 100'),
+('hundred_hours', 'Century Club', 'Accumulate 100 hours of focus time', '⏰', 500, 'focusHours >= 100'),
+('all_prayers_day', 'Devoted', 'Complete all 5 prayers in a day', '🕌', 75, 'dailyPrayers >= 5'),
+('all_habits_day', 'Disciplined', 'Complete all habits in a day', '💪', 75, 'dailyHabits >= all')
 ON CONFLICT (id) DO UPDATE SET
     title = EXCLUDED.title,
     description = EXCLUDED.description,

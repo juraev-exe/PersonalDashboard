@@ -5,6 +5,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSettingsStore } from '../../stores/settingsStore';
 import { Search, Bell, Sun, Moon as MoonIcon, User } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function TopNav() {
   const [searchOpen, setSearchOpen] = useState(false);
@@ -124,38 +125,51 @@ export default function TopNav() {
       </header>
 
       {/* Search Modal */}
-      {searchOpen && (
-        <div className="modal-overlay" onClick={() => setSearchOpen(false)}>
-          <div
-            className="modal-content"
-            style={{ maxWidth: 600, marginTop: '-10vh' }}
-            onClick={(e) => e.stopPropagation()}
+      <AnimatePresence>
+        {searchOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.15 }}
+            className="modal-overlay"
+            onClick={() => setSearchOpen(false)}
           >
-            <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--color-border)' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <Search size={16} style={{ color: 'var(--color-text-muted)', flexShrink: 0 }} />
-                <input
-                  autoFocus
-                  type="text"
-                  placeholder="Search tasks, notes, projects..."
-                  style={{
-                    flex: 1,
-                    background: 'transparent',
-                    border: 'none',
-                    outline: 'none',
-                    color: 'var(--color-text-primary)',
-                    fontSize: 15,
-                    fontFamily: 'var(--font-sans)',
-                  }}
-                />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.97, y: -10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.97, y: -10 }}
+              transition={{ duration: 0.15, ease: 'easeOut' }}
+              className="modal-content"
+              style={{ maxWidth: 600, marginTop: '-10vh' }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--color-border)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <Search size={16} style={{ color: 'var(--color-text-muted)', flexShrink: 0 }} />
+                  <input
+                    autoFocus
+                    type="text"
+                    placeholder="Search tasks, notes, projects..."
+                    style={{
+                      flex: 1,
+                      background: 'transparent',
+                      border: 'none',
+                      outline: 'none',
+                      color: 'var(--color-text-primary)',
+                      fontSize: 15,
+                      fontFamily: 'var(--font-sans)',
+                    }}
+                  />
+                </div>
               </div>
-            </div>
-            <div style={{ padding: '20px', color: 'var(--color-text-muted)', fontSize: 13 }}>
-              Start typing to search across all modules...
-            </div>
-          </div>
-        </div>
-      )}
+              <div style={{ padding: '20px', color: 'var(--color-text-muted)', fontSize: 13 }}>
+                Start typing to search across all modules...
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   );
 }

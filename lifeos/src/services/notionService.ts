@@ -1,6 +1,11 @@
 import { useSettingsStore } from '../stores/settingsStore';
 
-const NOTION_API_BASE = 'https://api.notion.com/v1';
+/**
+ * NOTE: Notion's API does not allow direct CORS requests from client browsers.
+ * In a production dashboard setup, these API requests are routed through
+ * our Vercel Serverless Function proxy at /api/notion.
+ */
+const NOTION_API_BASE = '/api/notion';
 const NOTION_VERSION = '2022-06-28';
 
 /**

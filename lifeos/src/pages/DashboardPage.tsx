@@ -8,7 +8,7 @@ import { useSettingsStore } from '../stores/settingsStore';
 import { getUpcomingEvents } from '../services/googleCalendarService';
 import { TaskStatus, ProjectStatus } from '../types';
 import { format, subDays } from 'date-fns';
-import { Timer, CheckSquare, Flame, Target, BookOpen, Clock, CalendarDays, Plus, Activity, BookText } from 'lucide-react';
+import { Timer, CheckSquare, Flame, Target, BookOpen, Clock, CalendarDays, Plus, Activity, BookText, Sun } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Legend } from 'recharts';
 import { useNavigate } from 'react-router-dom';
@@ -70,7 +70,7 @@ export default function DashboardPage() {
     return data;
   }, [sessions, tasks, activeHabits, habitLogs]);
 
-  const [weather, setWeather] = useState<{ temp: number; text: string; emoji: string } | null>(null);
+  const [weather, setWeather] = useState<{ temp: number; text: string; icon: 'sun' | 'activity' } | null>(null);
   const [loadingWeather, setLoadingWeather] = useState(true);
 
   useEffect(() => {
@@ -81,15 +81,15 @@ export default function DashboardPage() {
           const temp = data.current_weather.temperature;
           const code = data.current_weather.weathercode;
           let text = 'Sunny';
-          let emoji = '☀️';
-          if (code === 0) { text = 'Clear Sky'; emoji = '☀️'; }
-          else if ([1,2,3].includes(code)) { text = 'Partly Cloudy'; emoji = '⛅'; }
-          else if ([45,48].includes(code)) { text = 'Foggy'; emoji = '🌫️'; }
-          else if ([51,53,55,61,63,65,80,81,82].includes(code)) { text = 'Rainy'; emoji = '🌧️'; }
-          else if ([71,73,75,77,85,86].includes(code)) { text = 'Snowy'; emoji = '❄️'; }
-          else if ([95,96,99].includes(code)) { text = 'Thunderstorm'; emoji = '⛈️'; }
+          let icon: 'sun' | 'activity' = 'sun';
+          if (code === 0) { text = 'Clear Sky'; icon = 'sun'; }
+          else if ([1,2,3].includes(code)) { text = 'Partly Cloudy'; icon = 'activity'; }
+          else if ([45,48].includes(code)) { text = 'Foggy'; icon = 'activity'; }
+          else if ([51,53,55,61,63,65,80,81,82].includes(code)) { text = 'Rainy'; icon = 'activity'; }
+          else if ([71,73,75,77,85,86].includes(code)) { text = 'Snowy'; icon = 'activity'; }
+          else if ([95,96,99].includes(code)) { text = 'Thunderstorm'; icon = 'activity'; }
           
-          setWeather({ temp, text, emoji });
+          setWeather({ temp, text, icon });
         }
       })
       .catch(err => console.error('Failed to load weather:', err))
@@ -189,7 +189,9 @@ export default function DashboardPage() {
         
         {/* Weather Widget */}
         <div className="glass-card" style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 16, background: 'rgba(13, 17, 23, 0.35)' }}>
-          <div style={{ fontSize: 32 }}>{loadingWeather ? '⏳' : weather?.emoji || '🌤️'}</div>
+          <div style={{ width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-accent)' }}>
+            {weather?.icon === 'activity' ? <Activity size={28} /> : <Sun size={28} />}
+          </div>
           <div>
             <div style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--color-text-muted)' }}>
               Dushanbe weather

@@ -57,29 +57,29 @@ export const pomodoroPresets: PomodoroPreset[] = [
 
 // --- Achievement Definitions ---
 export const achievementDefinitions: Achievement[] = [
-  { id: 'first_pomodoro', title: 'First Focus', description: 'Complete your first Pomodoro session', icon: '🎯', xpReward: 50, condition: 'pomodoros >= 1' },
-  { id: 'ten_pomodoros', title: 'Getting Focused', description: 'Complete 10 Pomodoro sessions', icon: '🔥', xpReward: 100, condition: 'pomodoros >= 10' },
-  { id: 'fifty_pomodoros', title: 'Focus Master', description: 'Complete 50 Pomodoro sessions', icon: '⚡', xpReward: 250, condition: 'pomodoros >= 50' },
-  { id: 'hundred_pomodoros', title: 'Unstoppable', description: 'Complete 100 Pomodoro sessions', icon: '💎', xpReward: 500, condition: 'pomodoros >= 100' },
-  { id: 'first_task', title: 'Task Starter', description: 'Complete your first task', icon: '✅', xpReward: 25, condition: 'tasks >= 1' },
-  { id: 'ten_tasks', title: 'Productive', description: 'Complete 10 tasks', icon: '📋', xpReward: 100, condition: 'tasks >= 10' },
-  { id: 'fifty_tasks', title: 'Task Machine', description: 'Complete 50 tasks', icon: '🏆', xpReward: 250, condition: 'tasks >= 50' },
-  { id: 'hundred_tasks', title: 'Centurion', description: 'Complete 100 tasks', icon: '👑', xpReward: 500, condition: 'tasks >= 100' },
-  { id: 'streak_7', title: 'Week Warrior', description: 'Maintain a 7-day streak', icon: '🔥', xpReward: 150, condition: 'streak >= 7' },
-  { id: 'streak_30', title: 'Monthly Champion', description: 'Maintain a 30-day streak', icon: '🏅', xpReward: 500, condition: 'streak >= 30' },
-  { id: 'streak_100', title: 'Legend', description: 'Maintain a 100-day streak', icon: '🌟', xpReward: 1000, condition: 'streak >= 100' },
-  { id: 'hundred_hours', title: 'Century Club', description: 'Accumulate 100 hours of focus time', icon: '⏰', xpReward: 500, condition: 'focusHours >= 100' },
-  { id: 'all_prayers_day', title: 'Devoted', description: 'Complete all 5 prayers in a day', icon: '🕌', xpReward: 75, condition: 'dailyPrayers >= 5' },
-  { id: 'all_habits_day', title: 'Disciplined', description: 'Complete all habits in a day', icon: '💪', xpReward: 75, condition: 'dailyHabits >= all' },
+  { id: 'first_pomodoro', title: 'First Focus', description: 'Complete your first Pomodoro session', icon: 'target', xpReward: 50, condition: 'pomodoros >= 1' },
+  { id: 'ten_pomodoros', title: 'Getting Focused', description: 'Complete 10 Pomodoro sessions', icon: 'flame', xpReward: 100, condition: 'pomodoros >= 10' },
+  { id: 'fifty_pomodoros', title: 'Focus Master', description: 'Complete 50 Pomodoro sessions', icon: 'zap', xpReward: 250, condition: 'pomodoros >= 50' },
+  { id: 'hundred_pomodoros', title: 'Unstoppable', description: 'Complete 100 Pomodoro sessions', icon: 'award', xpReward: 500, condition: 'pomodoros >= 100' },
+  { id: 'first_task', title: 'Task Starter', description: 'Complete your first task', icon: 'check-square', xpReward: 25, condition: 'tasks >= 1' },
+  { id: 'ten_tasks', title: 'Productive', description: 'Complete 10 tasks', icon: 'list', xpReward: 100, condition: 'tasks >= 10' },
+  { id: 'fifty_tasks', title: 'Task Machine', description: 'Complete 50 tasks', icon: 'trophy', xpReward: 250, condition: 'tasks >= 50' },
+  { id: 'hundred_tasks', title: 'Centurion', description: 'Complete 100 tasks', icon: 'award', xpReward: 500, condition: 'tasks >= 100' },
+  { id: 'streak_7', title: 'Week Warrior', description: 'Maintain a 7-day streak', icon: 'flame', xpReward: 150, condition: 'streak >= 7' },
+  { id: 'streak_30', title: 'Monthly Champion', description: 'Maintain a 30-day streak', icon: 'award', xpReward: 500, condition: 'streak >= 30' },
+  { id: 'streak_100', title: 'Legend', description: 'Maintain a 100-day streak', icon: 'star', xpReward: 1000, condition: 'streak >= 100' },
+  { id: 'hundred_hours', title: 'Century Club', description: 'Accumulate 100 hours of focus time', icon: 'clock', xpReward: 500, condition: 'focusHours >= 100' },
+  { id: 'all_prayers_day', title: 'Devoted', description: 'Complete all 5 prayers in a day', icon: 'moon', xpReward: 75, condition: 'dailyPrayers >= 5' },
+  { id: 'all_habits_day', title: 'Disciplined', description: 'Complete all habits in a day', icon: 'activity', xpReward: 75, condition: 'dailyHabits >= all' },
 ];
 
 // --- Default Habits ---
 export const defaultHabits: Habit[] = [
-  { id: uuid(), name: 'Read', icon: '📚', frequency: 'daily', dailyTarget: 1, color: '#6366f1', createdAt: new Date().toISOString(), archived: false },
-  { id: uuid(), name: 'Exercise', icon: '🏃', frequency: 'daily', dailyTarget: 1, color: '#f43f5e', createdAt: new Date().toISOString(), archived: false },
-  { id: uuid(), name: 'Water', icon: '💧', frequency: 'daily', dailyTarget: 8, color: '#06b6d4', createdAt: new Date().toISOString(), archived: false },
-  { id: uuid(), name: 'Sleep 8h', icon: '😴', frequency: 'daily', dailyTarget: 1, color: '#8b5cf6', createdAt: new Date().toISOString(), archived: false },
-  { id: uuid(), name: 'Study', icon: '📖', frequency: 'daily', dailyTarget: 1, color: '#10b981', createdAt: new Date().toISOString(), archived: false },
+  { id: uuid(), name: 'Read', icon: 'BookOpen', frequency: 'daily', dailyTarget: 1, color: '#6366f1', createdAt: new Date().toISOString(), archived: false },
+  { id: uuid(), name: 'Exercise', icon: 'Activity', frequency: 'daily', dailyTarget: 1, color: '#f43f5e', createdAt: new Date().toISOString(), archived: false },
+  { id: uuid(), name: 'Water', icon: 'GlassWater', frequency: 'daily', dailyTarget: 8, color: '#06b6d4', createdAt: new Date().toISOString(), archived: false },
+  { id: uuid(), name: 'Sleep 8h', icon: 'Moon', frequency: 'daily', dailyTarget: 1, color: '#8b5cf6', createdAt: new Date().toISOString(), archived: false },
+  { id: uuid(), name: 'Study', icon: 'Terminal', frequency: 'daily', dailyTarget: 1, color: '#10b981', createdAt: new Date().toISOString(), archived: false },
 ];
 
 // --- Sample Tasks ---

@@ -24,7 +24,8 @@
     "ignoreDeprecations": "6.0",
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "lucide-react": ["./src/components/icons/packIcons.tsx"]
     }
   },
   "include": ["src"]
