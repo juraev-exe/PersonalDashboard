@@ -2,7 +2,7 @@ import React, { useRef, useState } from 'react';
 import { useSettingsStore } from '../stores/settingsStore';
 import { pomodoroPresets } from '../data/seed';
 import { exportAllData, importAllData, clearAllData } from '../services/storage';
-import { Settings, Sun, Moon, Bell, Volume2, Download, Upload, Trash2, ShieldAlert, Plug, GitBranch, Code, CalendarDays, FileSpreadsheet, CheckCircle2 } from 'lucide-react';
+import { Settings, Sun, Moon, Bell, Volume2, Download, Upload, Trash2, ShieldAlert, Plug, GitBranch, Code, CalendarDays, FileSpreadsheet, CheckCircle } from 'lucide-react';
 
 import type { AppSettings } from '../types';
 import { supabase } from '../services/supabase';
@@ -264,7 +264,7 @@ export default function SettingsPage() {
                 }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                      <CheckCircle2 size={16} style={{ color: '#3fb950', flexShrink: 0 }} />
+                      <CheckCircle size={16} style={{ color: '#3fb950', flexShrink: 0 }} />
                       <div>
                         <p style={{ fontSize: 13, fontWeight: 600, color: '#3fb950', margin: 0 }}>Google Connected</p>
                         {googleUserEmail && (

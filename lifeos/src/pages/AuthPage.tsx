@@ -5,7 +5,8 @@
 import React, { useState } from 'react';
 import { useAuthStore } from '../stores/authStore';
 import { isSupabaseConfigured } from '../services/supabase';
-import { signInWithGoogle } from '../services/googleAuth';
+import { connectGoogleCalendar } from '../services/googleAuth';
+
 import { motion, AnimatePresence } from 'framer-motion';
 import { Lock, Mail, User, Info, ArrowRight, Activity, Globe } from 'lucide-react';
 
@@ -54,7 +55,8 @@ export default function AuthPage() {
 
   const handleGoogleSignIn = async () => {
     setErrorMsg(null);
-    const { error } = await signInWithGoogle();
+    const { error } = await connectGoogleCalendar();
+
     if (error) setErrorMsg(error);
   };
 
