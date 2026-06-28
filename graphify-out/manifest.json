@@ -1,0 +1,717 @@
+{
+  "lifeos/api/notion.ts": {
+    "mtime": 1782406983.7525766,
+    "ast_hash": "e1583f39078a1def06fe2aa27d58888a",
+    "semantic_hash": ""
+  },
+  "lifeos/package.json": {
+    "mtime": 1782445117.5854871,
+    "ast_hash": "eaca4ad18310c5121014bc5abae14b70",
+    "semantic_hash": ""
+  },
+  "lifeos/src/components/icons/packIcons.tsx": {
+    "mtime": 1782445043.9441125,
+    "ast_hash": "d7a28b04fd139d95494d565df388399a",
+    "semantic_hash": ""
+  },
+  "lifeos/src/components/layout/MainLayout.tsx": {
+    "mtime": 1782320064.1832416,
+    "ast_hash": "38cddcb3986c1d8efc3584987f36c30d",
+    "semantic_hash": ""
+  },
+  "lifeos/src/components/layout/Sidebar.tsx": {
+    "mtime": 1781192452.39192,
+    "ast_hash": "69f89b8561e078131b350d89e749b95e",
+    "semantic_hash": ""
+  },
+  "lifeos/src/components/layout/TopNav.tsx": {
+    "mtime": 1782322534.287732,
+    "ast_hash": "866ce2ed3d9414e8b14eef55d66177f4",
+    "semantic_hash": ""
+  },
+  "lifeos/src/components/layout/XpToastContainer.tsx": {
+    "mtime": 1782320055.6712177,
+    "ast_hash": "94028afa5865d4a4b7188633b5c5dd7c",
+    "semantic_hash": ""
+  },
+  "lifeos/src/data/quotes.ts": {
+    "mtime": 1782319919.860916,
+    "ast_hash": "acc8c11eeecc39b50c510d0453890562",
+    "semantic_hash": ""
+  },
+  "lifeos/src/data/seed.ts": {
+    "mtime": 1782444416.0327258,
+    "ast_hash": "98041600466b351f35e36c6851023efc",
+    "semantic_hash": ""
+  },
+  "lifeos/src/hooks/useInitData.ts": {
+    "mtime": 1780383037.0067108,
+    "ast_hash": "16f86752da1567f5fea204b8adca3a9b",
+    "semantic_hash": ""
+  },
+  "lifeos/src/hooks/useKeyboardShortcuts.ts": {
+    "mtime": 1780376292.249969,
+    "ast_hash": "3316beb309f09f998dddcc7f09c0ee68",
+    "semantic_hash": ""
+  },
+  "lifeos/src/hooks/usePomodoro.ts": {
+    "mtime": 1780248282.3908808,
+    "ast_hash": "8c086ba3f77167ab9c4d799d166ec918",
+    "semantic_hash": ""
+  },
+  "lifeos/src/main.tsx": {
+    "mtime": 1782479754.410916,
+    "ast_hash": "870c89d8684f8abc37fc3572f2706076",
+    "semantic_hash": ""
+  },
+  "lifeos/src/pages/AnalyticsPage.tsx": {
+    "mtime": 1781192527.8845348,
+    "ast_hash": "81e6412c3f5d6897201169e73afcda1d",
+    "semantic_hash": ""
+  },
+  "lifeos/src/pages/AuthPage.tsx": {
+    "mtime": 1782481249.789362,
+    "ast_hash": "78788b0f0400a2ca2604bd44ea4cc9e3",
+    "semantic_hash": ""
+  },
+  "lifeos/src/pages/CalendarPage.tsx": {
+    "mtime": 1782319873.6731257,
+    "ast_hash": "004778d77734b86a0aed2f93f86299c4",
+    "semantic_hash": ""
+  },
+  "lifeos/src/pages/DashboardPage.tsx": {
+    "mtime": 1782444416.1961892,
+    "ast_hash": "a3cc54a8cd085b644f428615f27779c0",
+    "semantic_hash": ""
+  },
+  "lifeos/src/pages/FocusPage.tsx": {
+    "mtime": 1780382883.237083,
+    "ast_hash": "ea1a74cc55b06acf4b1d3797d1410182",
+    "semantic_hash": ""
+  },
+  "lifeos/src/pages/GoalsPage.tsx": {
+    "mtime": 1780383107.488351,
+    "ast_hash": "e2069fdec0f101a22ba54643773d87a4",
+    "semantic_hash": ""
+  },
+  "lifeos/src/pages/HabitsPage.tsx": {
+    "mtime": 1782444416.3787875,
+    "ast_hash": "792323bb6278cf98adf244fbbfbb02e3",
+    "semantic_hash": ""
+  },
+  "lifeos/src/pages/JournalPage.tsx": {
+    "mtime": 1781192543.888466,
+    "ast_hash": "b97a97a7f72c5ddee538e10694240afe",
+    "semantic_hash": ""
+  },
+  "lifeos/src/pages/NotesPage.tsx": {
+    "mtime": 1782388952.4701185,
+    "ast_hash": "fd16710a31671971982a9fbaa48a6bbb",
+    "semantic_hash": ""
+  },
+  "lifeos/src/pages/PomodoroPage.tsx": {
+    "mtime": 1780246997.5816388,
+    "ast_hash": "234ad17659aca72740a4ce91a16f1a6b",
+    "semantic_hash": ""
+  },
+  "lifeos/src/pages/PrayersPage.tsx": {
+    "mtime": 1782444480.369578,
+    "ast_hash": "22f8a8e63cdd72c0b6a5e478c425f16d",
+    "semantic_hash": ""
+  },
+  "lifeos/src/pages/ProjectsPage.tsx": {
+    "mtime": 1780383730.4550807,
+    "ast_hash": "e3875e9a34a0ff06a666e3d509457815",
+    "semantic_hash": ""
+  },
+  "lifeos/src/pages/SettingsPage.tsx": {
+    "mtime": 1782481539.2605903,
+    "ast_hash": "4356bc73b52fb2bdca076b6ab4c20667",
+    "semantic_hash": ""
+  },
+  "lifeos/src/pages/TasksPage.tsx": {
+    "mtime": 1782406291.3229673,
+    "ast_hash": "5158db2d53d005bc1e786c67712103e8",
+    "semantic_hash": ""
+  },
+  "lifeos/src/services/dbMapper.ts": {
+    "mtime": 1781193980.8992252,
+    "ast_hash": "86da2806e791b848b1ed6a310b3fb291",
+    "semantic_hash": ""
+  },
+  "lifeos/src/services/googleAuth.ts": {
+    "mtime": 1782479700.422395,
+    "ast_hash": "d66ec4bbd37de0819ad61b8e479e6903",
+    "semantic_hash": ""
+  },
+  "lifeos/src/services/googleCalendarService.ts": {
+    "mtime": 1780376282.3198829,
+    "ast_hash": "d24774b80fcca1a0214f0f6294ef1507",
+    "semantic_hash": ""
+  },
+  "lifeos/src/services/googleSheetsService.ts": {
+    "mtime": 1781192086.8974578,
+    "ast_hash": "47569f3fa646fbdf62dd40caec426d1c",
+    "semantic_hash": ""
+  },
+  "lifeos/src/services/notionService.ts": {
+    "mtime": 1782406874.5899382,
+    "ast_hash": "ce7c6262af292db04a9259b78de7a2cb",
+    "semantic_hash": ""
+  },
+  "lifeos/src/services/storage.ts": {
+    "mtime": 1780145700.5109487,
+    "ast_hash": "7651ea8a73ddfb57f81ec13cd9180a41",
+    "semantic_hash": ""
+  },
+  "lifeos/src/services/supabase.ts": {
+    "mtime": 1780375242.9922593,
+    "ast_hash": "b1bc88e8d5dcbb6899b771556eedb371",
+    "semantic_hash": ""
+  },
+  "lifeos/src/stores/authStore.ts": {
+    "mtime": 1781194141.5927334,
+    "ast_hash": "bb870350bd77116f6ddd1ceaf4faf582",
+    "semantic_hash": ""
+  },
+  "lifeos/src/stores/calendarStore.ts": {
+    "mtime": 1781194007.7006903,
+    "ast_hash": "be73cb7c504414f69acfec3d9bb021ac",
+    "semantic_hash": ""
+  },
+  "lifeos/src/stores/gamificationStore.ts": {
+    "mtime": 1782320205.3167236,
+    "ast_hash": "2461ed631c26b4d1f438bc677dfba4d0",
+    "semantic_hash": ""
+  },
+  "lifeos/src/stores/goalStore.ts": {
+    "mtime": 1781194102.5356328,
+    "ast_hash": "172a88a1171731684a76edcb4b17b813",
+    "semantic_hash": ""
+  },
+  "lifeos/src/stores/habitStore.ts": {
+    "mtime": 1781194039.4835937,
+    "ast_hash": "91fe9c7a9820e190face28d777cb7c02",
+    "semantic_hash": ""
+  },
+  "lifeos/src/stores/journalStore.ts": {
+    "mtime": 1781194096.1243489,
+    "ast_hash": "a166992ccf3c39c40f2e51280bea731e",
+    "semantic_hash": ""
+  },
+  "lifeos/src/stores/noteStore.ts": {
+    "mtime": 1781194026.7070434,
+    "ast_hash": "b1522ca6c15e56feafa048a54a21fbbb",
+    "semantic_hash": ""
+  },
+  "lifeos/src/stores/pomodoroStore.ts": {
+    "mtime": 1781194064.4759965,
+    "ast_hash": "587430e2c326475a1e3a3eda61f59f08",
+    "semantic_hash": ""
+  },
+  "lifeos/src/stores/prayerStore.ts": {
+    "mtime": 1781194079.3948286,
+    "ast_hash": "aa088a4cd5f65bf9f7e9cd97ce423c8e",
+    "semantic_hash": ""
+  },
+  "lifeos/src/stores/projectStore.ts": {
+    "mtime": 1781194092.0915284,
+    "ast_hash": "2048b7991083c6ecfe5152fc5425b38e",
+    "semantic_hash": ""
+  },
+  "lifeos/src/stores/settingsStore.ts": {
+    "mtime": 1782479739.3543913,
+    "ast_hash": "dc3b7cd0f8c40d7d90bdf987a4d96238",
+    "semantic_hash": ""
+  },
+  "lifeos/src/stores/taskStore.ts": {
+    "mtime": 1782319908.6352012,
+    "ast_hash": "01ca1802f82227454162f8e3083eb25b",
+    "semantic_hash": ""
+  },
+  "lifeos/src/stores/xpToastStore.ts": {
+    "mtime": 1782320048.4831612,
+    "ast_hash": "3262e634f413b4512b7cbe865f623d11",
+    "semantic_hash": ""
+  },
+  "lifeos/src/types/index.ts": {
+    "mtime": 1781192103.513474,
+    "ast_hash": "ded081639e5c5514c3f8907a6af530ae",
+    "semantic_hash": ""
+  },
+  "lifeos/tsconfig.json": {
+    "mtime": 1782408826.7173274,
+    "ast_hash": "b593963b3522c79d939b46964a123968",
+    "semantic_hash": ""
+  },
+  "lifeos/vercel.json": {
+    "mtime": 1782444488.9232967,
+    "ast_hash": "2a447b6ba781563fd8ca7b620a4edc34",
+    "semantic_hash": ""
+  },
+  "lifeos/vite.config.ts": {
+    "mtime": 1782408826.6068008,
+    "ast_hash": "61c20678da8094c44d0d42184db5f69d",
+    "semantic_hash": ""
+  },
+  "supabase/migrations/20260602000000_init_schema.sql": {
+    "mtime": 1782406258.7512813,
+    "ast_hash": "af0e992d46addf51c2c09f400c09cd80",
+    "semantic_hash": ""
+  },
+  "build_prompt.md": {
+    "mtime": 1781192663.950408,
+    "ast_hash": "a78667b68f47f81d524705d2c88b6624",
+    "semantic_hash": ""
+  },
+  "codebase.md": {
+    "mtime": 1781290166.865808,
+    "ast_hash": "69cb7e50cdd5fbc5dfabdcdde592c239",
+    "semantic_hash": ""
+  },
+  "dashboard_integration_plan.md": {
+    "mtime": 1781193099.9592662,
+    "ast_hash": "42736d74d24ac351518f639c459ac75f",
+    "semantic_hash": ""
+  },
+  "docker-compose.yml": {
+    "mtime": 1782320011.8740704,
+    "ast_hash": "9e99ca730c8502315d23676d0d99bb15",
+    "semantic_hash": ""
+  },
+  "lifeos/index.html": {
+    "mtime": 1780375926.698996,
+    "ast_hash": "e8833e0990bb9307c445c67d2c6debb3",
+    "semantic_hash": ""
+  },
+  "supabase/README.md": {
+    "mtime": 1780375049.8056555,
+    "ast_hash": "89dc2b3cd1c47c46758374e14aee0191",
+    "semantic_hash": ""
+  },
+  "lifeos/public/favicon.svg": {
+    "mtime": 1780145591.1800823,
+    "ast_hash": "7e840862161341271697daa99a40d76b",
+    "semantic_hash": ""
+  },
+  "lifeos/public/icons.svg": {
+    "mtime": 1780145591.207161,
+    "ast_hash": "3b4fcfcf393eca4d264dca4a4663bc37",
+    "semantic_hash": ""
+  },
+  "lifeos/public/icons/app/activity.svg": {
+    "mtime": 1758117164.0,
+    "ast_hash": "26942e16ed8eb400269ae3b6f71ba6e7",
+    "semantic_hash": ""
+  },
+  "lifeos/public/icons/app/alert-triangle.svg": {
+    "mtime": 1758117164.0,
+    "ast_hash": "31e4b2827f95108e7bc03a72d10a6a67",
+    "semantic_hash": ""
+  },
+  "lifeos/public/icons/app/angle-left.svg": {
+    "mtime": 1758117164.0,
+    "ast_hash": "a89f85f89da336d40fe789740f0bfdef",
+    "semantic_hash": ""
+  },
+  "lifeos/public/icons/app/angle-right.svg": {
+    "mtime": 1758117164.0,
+    "ast_hash": "aba060b0c2f459f9b0083f1ba8a824f4",
+    "semantic_hash": ""
+  },
+  "lifeos/public/icons/app/archive.svg": {
+    "mtime": 1758117164.0,
+    "ast_hash": "79d84858cf8c1eafe52ed87f5b478c08",
+    "semantic_hash": ""
+  },
+  "lifeos/public/icons/app/arrow-right.svg": {
+    "mtime": 1758117164.0,
+    "ast_hash": "1d4e0282b8c51db9e967aeb8384bc032",
+    "semantic_hash": ""
+  },
+  "lifeos/public/icons/app/arrow-up-down.svg": {
+    "mtime": 1758117164.0,
+    "ast_hash": "5950b8edac96451b1b2bdb79ab21c4fb",
+    "semantic_hash": ""
+  },
+  "lifeos/public/icons/app/award.svg": {
+    "mtime": 1758117164.0,
+    "ast_hash": "ea00c57d1249a854887e1875b4156614",
+    "semantic_hash": ""
+  },
+  "lifeos/public/icons/app/bar-chart.svg": {
+    "mtime": 1758117164.0,
+    "ast_hash": "a464de54cce149cff4b34fb41aa7a9b1",
+    "semantic_hash": ""
+  },
+  "lifeos/public/icons/app/bell.svg": {
+    "mtime": 1758117164.0,
+    "ast_hash": "0c238f8ff0f93f4df4c86cb36dd8d7ec",
+    "semantic_hash": ""
+  },
+  "lifeos/public/icons/app/book-open.svg": {
+    "mtime": 1758117164.0,
+    "ast_hash": "debab5b132afe6ab66f6e9e3c801a7e1",
+    "semantic_hash": ""
+  },
+  "lifeos/public/icons/app/bookmark.svg": {
+    "mtime": 1758117164.0,
+    "ast_hash": "5e623b294ba2dcb307c2d42cdb7f38f9",
+    "semantic_hash": ""
+  },
+  "lifeos/public/icons/app/calendar-days.svg": {
+    "mtime": 1758117164.0,
+    "ast_hash": "abd94cbba492e5dec58936013e2bcaeb",
+    "semantic_hash": ""
+  },
+  "lifeos/public/icons/app/calendar.svg": {
+    "mtime": 1758117164.0,
+    "ast_hash": "c957c57e6b22867ad19cd88a48a41c3e",
+    "semantic_hash": ""
+  },
+  "lifeos/public/icons/app/check-square.svg": {
+    "mtime": 1758117164.0,
+    "ast_hash": "a888832ebec83e9cd086f640cac85973",
+    "semantic_hash": ""
+  },
+  "lifeos/public/icons/app/check.svg": {
+    "mtime": 1758117164.0,
+    "ast_hash": "c9557d90d5347ec2adaee5d5a25cb1d4",
+    "semantic_hash": ""
+  },
+  "lifeos/public/icons/app/circle-check.svg": {
+    "mtime": 1758117164.0,
+    "ast_hash": "a4c6359d71657f943747407a86c1d0fa",
+    "semantic_hash": ""
+  },
+  "lifeos/public/icons/app/clock.svg": {
+    "mtime": 1758117164.0,
+    "ast_hash": "ab5b787d68c4e24f525765a46b84bf11",
+    "semantic_hash": ""
+  },
+  "lifeos/public/icons/app/code.svg": {
+    "mtime": 1758117164.0,
+    "ast_hash": "03952f47f0a7eab58ea005af953a0ae5",
+    "semantic_hash": ""
+  },
+  "lifeos/public/icons/app/download.svg": {
+    "mtime": 1758117164.0,
+    "ast_hash": "54c32f0daaafe554cf765b47fcb6a439",
+    "semantic_hash": ""
+  },
+  "lifeos/public/icons/app/edit.svg": {
+    "mtime": 1758117164.0,
+    "ast_hash": "2a8269db015b90aa9a0b14480984ddfc",
+    "semantic_hash": ""
+  },
+  "lifeos/public/icons/app/external-link.svg": {
+    "mtime": 1758117164.0,
+    "ast_hash": "d249627024cea131fefd38df880477b7",
+    "semantic_hash": ""
+  },
+  "lifeos/public/icons/app/file-excel.svg": {
+    "mtime": 1758117164.0,
+    "ast_hash": "c6e349a987636961237b8da9d7d10c17",
+    "semantic_hash": ""
+  },
+  "lifeos/public/icons/app/file-lines.svg": {
+    "mtime": 1758117164.0,
+    "ast_hash": "c55bf3b43280ca65de03c47809f4e798",
+    "semantic_hash": ""
+  },
+  "lifeos/public/icons/app/filter.svg": {
+    "mtime": 1758117164.0,
+    "ast_hash": "3e8d442c146b721d69b9e0d995ab60e9",
+    "semantic_hash": ""
+  },
+  "lifeos/public/icons/app/flame.svg": {
+    "mtime": 1758117164.0,
+    "ast_hash": "3b003b05b22b6bbe29697dc59e07d776",
+    "semantic_hash": ""
+  },
+  "lifeos/public/icons/app/folder-kanban.svg": {
+    "mtime": 1758117164.0,
+    "ast_hash": "40cc78bba1e5ccfd4433033a5ccaea5a",
+    "semantic_hash": ""
+  },
+  "lifeos/public/icons/app/gamepad.svg": {
+    "mtime": 1758117164.0,
+    "ast_hash": "971affa6b3124781f243e9329c2cf6c4",
+    "semantic_hash": ""
+  },
+  "lifeos/public/icons/app/git-branch.svg": {
+    "mtime": 1758117164.0,
+    "ast_hash": "982af371732728fc72fc2efa4eca75d8",
+    "semantic_hash": ""
+  },
+  "lifeos/public/icons/app/glass-water.svg": {
+    "mtime": 1758117164.0,
+    "ast_hash": "db107abc25f82b95c69d1b199ddff575",
+    "semantic_hash": ""
+  },
+  "lifeos/public/icons/app/globe.svg": {
+    "mtime": 1758117164.0,
+    "ast_hash": "355b3de2b1dac70ee51377cd7f5c8781",
+    "semantic_hash": ""
+  },
+  "lifeos/public/icons/app/graduation-cap.svg": {
+    "mtime": 1758117164.0,
+    "ast_hash": "d414cdcc5e49d5350648699fc966fb60",
+    "semantic_hash": ""
+  },
+  "lifeos/public/icons/app/help-circle.svg": {
+    "mtime": 1758117164.0,
+    "ast_hash": "27e7ad63e686c5d1b16d46e0b9fcbbae",
+    "semantic_hash": ""
+  },
+  "lifeos/public/icons/app/history.svg": {
+    "mtime": 1758117164.0,
+    "ast_hash": "3de6a0c3b0fe471f46aa9aec59073970",
+    "semantic_hash": ""
+  },
+  "lifeos/public/icons/app/info.svg": {
+    "mtime": 1758117164.0,
+    "ast_hash": "a8b254b88ea041c065146ef8f700ce36",
+    "semantic_hash": ""
+  },
+  "lifeos/public/icons/app/kanban.svg": {
+    "mtime": 1758117164.0,
+    "ast_hash": "ac2eeb1619e1404a6a304353c5d8d1ed",
+    "semantic_hash": ""
+  },
+  "lifeos/public/icons/app/layers.svg": {
+    "mtime": 1758117164.0,
+    "ast_hash": "c6cb476fb79cae1559bdfd21169d2fd7",
+    "semantic_hash": ""
+  },
+  "lifeos/public/icons/app/layout-dashboard.svg": {
+    "mtime": 1758117164.0,
+    "ast_hash": "99c4fde61535816fb5cd5be3ceca6f2a",
+    "semantic_hash": ""
+  },
+  "lifeos/public/icons/app/list.svg": {
+    "mtime": 1758117164.0,
+    "ast_hash": "7cde820bb86bb7e842720f0c39fc0be6",
+    "semantic_hash": ""
+  },
+  "lifeos/public/icons/app/lock.svg": {
+    "mtime": 1758117164.0,
+    "ast_hash": "b153cc264a65310400a0b3de7f8be7dc",
+    "semantic_hash": ""
+  },
+  "lifeos/public/icons/app/mail.svg": {
+    "mtime": 1758117164.0,
+    "ast_hash": "8e93f713b8edabd6cf8a0b37a01a1681",
+    "semantic_hash": ""
+  },
+  "lifeos/public/icons/app/maximize.svg": {
+    "mtime": 1758117164.0,
+    "ast_hash": "c1e8a8696a16f0872414951e7f5df8c0",
+    "semantic_hash": ""
+  },
+  "lifeos/public/icons/app/message-square.svg": {
+    "mtime": 1758117164.0,
+    "ast_hash": "4d102d99ad69c2bb160b18e98a1e3be0",
+    "semantic_hash": ""
+  },
+  "lifeos/public/icons/app/mic-off.svg": {
+    "mtime": 1758117164.0,
+    "ast_hash": "60dfb9c8ec5db4e2ae5e6c6ec96472b5",
+    "semantic_hash": ""
+  },
+  "lifeos/public/icons/app/mic.svg": {
+    "mtime": 1758117164.0,
+    "ast_hash": "5397cd077251150be291a98cfe6a5dc2",
+    "semantic_hash": ""
+  },
+  "lifeos/public/icons/app/minimize.svg": {
+    "mtime": 1758117164.0,
+    "ast_hash": "2581eb319d26ba577f19ae7077e5eecb",
+    "semantic_hash": ""
+  },
+  "lifeos/public/icons/app/moon.svg": {
+    "mtime": 1758117164.0,
+    "ast_hash": "b18f68158e44d771c8eff4af811ff858",
+    "semantic_hash": ""
+  },
+  "lifeos/public/icons/app/pause.svg": {
+    "mtime": 1758117164.0,
+    "ast_hash": "10993c44ec9849259de78e425d9f6d36",
+    "semantic_hash": ""
+  },
+  "lifeos/public/icons/app/pen-tool.svg": {
+    "mtime": 1758117164.0,
+    "ast_hash": "4bc3042786cd9d8dcffb3ad58079d604",
+    "semantic_hash": ""
+  },
+  "lifeos/public/icons/app/pin.svg": {
+    "mtime": 1758117164.0,
+    "ast_hash": "33cec4e7c0a0db167648238251ec71c0",
+    "semantic_hash": ""
+  },
+  "lifeos/public/icons/app/play.svg": {
+    "mtime": 1758117164.0,
+    "ast_hash": "517dc09817df78fee96f738c685bad51",
+    "semantic_hash": ""
+  },
+  "lifeos/public/icons/app/plug.svg": {
+    "mtime": 1758117164.0,
+    "ast_hash": "572df141d7361a45b4298eedf4e78bdb",
+    "semantic_hash": ""
+  },
+  "lifeos/public/icons/app/plus.svg": {
+    "mtime": 1758117164.0,
+    "ast_hash": "1c5d3ffabbe126450f580bcda89bd3dc",
+    "semantic_hash": ""
+  },
+  "lifeos/public/icons/app/refresh.svg": {
+    "mtime": 1758117164.0,
+    "ast_hash": "da1c132f5acb3ae6f7725fbe16d2afe8",
+    "semantic_hash": ""
+  },
+  "lifeos/public/icons/app/repeat.svg": {
+    "mtime": 1758117164.0,
+    "ast_hash": "d99dab05b4658eb61352be898299e844",
+    "semantic_hash": ""
+  },
+  "lifeos/public/icons/app/save.svg": {
+    "mtime": 1758117164.0,
+    "ast_hash": "b21df80af0e40b890439291860451431",
+    "semantic_hash": ""
+  },
+  "lifeos/public/icons/app/search.svg": {
+    "mtime": 1758117164.0,
+    "ast_hash": "f2b0c983cf33a3b40fa3a780fde6b4e2",
+    "semantic_hash": ""
+  },
+  "lifeos/public/icons/app/settings.svg": {
+    "mtime": 1758117164.0,
+    "ast_hash": "b188c0277e10f932c51aa8c173339bfb",
+    "semantic_hash": ""
+  },
+  "lifeos/public/icons/app/shield-alert.svg": {
+    "mtime": 1758117164.0,
+    "ast_hash": "31e4b2827f95108e7bc03a72d10a6a67",
+    "semantic_hash": ""
+  },
+  "lifeos/public/icons/app/shield.svg": {
+    "mtime": 1758117164.0,
+    "ast_hash": "98bdb657a54c16be8d5c54edfba9b88d",
+    "semantic_hash": ""
+  },
+  "lifeos/public/icons/app/skip-forward.svg": {
+    "mtime": 1758117164.0,
+    "ast_hash": "6d6ba26322dabd1757cea7e129bfa5b4",
+    "semantic_hash": ""
+  },
+  "lifeos/public/icons/app/square.svg": {
+    "mtime": 1758117164.0,
+    "ast_hash": "1a7dfb385f20f66b29af2ac7ca58feb7",
+    "semantic_hash": ""
+  },
+  "lifeos/public/icons/app/star.svg": {
+    "mtime": 1758117164.0,
+    "ast_hash": "bdf497cbd8ce13ec8245199e9d99e542",
+    "semantic_hash": ""
+  },
+  "lifeos/public/icons/app/status-good.svg": {
+    "mtime": 1758117164.0,
+    "ast_hash": "a4c6359d71657f943747407a86c1d0fa",
+    "semantic_hash": ""
+  },
+  "lifeos/public/icons/app/status-low.svg": {
+    "mtime": 1758117164.0,
+    "ast_hash": "72a1f4d03eb354490c9fcbcdb0b448f8",
+    "semantic_hash": ""
+  },
+  "lifeos/public/icons/app/status-neutral.svg": {
+    "mtime": 1758117164.0,
+    "ast_hash": "ba2fe3b8505dced3df69638b660c00a3",
+    "semantic_hash": ""
+  },
+  "lifeos/public/icons/app/sticky-note.svg": {
+    "mtime": 1758117164.0,
+    "ast_hash": "e425da7b8145feb7055b5897923fb75f",
+    "semantic_hash": ""
+  },
+  "lifeos/public/icons/app/sun.svg": {
+    "mtime": 1758117164.0,
+    "ast_hash": "8e2ed630d15c21e32fe472d46e028351",
+    "semantic_hash": ""
+  },
+  "lifeos/public/icons/app/tag.svg": {
+    "mtime": 1758117164.0,
+    "ast_hash": "e03cd803c4254f2817e51dc8172c81f0",
+    "semantic_hash": ""
+  },
+  "lifeos/public/icons/app/target.svg": {
+    "mtime": 1758117164.0,
+    "ast_hash": "69e79f6b68a287bb7b25f8d90469ab56",
+    "semantic_hash": ""
+  },
+  "lifeos/public/icons/app/terminal.svg": {
+    "mtime": 1758117164.0,
+    "ast_hash": "80f9e45e045158d1aa8e2fc8390f552b",
+    "semantic_hash": ""
+  },
+  "lifeos/public/icons/app/timer.svg": {
+    "mtime": 1758117164.0,
+    "ast_hash": "106307f4c3a7d9c657c31bdb4b52d174",
+    "semantic_hash": ""
+  },
+  "lifeos/public/icons/app/trash.svg": {
+    "mtime": 1758117164.0,
+    "ast_hash": "31267e042da5413360b23eb2d3ba969d",
+    "semantic_hash": ""
+  },
+  "lifeos/public/icons/app/trending-up.svg": {
+    "mtime": 1758117164.0,
+    "ast_hash": "6a07486ba267596d739460de7c0bfcc6",
+    "semantic_hash": ""
+  },
+  "lifeos/public/icons/app/trophy.svg": {
+    "mtime": 1758117164.0,
+    "ast_hash": "f69778e0d8ddb4a5cbd2efb5a11e9f72",
+    "semantic_hash": ""
+  },
+  "lifeos/public/icons/app/upload.svg": {
+    "mtime": 1758117164.0,
+    "ast_hash": "82449720c493be7eda758b9ec0c9401e",
+    "semantic_hash": ""
+  },
+  "lifeos/public/icons/app/user.svg": {
+    "mtime": 1758117164.0,
+    "ast_hash": "ba87a485b13498eb8891b11deb5cb473",
+    "semantic_hash": ""
+  },
+  "lifeos/public/icons/app/volume-x.svg": {
+    "mtime": 1758117164.0,
+    "ast_hash": "821c432b5c79cd1724acadf376f8a739",
+    "semantic_hash": ""
+  },
+  "lifeos/public/icons/app/volume.svg": {
+    "mtime": 1758117164.0,
+    "ast_hash": "24206a0ded97015456d3c001cb90a35d",
+    "semantic_hash": ""
+  },
+  "lifeos/public/icons/app/zap.svg": {
+    "mtime": 1758117164.0,
+    "ast_hash": "04214e5f450b9c477397693ca369b1db",
+    "semantic_hash": ""
+  },
+  "lifeos/src/assets/hero.png": {
+    "mtime": 1780145591.1413188,
+    "ast_hash": "aead493361b27e7510691c5d7072dfc1",
+    "semantic_hash": ""
+  },
+  "lifeos/src/assets/typescript.svg": {
+    "mtime": 1780145591.2378612,
+    "ast_hash": "07f132d2ec35a9f4c17c1b9f19a2aac7",
+    "semantic_hash": ""
+  },
+  "lifeos/src/assets/vite.svg": {
+    "mtime": 1780145591.2656057,
+    "ast_hash": "9960a24288958394ac50e57ff638b036",
+    "semantic_hash": ""
+  }
+}

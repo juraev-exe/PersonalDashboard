@@ -1,0 +1,111 @@
+{
+  "directed": false,
+  "multigraph": false,
+  "graph": {},
+  "nodes": [
+    {
+      "label": "AuthPage.tsx",
+      "file_type": "code",
+      "source_file": "lifeos/src/pages/AuthPage.tsx",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "pages_authpage",
+      "community": 1,
+      "norm_label": "authpage.tsx"
+    },
+    {
+      "label": "AuthPage()",
+      "file_type": "code",
+      "source_file": "lifeos/src/pages/AuthPage.tsx",
+      "source_location": "L13",
+      "_origin": "ast",
+      "id": "pages_authpage_authpage",
+      "community": 1,
+      "norm_label": "authpage()"
+    },
+    {
+      "label": "SettingsPage.tsx",
+      "file_type": "code",
+      "source_file": "lifeos/src/pages/SettingsPage.tsx",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "pages_settingspage",
+      "community": 0,
+      "norm_label": "settingspage.tsx"
+    },
+    {
+      "label": "container",
+      "file_type": "code",
+      "source_file": "lifeos/src/pages/SettingsPage.tsx",
+      "source_location": "L18",
+      "_origin": "ast",
+      "id": "pages_settingspage_container",
+      "community": 0,
+      "norm_label": "container"
+    },
+    {
+      "label": "item",
+      "file_type": "code",
+      "source_file": "lifeos/src/pages/SettingsPage.tsx",
+      "source_location": "L19",
+      "_origin": "ast",
+      "id": "pages_settingspage_item",
+      "community": 0,
+      "norm_label": "item"
+    },
+    {
+      "label": "SettingsPage()",
+      "file_type": "code",
+      "source_file": "lifeos/src/pages/SettingsPage.tsx",
+      "source_location": "L21",
+      "_origin": "ast",
+      "id": "pages_settingspage_settingspage",
+      "community": 0,
+      "norm_label": "settingspage()"
+    }
+  ],
+  "links": [
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "lifeos/src/pages/AuthPage.tsx",
+      "source_location": "L13",
+      "weight": 1.0,
+      "source": "pages_authpage",
+      "target": "pages_authpage_authpage",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "lifeos/src/pages/SettingsPage.tsx",
+      "source_location": "L18",
+      "weight": 1.0,
+      "source": "pages_settingspage",
+      "target": "pages_settingspage_container",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "lifeos/src/pages/SettingsPage.tsx",
+      "source_location": "L19",
+      "weight": 1.0,
+      "source": "pages_settingspage",
+      "target": "pages_settingspage_item",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "lifeos/src/pages/SettingsPage.tsx",
+      "source_location": "L21",
+      "weight": 1.0,
+      "source": "pages_settingspage",
+      "target": "pages_settingspage_settingspage",
+      "confidence_score": 1.0
+    }
+  ],
+  "hyperedges": [],
+  "built_at_commit": "65fa7c60075e0a3085c17dd45f18c2a7cd8e750b"
+}
