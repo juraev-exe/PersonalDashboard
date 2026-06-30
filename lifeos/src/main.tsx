@@ -25,6 +25,8 @@ import FocusPage from './pages/FocusPage';
 import GoalsPage from './pages/GoalsPage';
 import AnalyticsPage from './pages/AnalyticsPage';
 import SettingsPage from './pages/SettingsPage';
+import FinancePage from './pages/FinancePage';
+import DetoxPage from './pages/DetoxPage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -116,6 +118,8 @@ function App() {
             <Route path="/goals" element={<GoalsPage />} />
             <Route path="/analytics" element={<AnalyticsPage />} />
             <Route path="/settings" element={<SettingsPage />} />
+            <Route path="/finance" element={<FinancePage />} />
+            <Route path="/detox" element={<DetoxPage />} />
             <Route path="*" element={<DashboardPage />} />
           </Route>
         ) : (

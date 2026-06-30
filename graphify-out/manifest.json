@@ -5,28 +5,28 @@
     "semantic_hash": ""
   },
   "lifeos/package.json": {
-    "mtime": 1782445117.5854871,
-    "ast_hash": "eaca4ad18310c5121014bc5abae14b70",
+    "mtime": 1782649773.1416621,
+    "ast_hash": "d5eba8843f054fc7905097df350e53ee",
     "semantic_hash": ""
   },
   "lifeos/src/components/icons/packIcons.tsx": {
-    "mtime": 1782445043.9441125,
-    "ast_hash": "d7a28b04fd139d95494d565df388399a",
+    "mtime": 1782843197.279224,
+    "ast_hash": "8a85417b5d65efca57b7e6de0cfa363b",
     "semantic_hash": ""
   },
   "lifeos/src/components/layout/MainLayout.tsx": {
-    "mtime": 1782320064.1832416,
-    "ast_hash": "38cddcb3986c1d8efc3584987f36c30d",
+    "mtime": 1782831700.8517783,
+    "ast_hash": "d2e2cbc8e293cc15afa2f5ec5b802cc1",
     "semantic_hash": ""
   },
   "lifeos/src/components/layout/Sidebar.tsx": {
-    "mtime": 1781192452.39192,
-    "ast_hash": "69f89b8561e078131b350d89e749b95e",
+    "mtime": 1782831660.7288423,
+    "ast_hash": "70f03842be4bfaba7d36ebc1e9600fde",
     "semantic_hash": ""
   },
   "lifeos/src/components/layout/TopNav.tsx": {
-    "mtime": 1782322534.287732,
-    "ast_hash": "866ce2ed3d9414e8b14eef55d66177f4",
+    "mtime": 1782829369.933424,
+    "ast_hash": "35113508c831568ecf8b064a13aa6d33",
     "semantic_hash": ""
   },
   "lifeos/src/components/layout/XpToastContainer.tsx": {
@@ -45,8 +45,8 @@
     "semantic_hash": ""
   },
   "lifeos/src/hooks/useInitData.ts": {
-    "mtime": 1780383037.0067108,
-    "ast_hash": "16f86752da1567f5fea204b8adca3a9b",
+    "mtime": 1782827988.1559122,
+    "ast_hash": "ae164eacc547dff97cada89724555a01",
     "semantic_hash": ""
   },
   "lifeos/src/hooks/useKeyboardShortcuts.ts": {
@@ -60,8 +60,8 @@
     "semantic_hash": ""
   },
   "lifeos/src/main.tsx": {
-    "mtime": 1782479754.410916,
-    "ast_hash": "870c89d8684f8abc37fc3572f2706076",
+    "mtime": 1782828119.2522519,
+    "ast_hash": "b43420239322bf1faf0a766f63571cfb",
     "semantic_hash": ""
   },
   "lifeos/src/pages/AnalyticsPage.tsx": {
@@ -80,13 +80,13 @@
     "semantic_hash": ""
   },
   "lifeos/src/pages/DashboardPage.tsx": {
-    "mtime": 1782444416.1961892,
-    "ast_hash": "a3cc54a8cd085b644f428615f27779c0",
+    "mtime": 1782843227.367096,
+    "ast_hash": "0792ba00d8e400ffeb2a2c423c9e76d6",
     "semantic_hash": ""
   },
   "lifeos/src/pages/FocusPage.tsx": {
-    "mtime": 1780382883.237083,
-    "ast_hash": "ea1a74cc55b06acf4b1d3797d1410182",
+    "mtime": 1782831743.3796668,
+    "ast_hash": "0b216a59ade3fa67e51846b2dc6dd5d9",
     "semantic_hash": ""
   },
   "lifeos/src/pages/GoalsPage.tsx": {
@@ -95,8 +95,8 @@
     "semantic_hash": ""
   },
   "lifeos/src/pages/HabitsPage.tsx": {
-    "mtime": 1782444416.3787875,
-    "ast_hash": "792323bb6278cf98adf244fbbfbb02e3",
+    "mtime": 1782831525.4627793,
+    "ast_hash": "925a5ca189afc257c566b0dfa0c8bbd1",
     "semantic_hash": ""
   },
   "lifeos/src/pages/JournalPage.tsx": {
@@ -125,8 +125,8 @@
     "semantic_hash": ""
   },
   "lifeos/src/pages/SettingsPage.tsx": {
-    "mtime": 1782481539.2605903,
-    "ast_hash": "4356bc73b52fb2bdca076b6ab4c20667",
+    "mtime": 1782831577.9309602,
+    "ast_hash": "9cda6634492b8586a652ba050f58c6f7",
     "semantic_hash": ""
   },
   "lifeos/src/pages/TasksPage.tsx": {
@@ -220,8 +220,8 @@
     "semantic_hash": ""
   },
   "lifeos/src/stores/settingsStore.ts": {
-    "mtime": 1782479739.3543913,
-    "ast_hash": "dc3b7cd0f8c40d7d90bdf987a4d96238",
+    "mtime": 1782831562.0340483,
+    "ast_hash": "c153f3da0912f9bac8af223643d53e4e",
     "semantic_hash": ""
   },
   "lifeos/src/stores/taskStore.ts": {
@@ -235,8 +235,8 @@
     "semantic_hash": ""
   },
   "lifeos/src/types/index.ts": {
-    "mtime": 1781192103.513474,
-    "ast_hash": "ded081639e5c5514c3f8907a6af530ae",
+    "mtime": 1782831545.6568143,
+    "ast_hash": "4a2eab3059eaa5ab7ed75a861254bae8",
     "semantic_hash": ""
   },
   "lifeos/tsconfig.json": {
@@ -712,6 +712,531 @@
   "lifeos/src/assets/vite.svg": {
     "mtime": 1780145591.2656057,
     "ast_hash": "9960a24288958394ac50e57ff638b036",
+    "semantic_hash": ""
+  },
+  "api/notion.ts": {
+    "mtime": 1782798510.2527976,
+    "ast_hash": "e1583f39078a1def06fe2aa27d58888a",
+    "semantic_hash": ""
+  },
+  "package.json": {
+    "mtime": 1782798501.8403945,
+    "ast_hash": "9cb147bf61426047e2c8f03b3e18d692",
+    "semantic_hash": ""
+  },
+  "vercel.json": {
+    "mtime": 1782798506.9342725,
+    "ast_hash": "a74d0a05f76cca092578ac5130bd8198",
+    "semantic_hash": ""
+  },
+  "lifeos/src/pages/DetoxPage.tsx": {
+    "mtime": 1782828482.0403001,
+    "ast_hash": "cd981c7556fec7d88c082a13b6209592",
+    "semantic_hash": ""
+  },
+  "lifeos/src/pages/FinancePage.tsx": {
+    "mtime": 1782828564.2427373,
+    "ast_hash": "384fc4d83edc1d2de8056436fbd1724e",
+    "semantic_hash": ""
+  },
+  "lifeos/src/stores/detoxStore.ts": {
+    "mtime": 1782827940.7776399,
+    "ast_hash": "b56f9ba6b9ed5f917555817e8e6e20cd",
+    "semantic_hash": ""
+  },
+  "lifeos/src/stores/financeStore.ts": {
+    "mtime": 1782827928.6183383,
+    "ast_hash": "44d87f659bcfe1eda4999a7d09d30bb7",
+    "semantic_hash": ""
+  },
+  "lifeos/public/icons/app/dollar-sign.svg": {
+    "mtime": 1782828298.4012387,
+    "ast_hash": "125ab14c76889f2540dcbccb35a7d18d",
+    "semantic_hash": ""
+  },
+  "lifeos/public/icons/app/smartphone.svg": {
+    "mtime": 1782828305.6681876,
+    "ast_hash": "f8e1637d925c0d061f1b206d2e00aff4",
+    "semantic_hash": ""
+  },
+  "lifeos/public/icons/app/trending-down.svg": {
+    "mtime": 1782828332.4703393,
+    "ast_hash": "160a9eeb091ecf8cc90e5d40b6684066",
+    "semantic_hash": ""
+  },
+  "lifeos/public/images/icons/1Password.png": {
+    "mtime": 1755034956.0,
+    "ast_hash": "5525e4c8bdb2db759bfd6c30e4d6dd30",
+    "semantic_hash": ""
+  },
+  "lifeos/public/images/icons/AppCleaner.png": {
+    "mtime": 1755034972.0,
+    "ast_hash": "7ecd03c9d80787a4cebda458a1278090",
+    "semantic_hash": ""
+  },
+  "lifeos/public/images/icons/AutoCAD.png": {
+    "mtime": 1755034972.0,
+    "ast_hash": "4f7b8d69436ed92b1fb2c4ec86beeaf9",
+    "semantic_hash": ""
+  },
+  "lifeos/public/images/icons/BBEdit.png": {
+    "mtime": 1755034966.0,
+    "ast_hash": "3910219d099f4f0974d574ad80400dcd",
+    "semantic_hash": ""
+  },
+  "lifeos/public/images/icons/Beamer.png": {
+    "mtime": 1755034968.0,
+    "ast_hash": "8251332814f2aef4f7976af52cbe012c",
+    "semantic_hash": ""
+  },
+  "lifeos/public/images/icons/BetterTouchTool.png": {
+    "mtime": 1755034970.0,
+    "ast_hash": "50e0289d2f42e14695a274a69d60b57e",
+    "semantic_hash": ""
+  },
+  "lifeos/public/images/icons/Bitwarden.png": {
+    "mtime": 1755034980.0,
+    "ast_hash": "343f31680cdac10d03b65b02df0cc723",
+    "semantic_hash": ""
+  },
+  "lifeos/public/images/icons/Books.png": {
+    "mtime": 1755034976.0,
+    "ast_hash": "98bd051e7875e4064ab3e78a9591ee63",
+    "semantic_hash": ""
+  },
+  "lifeos/public/images/icons/Calibre.png": {
+    "mtime": 1755034970.0,
+    "ast_hash": "345ef26f3a803665b0d6c4988ce9116d",
+    "semantic_hash": ""
+  },
+  "lifeos/public/images/icons/CoconutBattery.png": {
+    "mtime": 1755034980.0,
+    "ast_hash": "ddfe54e1a25d8726bfb7eb219bb48fc3",
+    "semantic_hash": ""
+  },
+  "lifeos/public/images/icons/CrossOver.png": {
+    "mtime": 1755034950.0,
+    "ast_hash": "91a6cfeb9385e71f9ec011e5aeebccfc",
+    "semantic_hash": ""
+  },
+  "lifeos/public/images/icons/Discord.png": {
+    "mtime": 1755034970.0,
+    "ast_hash": "1cafd0ae719406579d088942e373e034",
+    "semantic_hash": ""
+  },
+  "lifeos/public/images/icons/Dropbox.png": {
+    "mtime": 1755034980.0,
+    "ast_hash": "19f27dc6d04963cd57ea55e3e34a7bf4",
+    "semantic_hash": ""
+  },
+  "lifeos/public/images/icons/Emby.png": {
+    "mtime": 1755034968.0,
+    "ast_hash": "1f58b28938fd90169b722c25825d2137",
+    "semantic_hash": ""
+  },
+  "lifeos/public/images/icons/Figma.png": {
+    "mtime": 1755034972.0,
+    "ast_hash": "1849423e12e7e5e0091fda448a915a7c",
+    "semantic_hash": ""
+  },
+  "lifeos/public/images/icons/Finder.png": {
+    "mtime": 1755034948.0,
+    "ast_hash": "d5b75a6ba76c1544c3ac3f18fa8bc7fd",
+    "semantic_hash": ""
+  },
+  "lifeos/public/images/icons/Flixtools.png": {
+    "mtime": 1755034980.0,
+    "ast_hash": "71e78dd9f669892c3e07c31808fbe558",
+    "semantic_hash": ""
+  },
+  "lifeos/public/images/icons/Forklift.png": {
+    "mtime": 1755034964.0,
+    "ast_hash": "613cef62e70d2bdec088b9dcbd427573",
+    "semantic_hash": ""
+  },
+  "lifeos/public/images/icons/Garageband.png": {
+    "mtime": 1755034954.0,
+    "ast_hash": "81dceff424fa1e04d496fd424fb253e9",
+    "semantic_hash": ""
+  },
+  "lifeos/public/images/icons/Gimp.png": {
+    "mtime": 1755034950.0,
+    "ast_hash": "0eff65f6b82ff089dca3fffb004e9bb4",
+    "semantic_hash": ""
+  },
+  "lifeos/public/images/icons/Git.png": {
+    "mtime": 1755034982.0,
+    "ast_hash": "8e6cbc944f810f26b00223ea78db065f",
+    "semantic_hash": ""
+  },
+  "lifeos/public/images/icons/HiddenMe.png": {
+    "mtime": 1755034978.0,
+    "ast_hash": "6ce7db5e5f7579ef0e2175b709b7d2ef",
+    "semantic_hash": ""
+  },
+  "lifeos/public/images/icons/IINA.png": {
+    "mtime": 1755034970.0,
+    "ast_hash": "beacbf4dfa99a59af4bff3a42c872542",
+    "semantic_hash": ""
+  },
+  "lifeos/public/images/icons/Image2Icon.png": {
+    "mtime": 1755034962.0,
+    "ast_hash": "3f97521408ca9f9bf33c2c3b95de0ee1",
+    "semantic_hash": ""
+  },
+  "lifeos/public/images/icons/ImageOptim.png": {
+    "mtime": 1755034976.0,
+    "ast_hash": "db7fa3df128d92837e7900bb947f96f6",
+    "semantic_hash": ""
+  },
+  "lifeos/public/images/icons/Instapaper.png": {
+    "mtime": 1755034952.0,
+    "ast_hash": "272f5ace2b9c4f2a71b5698dc84acefd",
+    "semantic_hash": ""
+  },
+  "lifeos/public/images/icons/Keynote.png": {
+    "mtime": 1755034956.0,
+    "ast_hash": "a3a0d549a8c2efafa6bda8263f2a8f01",
+    "semantic_hash": ""
+  },
+  "lifeos/public/images/icons/Kindle.png": {
+    "mtime": 1755034952.0,
+    "ast_hash": "8551ba7f6d3a9c1bf95ec2e3dcb6b922",
+    "semantic_hash": ""
+  },
+  "lifeos/public/images/icons/Kodi.png": {
+    "mtime": 1755034970.0,
+    "ast_hash": "01ad6ba5b00efb8ebffdb0961e2ae4dc",
+    "semantic_hash": ""
+  },
+  "lifeos/public/images/icons/Launchpad.png": {
+    "mtime": 1755034954.0,
+    "ast_hash": "5371fe4939265c7aa18c580ecce03251",
+    "semantic_hash": ""
+  },
+  "lifeos/public/images/icons/Line.png": {
+    "mtime": 1755034984.0,
+    "ast_hash": "694c54c3b0a5e175bc70d942e22efe37",
+    "semantic_hash": ""
+  },
+  "lifeos/public/images/icons/LiteIcon.png": {
+    "mtime": 1755034980.0,
+    "ast_hash": "92af90d2114bc445294ab22402738971",
+    "semantic_hash": ""
+  },
+  "lifeos/public/images/icons/Mail.png": {
+    "mtime": 1755034956.0,
+    "ast_hash": "bc8744bd90a22bf794f38bf3a3859273",
+    "semantic_hash": ""
+  },
+  "lifeos/public/images/icons/Music.png": {
+    "mtime": 1755034954.0,
+    "ast_hash": "1e480b298eb1f06a952e19da71fcc4ba",
+    "semantic_hash": ""
+  },
+  "lifeos/public/images/icons/Netflix.png": {
+    "mtime": 1755034984.0,
+    "ast_hash": "fcc4bfff2a1c58f8c7a850817aa0cde2",
+    "semantic_hash": ""
+  },
+  "lifeos/public/images/icons/Notes.png": {
+    "mtime": 1755034956.0,
+    "ast_hash": "00df8df5622768fc832adaa89b667492",
+    "semantic_hash": ""
+  },
+  "lifeos/public/images/icons/Notion.png": {
+    "mtime": 1755034952.0,
+    "ast_hash": "9d980eed41f526bd1806dd2d8f7f1e50",
+    "semantic_hash": ""
+  },
+  "lifeos/public/images/icons/Numbers.png": {
+    "mtime": 1755034958.0,
+    "ast_hash": "d1e3a43a976a5e7b3e627c4b15b6379d",
+    "semantic_hash": ""
+  },
+  "lifeos/public/images/icons/Obsidian.png": {
+    "mtime": 1755034978.0,
+    "ast_hash": "395c133f16d610006971b01234d4af73",
+    "semantic_hash": ""
+  },
+  "lifeos/public/images/icons/Opera.png": {
+    "mtime": 1755034960.0,
+    "ast_hash": "aeb81d86517d4444a72fe06b6109b4b7",
+    "semantic_hash": ""
+  },
+  "lifeos/public/images/icons/Pages.png": {
+    "mtime": 1755034956.0,
+    "ast_hash": "ecd5e97125711089fdbe46dfa766c614",
+    "semantic_hash": ""
+  },
+  "lifeos/public/images/icons/Plex.png": {
+    "mtime": 1755034968.0,
+    "ast_hash": "200aeb6791b9cee01dae93080636a4d3",
+    "semantic_hash": ""
+  },
+  "lifeos/public/images/icons/Prizmo.png": {
+    "mtime": 1755034950.0,
+    "ast_hash": "fc2463cf7f65d00d1a4a9785cc9c2643",
+    "semantic_hash": ""
+  },
+  "lifeos/public/images/icons/Rhinoceros.png": {
+    "mtime": 1755034982.0,
+    "ast_hash": "caa6e4bcabe6231c235a3470f6dc8890",
+    "semantic_hash": ""
+  },
+  "lifeos/public/images/icons/Safari.png": {
+    "mtime": 1755034948.0,
+    "ast_hash": "70779f0bf2c29ee5691059f89e14b773",
+    "semantic_hash": ""
+  },
+  "lifeos/public/images/icons/Settings.png": {
+    "mtime": 1755034956.0,
+    "ast_hash": "1d2c2287acbd0a41c7f9891f7cc90cae",
+    "semantic_hash": ""
+  },
+  "lifeos/public/images/icons/Shazam.png": {
+    "mtime": 1755034980.0,
+    "ast_hash": "b0ecf970a6d377b4921b3a632bbe1f77",
+    "semantic_hash": ""
+  },
+  "lifeos/public/images/icons/Sketch.png": {
+    "mtime": 1755034962.0,
+    "ast_hash": "43350b7c16e2b762b3920eb0b9302787",
+    "semantic_hash": ""
+  },
+  "lifeos/public/images/icons/Sketchup.png": {
+    "mtime": 1755034972.0,
+    "ast_hash": "80dd5e59fd358ed80e963d7c8e6b3ff4",
+    "semantic_hash": ""
+  },
+  "lifeos/public/images/icons/Slack.png": {
+    "mtime": 1755034952.0,
+    "ast_hash": "20c5173e60ce757f5ba7945de1db11ee",
+    "semantic_hash": ""
+  },
+  "lifeos/public/images/icons/Spotify.png": {
+    "mtime": 1755034974.0,
+    "ast_hash": "6238b2fab30e0c9d57848866e0cd101f",
+    "semantic_hash": ""
+  },
+  "lifeos/public/images/icons/Steam.png": {
+    "mtime": 1755034980.0,
+    "ast_hash": "0d5435872648f91836080788b644dc10",
+    "semantic_hash": ""
+  },
+  "lifeos/public/images/icons/Stremio.png": {
+    "mtime": 1755034968.0,
+    "ast_hash": "03e5ee84527b17831f554a9229c291b9",
+    "semantic_hash": ""
+  },
+  "lifeos/public/images/icons/Strike.png": {
+    "mtime": 1755034952.0,
+    "ast_hash": "f993a8b4bdab519e2c33bd65749fc460",
+    "semantic_hash": ""
+  },
+  "lifeos/public/images/icons/TeamSpeak.png": {
+    "mtime": 1755034980.0,
+    "ast_hash": "e28fd22842fa71a5ea83da98f08d8e37",
+    "semantic_hash": ""
+  },
+  "lifeos/public/images/icons/TeamViewer.png": {
+    "mtime": 1755034980.0,
+    "ast_hash": "45f8356c568954489c1b792b727fc4a3",
+    "semantic_hash": ""
+  },
+  "lifeos/public/images/icons/Telegram.png": {
+    "mtime": 1755034982.0,
+    "ast_hash": "a4f539d0b13b1c11c7abbab5da0ff183",
+    "semantic_hash": ""
+  },
+  "lifeos/public/images/icons/Termius.png": {
+    "mtime": 1755034970.0,
+    "ast_hash": "64cc8c81cacd903ec5f0d50e8f7741de",
+    "semantic_hash": ""
+  },
+  "lifeos/public/images/icons/Tidal.png": {
+    "mtime": 1755034968.0,
+    "ast_hash": "44b57fc9d35d7231bde98051ed4a63e3",
+    "semantic_hash": ""
+  },
+  "lifeos/public/images/icons/Transmission.png": {
+    "mtime": 1755034980.0,
+    "ast_hash": "5deb8e2e6c66d8f1a39e6c462bcb14e1",
+    "semantic_hash": ""
+  },
+  "lifeos/public/images/icons/TripMode.png": {
+    "mtime": 1755034960.0,
+    "ast_hash": "2fec8a655bd78003ff4c5d13ac59f8ad",
+    "semantic_hash": ""
+  },
+  "lifeos/public/images/icons/Tunnelblick.png": {
+    "mtime": 1755034982.0,
+    "ast_hash": "925c2b246c6a6bc1f5130ff2a33be06a",
+    "semantic_hash": ""
+  },
+  "lifeos/public/images/icons/Twitch.png": {
+    "mtime": 1755034966.0,
+    "ast_hash": "2465976b6045db5515e18d36c32c1399",
+    "semantic_hash": ""
+  },
+  "lifeos/public/images/icons/Typora.png": {
+    "mtime": 1755034952.0,
+    "ast_hash": "5008d3593bbdbd9d91d83cdeb74a678b",
+    "semantic_hash": ""
+  },
+  "lifeos/public/images/icons/Ulysses.png": {
+    "mtime": 1755034976.0,
+    "ast_hash": "bb6a8a6b869a8ed5bed44d282b91aacf",
+    "semantic_hash": ""
+  },
+  "lifeos/public/images/icons/Unsplash.png": {
+    "mtime": 1755034970.0,
+    "ast_hash": "a76e6b399c1fb2537a01e8aa8429a8cc",
+    "semantic_hash": ""
+  },
+  "lifeos/public/images/icons/VLC.png": {
+    "mtime": 1755034980.0,
+    "ast_hash": "57923d83caa075f7e3c7017b852fa620",
+    "semantic_hash": ""
+  },
+  "lifeos/public/images/icons/Vivaldi.png": {
+    "mtime": 1755034960.0,
+    "ast_hash": "901f163dba4088404971b39e22f29fe5",
+    "semantic_hash": ""
+  },
+  "lifeos/public/images/icons/Whatsapp.png": {
+    "mtime": 1755034984.0,
+    "ast_hash": "815c9e42768369113ebe42bce90bc320",
+    "semantic_hash": ""
+  },
+  "lifeos/public/images/icons/WordPress.png": {
+    "mtime": 1755034980.0,
+    "ast_hash": "916b15f0ae12c3d9ffd018b48bcbac68",
+    "semantic_hash": ""
+  },
+  "lifeos/public/images/icons/Yoink.png": {
+    "mtime": 1755034980.0,
+    "ast_hash": "cf223d5949cd73363800eb6040ade1ab",
+    "semantic_hash": ""
+  },
+  "lifeos/public/images/icons/YouTube.png": {
+    "mtime": 1755034960.0,
+    "ast_hash": "32afa3c51bbdb74d8a859b5f84628ef7",
+    "semantic_hash": ""
+  },
+  "lifeos/public/images/icons/iMovie.png": {
+    "mtime": 1755034976.0,
+    "ast_hash": "20cde7fa49f0007d8c623743ea372f55",
+    "semantic_hash": ""
+  },
+  "lifeos/public/images/icons/qBittorrent.png": {
+    "mtime": 1755034970.0,
+    "ast_hash": "379a8c6f37f816f551162b544b97ec24",
+    "semantic_hash": ""
+  },
+  "lifeos/public/images/icons/uTorrent.png": {
+    "mtime": 1755034960.0,
+    "ast_hash": "f85e5d46a0b2d1f40ec8c686d3b44080",
+    "semantic_hash": ""
+  },
+  "lifeos/src/components/layout/Skeleton.tsx": {
+    "mtime": 1782831623.9522333,
+    "ast_hash": "91be40b8f8274711256f1818e2d4576b",
+    "semantic_hash": ""
+  },
+  "lifeos/src/components/layout/SpotifyWidget.tsx": {
+    "mtime": 1782831603.536667,
+    "ast_hash": "47ecbb21a9335be5d557a3969344a75c",
+    "semantic_hash": ""
+  },
+  "lifeos/public/icons/app/apple-whole.svg": {
+    "mtime": 1782831228.2297313,
+    "ast_hash": "e023fc58794c5b63dd7e8aa7bda80c72",
+    "semantic_hash": ""
+  },
+  "lifeos/public/icons/app/bed.svg": {
+    "mtime": 1782831124.3260849,
+    "ast_hash": "4393211d25f063ee09786014c016e82f",
+    "semantic_hash": ""
+  },
+  "lifeos/public/icons/app/bicycle.svg": {
+    "mtime": 1782831256.0512493,
+    "ast_hash": "6a5e820f852d012e02410c9014686a6d",
+    "semantic_hash": ""
+  },
+  "lifeos/public/icons/app/brain.svg": {
+    "mtime": 1782831182.9929006,
+    "ast_hash": "0d05ac72e5ec824b3887446cdccdb00f",
+    "semantic_hash": ""
+  },
+  "lifeos/public/icons/app/carrot.svg": {
+    "mtime": 1782831238.2084982,
+    "ast_hash": "f7c2e8d25071075f42bdd8bdc8ba7908",
+    "semantic_hash": ""
+  },
+  "lifeos/public/icons/app/chevron-down.svg": {
+    "mtime": 1782829577.2014375,
+    "ast_hash": "7102a4b219caa25128093b16c13d7be2",
+    "semantic_hash": ""
+  },
+  "lifeos/public/icons/app/cloud-lightning.svg": {
+    "mtime": 1782843122.418802,
+    "ast_hash": "47b2e49a0fc2b490325069647594f8e0",
+    "semantic_hash": ""
+  },
+  "lifeos/public/icons/app/cloud-rain.svg": {
+    "mtime": 1782843011.2005641,
+    "ast_hash": "151cb81d7badf5c348ea8df8b786534c",
+    "semantic_hash": ""
+  },
+  "lifeos/public/icons/app/cloud-snow.svg": {
+    "mtime": 1782843055.2875414,
+    "ast_hash": "9e06046f87b0c9c4aa85e4627a6ff13c",
+    "semantic_hash": ""
+  },
+  "lifeos/public/icons/app/cloud.svg": {
+    "mtime": 1782843000.034782,
+    "ast_hash": "a30d464c2765f355c9e2b1ffb2436d32",
+    "semantic_hash": ""
+  },
+  "lifeos/public/icons/app/droplet.svg": {
+    "mtime": 1782831362.6498861,
+    "ast_hash": "60ddd112460460dee546a63abd5ca74f",
+    "semantic_hash": ""
+  },
+  "lifeos/public/icons/app/dumbbell.svg": {
+    "mtime": 1782831105.829182,
+    "ast_hash": "403e3741044114df2139936d8eb911c2",
+    "semantic_hash": ""
+  },
+  "lifeos/public/icons/app/guitar.svg": {
+    "mtime": 1782831281.4317174,
+    "ast_hash": "b2be5a7b785021763f4b2c9a989ed963",
+    "semantic_hash": ""
+  },
+  "lifeos/public/icons/app/leaf.svg": {
+    "mtime": 1782831309.8826885,
+    "ast_hash": "a5da395a2c0a27758e6ef0f64492b28c",
+    "semantic_hash": ""
+  },
+  "lifeos/public/icons/app/log-out.svg": {
+    "mtime": 1782829554.8564794,
+    "ast_hash": "89134fc7b01284d598d3a2cefa63d1b8",
+    "semantic_hash": ""
+  },
+  "lifeos/public/icons/app/music.svg": {
+    "mtime": 1782843146.9685192,
+    "ast_hash": "ff3ba980c8c535ac2eccd63c49c6eb89",
+    "semantic_hash": ""
+  },
+  "lifeos/public/icons/app/pen.svg": {
+    "mtime": 1782831339.2957036,
+    "ast_hash": "c8a58079a013f1c665e7e60efc257fec",
+    "semantic_hash": ""
+  },
+  "lifeos/public/icons/app/utensils.svg": {
+    "mtime": 1782831209.9545615,
+    "ast_hash": "2995db359f9330f77348371256899ddb",
     "semantic_hash": ""
   }
 }

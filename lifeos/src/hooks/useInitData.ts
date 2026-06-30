@@ -15,6 +15,8 @@ import { useSettingsStore } from '../stores/settingsStore';
 import { useAuthStore } from '../stores/authStore';
 import { useJournalStore } from '../stores/journalStore';
 import { useGoalStore } from '../stores/goalStore';
+import { useFinanceStore } from '../stores/financeStore';
+import { useDetoxStore } from '../stores/detoxStore';
 import * as storage from '../services/storage';
 import {
   defaultHabits,
@@ -42,6 +44,8 @@ export function useInitData() {
   const loadGoals = useGoalStore((s) => s.loadGoals);
   const loadEvents = useCalendarStore((s) => s.loadEvents);
   const loadGamification = useGamificationStore((s) => s.loadGamification);
+  const loadTransactions = useFinanceStore((s) => s.loadTransactions);
+  const loadDetoxData = useDetoxStore((s) => s.loadDetoxData);
   const theme = useSettingsStore((s) => s.theme);
 
   useEffect(() => {
@@ -82,5 +86,7 @@ export function useInitData() {
     loadGoals();
     loadEvents();
     loadGamification();
-  }, [authInitialized, loadSessions, loadTasks, loadHabits, loadPrayers, loadProjects, loadNotes, loadEntries, loadGoals, loadEvents, loadGamification, theme]);
+    loadTransactions();
+    loadDetoxData();
+  }, [authInitialized, loadSessions, loadTasks, loadHabits, loadPrayers, loadProjects, loadNotes, loadEntries, loadGoals, loadEvents, loadGamification, loadTransactions, loadDetoxData, theme]);
 }

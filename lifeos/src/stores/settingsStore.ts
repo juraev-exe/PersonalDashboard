@@ -34,6 +34,7 @@ const defaultSettings: AppSettings = {
   sidebarCollapsed: false,
   notionDatabaseId: '',
   notionParentType: 'database',
+  spotifyPlaylistUrl: 'https://open.spotify.com/playlist/37i9dQZF1DX8UebgpwzvUh',
 };
 
 const loadSettings = (): AppSettings => getValue<AppSettings>('settings', defaultSettings);

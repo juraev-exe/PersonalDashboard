@@ -1,0 +1,12 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "cd lifeos && npm run build",
+  "installCommand": "npm install && cd lifeos && npm install",
+  "outputDirectory": "lifeos/dist",
+  "rewrites": [
+    {
+      "source": "/api/notion/:path*",
+      "destination": "/api/notion"
+    }
+  ]
+}

@@ -8,31 +8,35 @@ import Sidebar from './Sidebar';
 import TopNav from './TopNav';
 import XpToastContainer from './XpToastContainer';
 import { useSettingsStore } from '../../stores/settingsStore';
+import { usePomodoroStore } from '../../stores/pomodoroStore';
 import { useKeyboardShortcuts } from '../../hooks/useKeyboardShortcuts';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function MainLayout() {
   const collapsed = useSettingsStore((s) => s.sidebarCollapsed);
+  const isRunning = usePomodoroStore((s) => s.isRunning);
   const location = useLocation();
   useKeyboardShortcuts();
 
+  const hideNavigation = location.pathname === '/focus' && isRunning;
+
   return (
     <div style={{ display: 'flex', minHeight: '100vh' }}>
-      <Sidebar />
+      {!hideNavigation && <Sidebar />}
       <XpToastContainer />
       <div
         style={{
           flex: 1,
-          marginLeft: collapsed ? 'var(--spacing-sidebar-collapsed)' : 'var(--spacing-sidebar)',
-          transition: 'margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+          marginLeft: hideNavigation ? 0 : (collapsed ? 'var(--spacing-sidebar-collapsed)' : 'var(--spacing-sidebar)'),
+          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
         }}
       >
-        <TopNav />
+        {!hideNavigation && <TopNav />}
         <main
           style={{
-            marginTop: 'var(--spacing-topnav)',
-            padding: '24px',
-            minHeight: 'calc(100vh - var(--spacing-topnav))',
+            marginTop: hideNavigation ? 0 : 'var(--spacing-topnav)',
+            padding: hideNavigation ? 0 : '24px',
+            minHeight: hideNavigation ? '100vh' : 'calc(100vh - var(--spacing-topnav))',
           }}
         >
           <AnimatePresence mode="wait">

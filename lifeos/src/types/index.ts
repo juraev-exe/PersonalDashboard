@@ -233,8 +233,10 @@ export interface AppSettings {
   wakatimeApiKey?: string;
   notionApiKey?: string;
   googleCalendarToken?: string;
+  googleUserEmail?: string;
   notionDatabaseId?: string;
   notionParentType?: 'database' | 'page';
+  spotifyPlaylistUrl?: string;
 }
 
 export interface Quote {

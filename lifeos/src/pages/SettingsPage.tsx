@@ -31,6 +31,7 @@ export default function SettingsPage() {
   const notionApiKey = useSettingsStore((s) => s.notionApiKey) || '';
   const googleCalendarToken = useSettingsStore((s) => s.googleCalendarToken) || '';
   const googleUserEmail = useSettingsStore((s) => s.googleUserEmail as string | undefined) || '';
+  const spotifyPlaylistUrl = useSettingsStore((s) => s.spotifyPlaylistUrl) || '';
 
   const clearGoogleSession = useSettingsStore((s) => s.clearGoogleSession);
 
@@ -243,6 +244,23 @@ export default function SettingsPage() {
                   />
                 </div>
               </div>
+            </div>
+
+            {/* Spotify */}
+            <div>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 500, color: 'var(--color-text-secondary)', marginBottom: 6 }}>
+                <span style={{ color: '#1DB954', fontWeight: 'bold' }}>Spotify</span> Playlist URL or ID
+              </label>
+              <input
+                type="text"
+                placeholder="https://open.spotify.com/playlist/... or playlist ID"
+                value={spotifyPlaylistUrl}
+                onChange={(e) => setIntegrationKey('spotifyPlaylistUrl', e.target.value)}
+                className="input"
+              />
+              <p style={{ fontSize: 11, color: 'var(--color-text-muted)', marginTop: 4 }}>
+                Enter any Spotify playlist URL to show it inside your dashboard and Focus timer widget.
+              </p>
             </div>
 
             {/* Google Services */}

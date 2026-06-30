@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { useHabitStore } from '../stores/habitStore';
 import type { Habit } from '../types';
 import { Plus, Repeat, Flame, Trash2, Edit3, Archive, Check, Calendar, HelpCircle, Award, Activity, GlassWater, BookOpen, Moon, Terminal, Shield, Trophy } from 'lucide-react';
+import { Dumbbell, Bed, Brain, Utensils, AppleWhole, Carrot, Bicycle, Guitar, Leaf, Pen, Droplet } from '../components/icons/packIcons';
 import { motion, AnimatePresence } from 'framer-motion';
 import { format, subDays } from 'date-fns';
 
@@ -13,6 +14,17 @@ const PRESET_ICONS = [
   { name: 'Terminal', component: Terminal },
   { name: 'Shield', component: Shield },
   { name: 'Trophy', component: Trophy },
+  { name: 'Dumbbell', component: Dumbbell },
+  { name: 'Bed', component: Bed },
+  { name: 'Brain', component: Brain },
+  { name: 'Utensils', component: Utensils },
+  { name: 'AppleWhole', component: AppleWhole },
+  { name: 'Carrot', component: Carrot },
+  { name: 'Bicycle', component: Bicycle },
+  { name: 'Guitar', component: Guitar },
+  { name: 'Leaf', component: Leaf },
+  { name: 'Pen', component: Pen },
+  { name: 'Droplet', component: Droplet },
 ];
 
 const PRESET_COLORS = [
@@ -22,6 +34,10 @@ const PRESET_COLORS = [
   { name: 'Red', value: '#f85149' },
   { name: 'Purple', value: '#a371f7' },
   { name: 'Lime', value: '#56d364' },
+];
+
+const CUSTOM_PNG_ICONS = [
+  'Notion', 'Notes', 'Settings', 'Spotify', 'YouTube', 'Discord', 'Dropbox', 'Figma', 'Git', 'Telegram', 'Whatsapp', 'Mail', 'Books', 'Music', 'Safari', 'Sketch', 'Slack', 'Steam', 'VLC'
 ];
 
 export default function HabitsPage() {
@@ -207,7 +223,15 @@ export default function HabitsPage() {
                         width: 42, height: 42, borderRadius: 'var(--radius-md)',
                         background: `${habit.color}20`, display: 'flex', alignItems: 'center', justifyContent: 'center',
                       }}>
-                        <Icon size={22} style={{ color: habit.color }} />
+                        {habit.icon && habit.icon.endsWith('.png') ? (
+                          <img 
+                            src={`/images/icons/${habit.icon}`} 
+                            alt={habit.name} 
+                            style={{ width: 22, height: 22, objectFit: 'contain' }} 
+                          />
+                        ) : (
+                          <Icon size={22} style={{ color: habit.color }} />
+                        )}
                       </div>
                       <div>
                         <h4 style={{ fontSize: 15, fontWeight: 700, color: 'var(--color-text-primary)' }}>{habit.name}</h4>
@@ -342,8 +366,8 @@ export default function HabitsPage() {
                 </div>
 
                 <div>
-                  <label style={{ display: 'block', fontSize: 12, fontWeight: 500, color: 'var(--color-text-secondary)', marginBottom: 8 }}>Choose Icon</label>
-                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                  <label style={{ display: 'block', fontSize: 12, fontWeight: 500, color: 'var(--color-text-secondary)', marginBottom: 8 }}>Choose Preset Icon</label>
+                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '12px' }}>
                     {PRESET_ICONS.map((pi) => {
                       const IconComp = pi.component;
                       return (
@@ -368,6 +392,30 @@ export default function HabitsPage() {
                         </button>
                       );
                     })}
+                  </div>
+
+                  <label style={{ display: 'block', fontSize: 12, fontWeight: 500, color: 'var(--color-text-secondary)', marginBottom: 8 }}>Choose Premium App Icon (From F:\Picture)</label>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: '8px', maxHeight: '120px', overflowY: 'auto', padding: '6px', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', background: 'var(--color-bg-secondary)' }}>
+                    {CUSTOM_PNG_ICONS.map((pname) => (
+                      <button
+                        key={pname}
+                        type="button"
+                        onClick={() => setIcon(`${pname}.png`)}
+                        style={{
+                          padding: '6px',
+                          borderRadius: 'var(--radius-md)',
+                          border: icon === `${pname}.png` ? `2px solid ${color}` : '1px solid var(--color-border)',
+                          background: icon === `${pname}.png` ? `${color}15` : 'var(--color-bg-tertiary)',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                        }}
+                        title={pname}
+                      >
+                        <img src={`/images/icons/${pname}.png`} alt={pname} style={{ width: 22, height: 22, objectFit: 'contain' }} />
+                      </button>
+                    ))}
                   </div>
                 </div>
 

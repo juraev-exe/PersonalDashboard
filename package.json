@@ -1,0 +1,10 @@
+{
+  "name": "personal-dashboard-root",
+  "private": true,
+  "scripts": {
+    "build": "cd lifeos && npm run build"
+  },
+  "devDependencies": {
+    "@vercel/node": "^3.0.0"
+  }
+}

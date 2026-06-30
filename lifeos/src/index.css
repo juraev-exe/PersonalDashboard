@@ -6,20 +6,20 @@
    ============================================ */
 
 @theme {
-  /* Dark OLED theme — GitHub Green */
-  --color-bg-primary: #000000;
-  --color-bg-secondary: #0a0a0a;
-  --color-bg-tertiary: #0d1117;
-  --color-bg-card: #0a0a0a;
-  --color-bg-hover: #161b22;
-  --color-bg-active: #1c2128;
+  /* Dark OLED theme — GitHub Green, modernized to Space 3D */
+  --color-bg-primary: #020206;
+  --color-bg-secondary: #080814;
+  --color-bg-tertiary: #101026;
+  --color-bg-card: rgba(8, 8, 20, 0.55);
+  --color-bg-hover: rgba(255, 255, 255, 0.04);
+  --color-bg-active: rgba(255, 255, 255, 0.08);
 
   /* Borders — faint green-tinted dark */
-  --color-border: #151b23;
-  --color-border-light: #21262d;
+  --color-border: rgba(255, 255, 255, 0.05);
+  --color-border-light: rgba(255, 255, 255, 0.15);
 
   /* Text colors */
-  --color-text-primary: #e6edf3;
+  --color-text-primary: #f0f3f6;
   --color-text-secondary: #8b949e;
   --color-text-muted: #6e7681;
 
@@ -43,7 +43,7 @@
   --color-info: #58a6ff;
 
   /* Heatmap levels — GitHub dark */
-  --color-heat-0: #0d1117;
+  --color-heat-0: #0a0a14;
   --color-heat-1: #0e4429;
   --color-heat-2: #006d32;
   --color-heat-3: #26a641;
@@ -54,8 +54,9 @@
   --spacing-sidebar-collapsed: 64px;
   --spacing-topnav: 60px;
 
-  /* Shadows — nearly invisible on pure black */
-  --shadow-card: 0 0 0 1px var(--color-border), 0 1px 3px rgba(0, 0, 0, 0.6);
+  /* Premium 3D Shadows */
+  --shadow-card: 0 4px 20px -2px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  --shadow-card-hover: 0 20px 40px -10px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.15), 0 0 20px rgba(63, 185, 80, 0.15);
   --shadow-glow: 0 0 12px var(--color-accent-glow);
   --shadow-emerald-glow: 0 0 12px var(--color-emerald-glow);
 
@@ -114,11 +115,10 @@ html {
 }
 
 body {
-  background: var(--color-bg-primary);
+  background: radial-gradient(circle at top, #0f0f25 0%, #030308 100%);
   color: var(--color-text-primary);
   min-height: 100vh;
   overflow-x: hidden;
-  /* Removed heavy glassmorphism background effects */
 }
 
 .font-mono {
@@ -158,10 +158,14 @@ body {
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-card);
-  transition: border-color 0.15s ease;
+  backdrop-filter: blur(12px);
+  transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.25s ease, border-color 0.25s ease;
+  transform: translateY(0) translateZ(0);
 }
 
 .glass-card:hover {
+  transform: translateY(-5px) translateZ(0) scale(1.005);
+  box-shadow: var(--shadow-card-hover);
   border-color: var(--color-border-light);
 }
 
@@ -447,4 +451,88 @@ select.input {
 
 .tooltip-container:hover .tooltip {
   opacity: 1;
+}
+
+/* ============================================
+   Custom 3D Animations & Skeleton animations
+   ============================================ */
+@keyframes pulse-skeleton {
+  0%, 100% {
+    opacity: 0.6;
+    background-color: var(--color-bg-tertiary);
+  }
+  50% {
+    opacity: 0.25;
+    background-color: var(--color-border-light);
+  }
+}
+
+.skeleton {
+  animation: pulse-skeleton 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  position: relative;
+  overflow: hidden;
+}
+
+.skeleton::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.03) 20%,
+    rgba(255, 255, 255, 0.08) 60%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* Sidebar premium styling */
+.sidebar-link {
+  position: relative;
+  transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+  border: 1px solid transparent !important;
+}
+
+.sidebar-link::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 25%;
+  height: 50%;
+  width: 3px;
+  border-radius: 99px;
+  background: var(--color-accent);
+  transform: scaleY(0);
+  transition: transform 0.2s ease;
+}
+
+.sidebar-link:hover::before {
+  transform: scaleY(0.7);
+}
+
+.sidebar-link.active::before {
+  transform: scaleY(1);
+}
+
+.sidebar-link:hover {
+  background: var(--color-bg-hover) !important;
+  border-color: rgba(255, 255, 255, 0.03) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.sidebar-link.active {
+  background: var(--color-bg-active) !important;
+  border-color: rgba(63, 185, 80, 0.15) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2), 0 0 10px rgba(63, 185, 80, 0.1);
 }

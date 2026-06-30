@@ -80,7 +80,28 @@ type PackIconName =
   | 'volume-x'
   | 'mic'
   | 'mic-off'
-  | 'zap';
+  | 'dollar-sign'
+  | 'smartphone'
+  | 'trending-down'
+  | 'log-out'
+  | 'chevron-down'
+  | 'zap'
+  | 'dumbbell'
+  | 'bed'
+  | 'brain'
+  | 'utensils'
+  | 'apple-whole'
+  | 'carrot'
+  | 'bicycle'
+  | 'guitar'
+  | 'leaf'
+  | 'pen'
+  | 'cloud'
+  | 'cloud-rain'
+  | 'cloud-snow'
+  | 'cloud-lightning'
+  | 'music'
+  | 'droplet';
 
 export type LucideProps = Omit<React.HTMLAttributes<HTMLSpanElement>, 'color'> & {
   size?: number | string;
@@ -213,9 +234,30 @@ export const Terminal = createIcon('terminal');
 export const Timer = createIcon('timer');
 export const Trash2 = createIcon('trash');
 export const TrendingUp = createIcon('trending-up');
+export const TrendingDown = createIcon('trending-down');
+export const DollarSign = createIcon('dollar-sign');
+export const Smartphone = createIcon('smartphone');
+export const LogOut = createIcon('log-out');
+export const ChevronDown = createIcon('chevron-down');
 export const Trophy = createIcon('trophy');
 export const Upload = createIcon('upload');
 export const User = createIcon('user');
 export const Volume2 = createIcon('volume');
 export const VolumeX = createIcon('volume-x');
 export const Zap = createIcon('zap');
+export const Dumbbell = createIcon('dumbbell');
+export const Bed = createIcon('bed');
+export const Brain = createIcon('brain');
+export const Utensils = createIcon('utensils');
+export const AppleWhole = createIcon('apple-whole');
+export const Carrot = createIcon('carrot');
+export const Bicycle = createIcon('bicycle');
+export const Guitar = createIcon('guitar');
+export const Leaf = createIcon('leaf');
+export const Pen = createIcon('pen');
+export const Droplet = createIcon('droplet');
+export const Cloud = createIcon('cloud');
+export const CloudRain = createIcon('cloud-rain');
+export const CloudSnow = createIcon('cloud-snow');
+export const CloudLightning = createIcon('cloud-lightning');
+export const Music = createIcon('music');

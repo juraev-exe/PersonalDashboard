@@ -2,16 +2,24 @@
 // LifeOS — Top Navigation Component
 // ============================================
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useSettingsStore } from '../../stores/settingsStore';
-import { Search, Bell, Sun, Moon as MoonIcon, User } from 'lucide-react';
+import { useAuthStore } from '../../stores/authStore';
+import { Search, Bell, Sun, Moon as MoonIcon, User, LogOut, Settings, ChevronDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 
 export default function TopNav() {
   const [searchOpen, setSearchOpen] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
   const theme = useSettingsStore((s) => s.theme);
   const toggleTheme = useSettingsStore((s) => s.toggleTheme);
   const collapsed = useSettingsStore((s) => s.sidebarCollapsed);
+  const user = useAuthStore((s) => s.user);
+  const isGuest = useAuthStore((s) => s.isGuest);
+  const signOut = useAuthStore((s) => s.signOut);
+  const navigate = useNavigate();
+  const userMenuRef = useRef<HTMLDivElement>(null);
 
   // Keyboard shortcut
   useEffect(() => {
@@ -20,11 +28,33 @@ export default function TopNav() {
         e.preventDefault();
         setSearchOpen((v) => !v);
       }
-      if (e.key === 'Escape') setSearchOpen(false);
+      if (e.key === 'Escape') {
+        setSearchOpen(false);
+        setUserMenuOpen(false);
+      }
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
   }, []);
+
+  // Click outside to close user menu
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) {
+        setUserMenuOpen(false);
+      }
+    };
+    if (userMenuOpen) {
+      document.addEventListener('mousedown', handler);
+    }
+    return () => document.removeEventListener('mousedown', handler);
+  }, [userMenuOpen]);
+
+  const handleLogout = async () => {
+    setUserMenuOpen(false);
+    await signOut();
+    navigate('/');
+  };
 
   return (
     <>
@@ -108,18 +138,129 @@ export default function TopNav() {
             }} />
           </button>
 
-          <div style={{
-            width: 28,
-            height: 28,
-            borderRadius: 'var(--radius-full)',
-            background: 'var(--color-bg-active)',
-            border: '1px solid var(--color-border)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            cursor: 'pointer',
-          }}>
-            <User size={14} color="var(--color-text-primary)" />
+          {/* User Avatar + Dropdown */}
+          <div ref={userMenuRef} style={{ position: 'relative' }}>
+            <button
+              onClick={() => setUserMenuOpen((v) => !v)}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+                padding: '4px 8px 4px 4px',
+                background: userMenuOpen ? 'var(--color-bg-hover)' : 'transparent',
+                border: '1px solid transparent',
+                borderRadius: 'var(--radius-md)',
+                cursor: 'pointer',
+                transition: 'all 0.15s',
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--color-bg-hover)'; }}
+              onMouseLeave={(e) => { if (!userMenuOpen) e.currentTarget.style.background = 'transparent'; }}
+            >
+              <div style={{
+                width: 28,
+                height: 28,
+                borderRadius: 'var(--radius-full)',
+                background: 'var(--color-accent-glow)',
+                border: '1px solid var(--color-border)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}>
+                {user?.avatar ? (
+                  <img src={user.avatar} alt="" style={{ width: 28, height: 28, borderRadius: '50%' }} />
+                ) : (
+                  <User size={14} color="var(--color-accent)" />
+                )}
+              </div>
+              <ChevronDown size={12} style={{ color: 'var(--color-text-muted)', transform: userMenuOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
+            </button>
+
+            {/* Dropdown Menu */}
+            <AnimatePresence>
+              {userMenuOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: -6, scale: 0.96 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -6, scale: 0.96 }}
+                  transition={{ duration: 0.12 }}
+                  style={{
+                    position: 'absolute',
+                    top: 'calc(100% + 8px)',
+                    right: 0,
+                    width: 240,
+                    background: 'var(--color-bg-secondary)',
+                    border: '1px solid var(--color-border)',
+                    borderRadius: 'var(--radius-lg)',
+                    boxShadow: '0 12px 40px rgba(0,0,0,0.35)',
+                    zIndex: 100,
+                    overflow: 'hidden',
+                  }}
+                >
+                  {/* User Info */}
+                  <div style={{ padding: '14px 16px', borderBottom: '1px solid var(--color-border)' }}>
+                    <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text-primary)', marginBottom: 2 }}>
+                      {user?.name || 'User'}
+                    </div>
+                    <div style={{ fontSize: 12, color: 'var(--color-text-muted)' }}>
+                      {isGuest ? 'Guest Mode' : (user?.email || '')}
+                    </div>
+                  </div>
+
+                  {/* Menu Items */}
+                  <div style={{ padding: '6px' }}>
+                    <button
+                      onClick={() => { setUserMenuOpen(false); navigate('/settings'); }}
+                      style={{
+                        width: '100%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 10,
+                        padding: '8px 10px',
+                        background: 'transparent',
+                        border: 'none',
+                        borderRadius: 'var(--radius-md)',
+                        color: 'var(--color-text-secondary)',
+                        cursor: 'pointer',
+                        fontSize: 13,
+                        transition: 'all 0.1s',
+                      }}
+                      onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--color-bg-hover)'; e.currentTarget.style.color = 'var(--color-text-primary)'; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--color-text-secondary)'; }}
+                    >
+                      <Settings size={14} />
+                      Settings
+                    </button>
+                  </div>
+
+                  {/* Logout */}
+                  <div style={{ padding: '6px', borderTop: '1px solid var(--color-border)' }}>
+                    <button
+                      onClick={handleLogout}
+                      style={{
+                        width: '100%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 10,
+                        padding: '8px 10px',
+                        background: 'transparent',
+                        border: 'none',
+                        borderRadius: 'var(--radius-md)',
+                        color: 'var(--color-rose)',
+                        cursor: 'pointer',
+                        fontSize: 13,
+                        fontWeight: 500,
+                        transition: 'all 0.1s',
+                      }}
+                      onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(248, 81, 73, 0.1)'; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
+                    >
+                      <LogOut size={14} />
+                      Sign Out
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </div>
       </header>
@@ -173,3 +314,4 @@ export default function TopNav() {
     </>
   );
 }
+

@@ -1,11 +1,8 @@
-// ============================================
-// LifeOS — Sidebar Component
-// ============================================
-
 import React from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { useSettingsStore } from '../../stores/settingsStore';
 import { useGamificationStore } from '../../stores/gamificationStore';
+import { useAuthStore } from '../../stores/authStore';
 import { motion } from 'framer-motion';
 import {
   LayoutDashboard,
@@ -27,6 +24,9 @@ import {
   ChevronLeft,
   ChevronRight,
   Zap,
+  DollarSign,
+  ShieldAlert,
+  LogOut,
 } from 'lucide-react';
 
 const navGroups = [
@@ -39,6 +39,7 @@ const navGroups = [
       { path: '/habits', label: 'Habits', icon: Repeat },
       { path: '/prayers', label: 'Prayers', icon: Moon },
       { path: '/focus', label: 'Focus Mode', icon: Target },
+      { path: '/detox', label: 'Digital Detox', icon: ShieldAlert },
     ]
   },
   {
@@ -60,6 +61,7 @@ const navGroups = [
     items: [
       { path: '/calendar', label: 'Calendar', icon: CalendarDays },
       { path: '/notes', label: 'Notes', icon: StickyNote },
+      { path: '/finance', label: 'Finance', icon: DollarSign },
     ]
   },
   {
@@ -76,7 +78,14 @@ export default function Sidebar() {
   const toggleSidebar = useSettingsStore((s) => s.toggleSidebar);
   const level = useGamificationStore((s) => s.level);
   const xpProgress = useGamificationStore((s) => s.getXPProgress());
+  const signOut = useAuthStore((s) => s.signOut);
   const location = useLocation();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    await signOut();
+    navigate('/');
+  };
 
   return (
     <aside
@@ -165,33 +174,21 @@ export default function Sidebar() {
                 >
                   <NavLink
                     to={item.path}
+                    className={`sidebar-link ${isActive ? 'active' : ''}`}
                     style={{
                       display: 'flex',
                       alignItems: 'center',
                       gap: 12,
-                      padding: collapsed ? '8px 0' : '6px 8px',
+                      padding: collapsed ? '8px 0' : '8px 12px',
                       justifyContent: collapsed ? 'center' : 'flex-start',
                       borderRadius: 'var(--radius-md)',
                       textDecoration: 'none',
                       fontSize: 13,
-                      fontWeight: isActive ? 500 : 400,
+                      fontWeight: isActive ? 600 : 400,
                       color: isActive ? 'var(--color-text-primary)' : 'var(--color-text-secondary)',
-                      background: isActive ? 'var(--color-bg-active)' : 'transparent',
-                      transition: 'all 0.1s ease',
+                      transition: 'all 0.2s ease',
                     }}
                     title={collapsed ? item.label : undefined}
-                    onMouseEnter={(e) => {
-                      if (!isActive) {
-                        e.currentTarget.style.background = 'var(--color-bg-hover)';
-                        e.currentTarget.style.color = 'var(--color-text-primary)';
-                      }
-                    }}
-                    onMouseLeave={(e) => {
-                      if (!isActive) {
-                        e.currentTarget.style.background = 'transparent';
-                        e.currentTarget.style.color = 'var(--color-text-secondary)';
-                      }
-                    }}
                   >
                     <Icon size={16} style={{ flexShrink: 0 }} />
                     {!collapsed && <span>{item.label}</span>}
@@ -250,6 +247,31 @@ export default function Sidebar() {
         </div>
       </div>
 
+      {/* Sign Out Button */}
+      <button
+        onClick={handleLogout}
+        title={collapsed ? 'Sign Out' : undefined}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: collapsed ? 'center' : 'flex-start',
+          gap: 10,
+          padding: collapsed ? '12px' : '10px 20px',
+          borderTop: '1px solid var(--color-border)',
+          background: 'transparent',
+          color: 'var(--color-text-muted)',
+          cursor: 'pointer',
+          border: 'none',
+          fontSize: 13,
+          transition: 'all 0.15s ease',
+        }}
+        onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--color-rose)'; e.currentTarget.style.background = 'rgba(248, 81, 73, 0.06)'; }}
+        onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--color-text-muted)'; e.currentTarget.style.background = 'transparent'; }}
+      >
+        <LogOut size={16} style={{ flexShrink: 0 }} />
+        {!collapsed && <span>Sign Out</span>}
+      </button>
+
       {/* Collapse Toggle */}
       <button
         onClick={toggleSidebar}
@@ -273,3 +295,4 @@ export default function Sidebar() {
     </aside>
   );
 }
+
