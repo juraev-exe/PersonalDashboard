@@ -1,16 +1,16 @@
-# Graph Report - PersonalDashboard  (2026-06-30)
+# Graph Report - PersonalDashboard  (2026-07-01)
 
 ## Corpus Check
 - 65 files · ~1,210,349 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 442 nodes · 1136 edges · 29 communities (28 shown, 1 thin omitted)
+- 442 nodes · 1136 edges · 28 communities (27 shown, 1 thin omitted)
 - Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `ede7bf94`
+- Built from commit: `dcdcfba6`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -38,7 +38,6 @@
 - [[_COMMUNITY_Community 25|Community 25]]
 - [[_COMMUNITY_Community 26|Community 26]]
 - [[_COMMUNITY_Community 27|Community 27]]
-- [[_COMMUNITY_Community 28|Community 28]]
 - [[_COMMUNITY_Community 32|Community 32]]
 
 ## God Nodes (most connected - your core abstractions)
@@ -54,29 +53,29 @@
 10. `Trash2` - 11 edges
 
 ## Surprising Connections (you probably didn't know these)
-- `AuthPage()` --calls--> `useAuthStore`  [EXTRACTED]
-  lifeos/src/pages/AuthPage.tsx → lifeos/src/stores/authStore.ts
 - `SettingsPage()` --calls--> `useSettingsStore`  [EXTRACTED]
   lifeos/src/pages/SettingsPage.tsx → lifeos/src/stores/settingsStore.ts
+- `AuthPage()` --calls--> `useAuthStore`  [EXTRACTED]
+  lifeos/src/pages/AuthPage.tsx → lifeos/src/stores/authStore.ts
 - `TasksPage()` --calls--> `useTaskStore`  [EXTRACTED]
   lifeos/src/pages/TasksPage.tsx → lifeos/src/stores/taskStore.ts
 - `SpotifyWidget()` --calls--> `useSettingsStore`  [EXTRACTED]
   lifeos/src/components/layout/SpotifyWidget.tsx → lifeos/src/stores/settingsStore.ts
-- `XpToastContainer()` --calls--> `useXpToastStore`  [EXTRACTED]
-  lifeos/src/components/layout/XpToastContainer.tsx → lifeos/src/stores/xpToastStore.ts
+- `useInitData()` --calls--> `useCalendarStore`  [EXTRACTED]
+  lifeos/src/hooks/useInitData.ts → lifeos/src/stores/calendarStore.ts
 
 ## Import Cycles
 - None detected.
 
-## Communities (29 total, 1 thin omitted)
+## Communities (28 total, 1 thin omitted)
 
 ### Community 0 - "Community 0"
 Cohesion: 0.10
 Nodes (30): pomodoroPresets, Code, Download, FileSpreadsheet, GitBranch, Plug, Upload, container (+22 more)
 
 ### Community 1 - "Community 1"
-Cohesion: 0.20
-Nodes (9): CalendarDays, Code2, Gamepad2, GraduationCap, LayoutDashboard, PenTool, StickyNote, Timer (+1 more)
+Cohesion: 0.12
+Nodes (17): Bell, CalendarDays, ChevronDown, Code2, Gamepad2, GraduationCap, LayoutDashboard, LogOut (+9 more)
 
 ### Community 2 - "Community 2"
 Cohesion: 0.06
@@ -95,8 +94,8 @@ Cohesion: 0.09
 Nodes (22): compilerOptions, allowImportingTsExtensions, baseUrl, ignoreDeprecations, jsx, lib, module, moduleDetection (+14 more)
 
 ### Community 6 - "Community 6"
-Cohesion: 0.16
-Nodes (13): BookOpen, Check, CheckSquare, ChevronRight, Clock, FileText, Pin, Plus (+5 more)
+Cohesion: 0.19
+Nodes (10): Calendar, Check, CheckSquare, Flame, Info, Star, TrendingUp, container (+2 more)
 
 ### Community 7 - "Community 7"
 Cohesion: 0.20
@@ -135,16 +134,16 @@ Cohesion: 0.12
 Nodes (17): getRandomQuote(), Quote, quotes, BookText, Cloud, CloudLightning, CloudRain, CloudSnow (+9 more)
 
 ### Community 21 - "Community 21"
-Cohesion: 0.16
-Nodes (13): Flame, History, Maximize2, MessageSquare, Minimize2, Music, Pause, Play (+5 more)
+Cohesion: 0.22
+Nodes (9): Archive, BookOpen, Clock, FileText, History, MessageSquare, Pin, SkipForward (+1 more)
 
 ### Community 22 - "Community 22"
-Cohesion: 0.33
-Nodes (5): Edit3, ExternalLink, FolderKanban, Layers, Trash2
+Cohesion: 0.22
+Nodes (9): ChevronRight, Edit3, ExternalLink, FolderKanban, Layers, Plus, Target, Trash2 (+1 more)
 
 ### Community 23 - "Community 23"
-Cohesion: 0.11
-Nodes (27): Activity, AppleWhole, Archive, Award, Bed, Bicycle, Brain, Carrot (+19 more)
+Cohesion: 0.10
+Nodes (32): Activity, AppleWhole, Award, Bed, Bicycle, Brain, Carrot, Droplet (+24 more)
 
 ### Community 25 - "Community 25"
 Cohesion: 0.25
@@ -158,33 +157,29 @@ Nodes (6): ChevronLeft, Frown, Meh, Save, Smile, moods
 Cohesion: 0.19
 Nodes (12): BarChart3, CheckCircle, ShieldAlert, Smartphone, DetoxPage(), PRESET_COLORS, SCREENTIME_CATEGORIES, BadHabit (+4 more)
 
-### Community 28 - "Community 28"
-Cohesion: 0.18
-Nodes (10): Bell, Calendar, ChevronDown, Info, LogOut, Moon, Search, Settings (+2 more)
-
 ### Community 32 - "Community 32"
 Cohesion: 0.83
 Nodes (3): createNotionPage(), getHeaders(), searchNotion()
 
 ## Knowledge Gaps
-- **115 isolated node(s):** `name`, `private`, `version`, `type`, `dev` (+110 more)
+- **115 isolated node(s):** `PackIconName`, `LucideProps`, `navGroups`, `SkeletonProps`, `SkeletonCardProps` (+110 more)
   These have ≤1 connection - possible missing edges or undocumented components.
 - **1 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `useSettingsStore` connect `Community 4` to `Community 0`, `Community 1`, `Community 32`, `Community 3`, `Community 6`, `Community 7`, `Community 20`, `Community 21`, `Community 28`?**
+- **Why does `useSettingsStore` connect `Community 4` to `Community 0`, `Community 1`, `Community 32`, `Community 3`, `Community 6`, `Community 7`, `Community 20`, `Community 21`?**
   _High betweenness centrality (0.018) - this node is a cross-community bridge._
-- **Why does `useAuthStore` connect `Community 4` to `Community 1`, `Community 3`, `Community 6`, `Community 7`, `Community 19`, `Community 27`, `Community 28`?**
+- **Why does `useAuthStore` connect `Community 4` to `Community 1`, `Community 3`, `Community 6`, `Community 7`, `Community 19`, `Community 27`?**
   _High betweenness centrality (0.011) - this node is a cross-community bridge._
-- **Why does `usePomodoroStore` connect `Community 4` to `Community 0`, `Community 3`, `Community 6`, `Community 20`, `Community 21`?**
+- **Why does `usePomodoroStore` connect `Community 4` to `Community 0`, `Community 3`, `Community 6`, `Community 20`, `Community 21`, `Community 23`?**
   _High betweenness centrality (0.007) - this node is a cross-community bridge._
-- **What connects `name`, `private`, `version` to the rest of the system?**
+- **What connects `PackIconName`, `LucideProps`, `navGroups` to the rest of the system?**
   _115 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Community 0` be split into smaller, more focused modules?**
   _Cohesion score 0.10160427807486631 - nodes in this community are weakly interconnected._
+- **Should `Community 1` be split into smaller, more focused modules?**
+  _Cohesion score 0.11695906432748537 - nodes in this community are weakly interconnected._
 - **Should `Community 2` be split into smaller, more focused modules?**
   _Cohesion score 0.06451612903225806 - nodes in this community are weakly interconnected._
-- **Should `Community 3` be split into smaller, more focused modules?**
-  _Cohesion score 0.05297334244702666 - nodes in this community are weakly interconnected._
