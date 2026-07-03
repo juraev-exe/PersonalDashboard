@@ -536,3 +536,43 @@ select.input {
   border-color: rgba(63, 185, 80, 0.15) !important;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2), 0 0 10px rgba(63, 185, 80, 0.1);
 }
+
+/* Auto-Hiding Sidebar */
+.sidebar-autohide {
+  transform: translateX(-100%);
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.sidebar-autohide:hover,
+.sidebar-autohide.hover-active {
+  transform: translateX(0);
+}
+
+.sidebar-trigger-zone {
+  position: fixed;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 14px;
+  z-index: 38;
+  cursor: pointer;
+}
+
+.sidebar-trigger-strip {
+  position: absolute;
+  left: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 4px;
+  height: 60px;
+  background: var(--color-accent);
+  box-shadow: 0 0 8px var(--color-accent);
+  border-radius: 99px;
+  opacity: 0.3;
+  transition: opacity 0.2s, height 0.2s;
+}
+
+.sidebar-trigger-zone:hover .sidebar-trigger-strip {
+  opacity: 1;
+  height: 100px;
+}

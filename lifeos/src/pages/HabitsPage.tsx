@@ -322,7 +322,13 @@ export default function HabitsPage() {
 
       {/* Archive Habits section */}
       {archivedHabits.length > 0 && (
-        <div style={{ marginTop: 12 }}>
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.4 }}
+          style={{ marginTop: 12 }}
+        >
           <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 16, color: 'var(--color-text-muted)' }}>Archived Habits</h3>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '16px' }}>
             {archivedHabits.map((habit) => (
@@ -339,7 +345,7 @@ export default function HabitsPage() {
               </div>
             ))}
           </div>
-        </div>
+        </motion.div>
       )}
 
       {/* Add / Edit Habit Modal */}

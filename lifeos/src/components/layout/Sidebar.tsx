@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { useSettingsStore } from '../../stores/settingsStore';
 import { useGamificationStore } from '../../stores/gamificationStore';
@@ -27,6 +27,7 @@ import {
   DollarSign,
   ShieldAlert,
   LogOut,
+  Pin,
 } from 'lucide-react';
 
 const navGroups = [
@@ -76,6 +77,9 @@ const navGroups = [
 export default function Sidebar() {
   const collapsed = useSettingsStore((s) => s.sidebarCollapsed);
   const toggleSidebar = useSettingsStore((s) => s.toggleSidebar);
+  const sidebarAutoHide = useSettingsStore((s) => s.sidebarAutoHide);
+  const toggleSidebarAutoHide = useSettingsStore((s) => s.toggleSidebarAutoHide);
+  const [hoverActive, setHoverActive] = useState(false);
   const level = useGamificationStore((s) => s.level);
   const xpProgress = useGamificationStore((s) => s.getXPProgress());
   const signOut = useAuthStore((s) => s.signOut);
@@ -88,21 +92,34 @@ export default function Sidebar() {
   };
 
   return (
-    <aside
-      style={{
-        width: collapsed ? 'var(--spacing-sidebar-collapsed)' : 'var(--spacing-sidebar)',
-        minHeight: '100vh',
-        position: 'fixed',
-        left: 0,
-        top: 0,
-        zIndex: 40,
-        display: 'flex',
-        flexDirection: 'column',
-        transition: 'width 0.2s ease',
-        background: 'var(--color-bg-primary)',
-        borderRight: '1px solid var(--color-border)',
-      }}
-    >
+    <>
+      {sidebarAutoHide && (
+        <div
+          className="sidebar-trigger-zone"
+          onMouseEnter={() => setHoverActive(true)}
+          onMouseLeave={() => setHoverActive(false)}
+        >
+          <div className="sidebar-trigger-strip" />
+        </div>
+      )}
+      <aside
+        onMouseEnter={() => sidebarAutoHide && setHoverActive(true)}
+        onMouseLeave={() => sidebarAutoHide && setHoverActive(false)}
+        className={sidebarAutoHide ? `sidebar-autohide ${hoverActive ? 'hover-active' : ''}` : ''}
+        style={{
+          width: collapsed ? 'var(--spacing-sidebar-collapsed)' : 'var(--spacing-sidebar)',
+          minHeight: '100vh',
+          position: 'fixed',
+          left: 0,
+          top: 0,
+          zIndex: 40,
+          display: 'flex',
+          flexDirection: 'column',
+          transition: 'width 0.2s ease, transform 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
+          background: 'var(--color-bg-primary)',
+          borderRight: '1px solid var(--color-border)',
+        }}
+      >
       {/* Logo */}
       <div style={{
         padding: collapsed ? '20px 0' : '24px 20px 16px',
@@ -272,27 +289,56 @@ export default function Sidebar() {
         {!collapsed && <span>Sign Out</span>}
       </button>
 
-      {/* Collapse Toggle */}
-      <button
-        onClick={toggleSidebar}
-        style={{
-          padding: '12px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          borderTop: '1px solid var(--color-border)',
-          background: 'transparent',
-          color: 'var(--color-text-muted)',
-          cursor: 'pointer',
-          border: 'none',
-          transition: 'color 0.1s ease',
-        }}
-        onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--color-text-primary)'; }}
-        onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--color-text-muted)'; }}
-      >
-        {collapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
-      </button>
+      {/* Bottom Actions Row */}
+      <div style={{
+        display: 'flex',
+        borderTop: '1px solid var(--color-border)',
+        background: 'transparent',
+      }}>
+        {/* Auto-Hide Pin Toggle */}
+        <button
+          onClick={toggleSidebarAutoHide}
+          title={sidebarAutoHide ? 'Pin Sidebar (Disable Auto-Hide)' : 'Unpin Sidebar (Enable Auto-Hide)'}
+          style={{
+            flex: 1,
+            padding: '12px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: 'transparent',
+            color: sidebarAutoHide ? 'var(--color-accent)' : 'var(--color-text-muted)',
+            cursor: 'pointer',
+            border: 'none',
+            borderRight: '1px solid var(--color-border)',
+            transition: 'color 0.1s ease',
+          }}
+        >
+          <Pin size={15} style={{ transform: sidebarAutoHide ? 'rotate(0deg)' : 'rotate(45deg)', transition: 'transform 0.2s' }} />
+        </button>
+
+        {/* Collapse Toggle */}
+        <button
+          onClick={toggleSidebar}
+          style={{
+            flex: 1,
+            padding: '12px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: 'transparent',
+            color: 'var(--color-text-muted)',
+            cursor: 'pointer',
+            border: 'none',
+            transition: 'color 0.1s ease',
+          }}
+          onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--color-text-primary)'; }}
+          onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--color-text-muted)'; }}
+        >
+          {collapsed ? <ChevronRight size={15} /> : <ChevronLeft size={15} />}
+        </button>
+      </div>
     </aside>
+  </>
   );
 }
 

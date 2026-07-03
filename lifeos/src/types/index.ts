@@ -237,6 +237,7 @@ export interface AppSettings {
   notionDatabaseId?: string;
   notionParentType?: 'database' | 'page';
   spotifyPlaylistUrl?: string;
+  sidebarAutoHide?: boolean;
 }
 
 export interface Quote {

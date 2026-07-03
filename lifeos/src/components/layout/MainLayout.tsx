@@ -14,11 +14,13 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 export default function MainLayout() {
   const collapsed = useSettingsStore((s) => s.sidebarCollapsed);
+  const sidebarAutoHide = useSettingsStore((s) => s.sidebarAutoHide);
   const isRunning = usePomodoroStore((s) => s.isRunning);
   const location = useLocation();
   useKeyboardShortcuts();
 
   const hideNavigation = location.pathname === '/focus' && isRunning;
+  const marginLeft = hideNavigation || sidebarAutoHide ? 0 : (collapsed ? 'var(--spacing-sidebar-collapsed)' : 'var(--spacing-sidebar)');
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh' }}>
@@ -27,7 +29,7 @@ export default function MainLayout() {
       <div
         style={{
           flex: 1,
-          marginLeft: hideNavigation ? 0 : (collapsed ? 'var(--spacing-sidebar-collapsed)' : 'var(--spacing-sidebar)'),
+          marginLeft,
           transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
         }}
       >

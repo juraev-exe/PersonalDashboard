@@ -19,6 +19,7 @@ import { useNavigate } from 'react-router-dom';
 import { getRandomQuote } from '../data/quotes';
 import SpotifyWidget from '../components/layout/SpotifyWidget';
 import Skeleton, { SkeletonCard } from '../components/layout/Skeleton';
+import Interactive3DOrb from '../components/layout/Interactive3DOrb';
 
 const container = { hidden: {}, show: { transition: { staggerChildren: 0.05 } } };
 const item = { hidden: { opacity: 0, y: 10 }, show: { opacity: 1, y: 0, transition: { duration: 0.3 } } };
@@ -308,6 +309,33 @@ export default function DashboardPage() {
           </div>
         )}
 
+        {/* Interactive 3D Orb Widget */}
+        <div 
+          className="glass-card" 
+          style={{ 
+            padding: '16px 20px', 
+            display: 'flex', 
+            alignItems: 'center', 
+            background: 'linear-gradient(135deg, rgba(63, 185, 80, 0.04) 0%, rgba(8, 8, 20, 0.4) 100%)', 
+            borderColor: 'rgba(63, 185, 80, 0.15)',
+            overflow: 'hidden'
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16, width: '100%' }}>
+            <div style={{ width: 50, height: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <Interactive3DOrb size={50} particleCount={50} color="var(--color-accent)" />
+            </div>
+            <div>
+              <div style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--color-text-muted)' }}>
+                Focus Engine
+              </div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-text-primary)', marginTop: 2 }}>
+                Zen system ready
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* Motivational Quotes Widget */}
         <div 
           className="glass-card" 
@@ -473,7 +501,14 @@ export default function DashboardPage() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
           
           {/* GitHub-style Heatmap */}
-          <motion.div variants={item} className="glass-card" style={{ padding: 20 }}>
+          <motion.div 
+            initial={{ opacity: 0, y: 20, scale: 0.98 }}
+            whileInView={{ opacity: 1, y: 0, scale: 1 }}
+            viewport={{ once: true, margin: '-20px' }}
+            transition={{ duration: 0.4 }}
+            className="glass-card" 
+            style={{ padding: 20 }}
+          >
             <h3 style={{ fontSize: 13, fontWeight: 700, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 6, textTransform: 'uppercase', letterSpacing: '0.03em' }}>
               <Flame size={14} style={{ color: 'var(--color-rose)' }} /> Activity Heatmap
             </h3>
@@ -509,7 +544,14 @@ export default function DashboardPage() {
           </motion.div>
 
           {/* Project Progress */}
-          <motion.div variants={item} className="glass-card" style={{ padding: 20 }}>
+          <motion.div 
+            initial={{ opacity: 0, y: 20, scale: 0.98 }}
+            whileInView={{ opacity: 1, y: 0, scale: 1 }}
+            viewport={{ once: true, margin: '-20px' }}
+            transition={{ duration: 0.4, delay: 0.05 }}
+            className="glass-card" 
+            style={{ padding: 20 }}
+          >
             <h3 style={{ fontSize: 13, fontWeight: 700, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 6, textTransform: 'uppercase', letterSpacing: '0.03em' }}>
               <Activity size={14} /> Project Progress
             </h3>
@@ -531,7 +573,14 @@ export default function DashboardPage() {
           </motion.div>
 
           {/* Study / Coding Statistics (Weekly Charts) */}
-          <motion.div variants={item} className="glass-card" style={{ padding: 20 }}>
+          <motion.div 
+            initial={{ opacity: 0, y: 20, scale: 0.98 }}
+            whileInView={{ opacity: 1, y: 0, scale: 1 }}
+            viewport={{ once: true, margin: '-20px' }}
+            transition={{ duration: 0.4, delay: 0.1 }}
+            className="glass-card" 
+            style={{ padding: 20 }}
+          >
             <h3 style={{ fontSize: 13, fontWeight: 700, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 6, color: 'var(--color-text-primary)', textTransform: 'uppercase', letterSpacing: '0.03em' }}>
               <BookText size={14} /> Weekly Statistics
             </h3>
@@ -575,7 +624,14 @@ export default function DashboardPage() {
           </motion.div>
 
           {/* Upcoming Events */}
-          <motion.div variants={item} className="glass-card" style={{ padding: 20 }}>
+          <motion.div 
+            initial={{ opacity: 0, y: 20, scale: 0.98 }}
+            whileInView={{ opacity: 1, y: 0, scale: 1 }}
+            viewport={{ once: true, margin: '-20px' }}
+            transition={{ duration: 0.4, delay: 0.15 }}
+            className="glass-card" 
+            style={{ padding: 20 }}
+          >
             <h3 style={{ fontSize: 13, fontWeight: 700, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 6, textTransform: 'uppercase', letterSpacing: '0.03em' }}>
               <CalendarDays size={14} /> Upcoming Events
             </h3>

@@ -17,6 +17,7 @@ interface SettingsState extends AppSettings {
   setNotificationsEnabled: (v: boolean) => void;
   setSidebarCollapsed: (v: boolean) => void;
   toggleSidebar: () => void;
+  toggleSidebarAutoHide: () => void;
   setIntegrationKey: (key: keyof AppSettings, value: string) => void;
   /** Called after OAuth redirect — stores the provider token + email */
   setGoogleSession: (token: string, email: string) => void;
@@ -35,6 +36,7 @@ const defaultSettings: AppSettings = {
   notionDatabaseId: '',
   notionParentType: 'database',
   spotifyPlaylistUrl: 'https://open.spotify.com/playlist/37i9dQZF1DX8UebgpwzvUh',
+  sidebarAutoHide: false,
 };
 
 const loadSettings = (): AppSettings => getValue<AppSettings>('settings', defaultSettings);
@@ -98,6 +100,13 @@ export const useSettingsStore = create<SettingsState>((set) => ({
     const next = { ...s, sidebarCollapsed };
     setValue('settings', next);
     return { sidebarCollapsed };
+  }),
+
+  toggleSidebarAutoHide: () => set((s) => {
+    const sidebarAutoHide = !s.sidebarAutoHide;
+    const next = { ...s, sidebarAutoHide };
+    setValue('settings', next);
+    return { sidebarAutoHide };
   }),
 
   setIntegrationKey: (key, value) => set((s) => {
