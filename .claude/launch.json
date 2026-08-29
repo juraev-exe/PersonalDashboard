@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "lifeos-dev",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "lifeos", "run", "dev", "--", "--port", "5182", "--strictPort"],
+      "port": 5182
+    }
+  ]
+}
