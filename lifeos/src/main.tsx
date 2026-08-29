@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import MainLayout from './components/layout/MainLayout';
+import OfflineIndicator from './components/layout/OfflineIndicator';
 import DashboardPage from './pages/DashboardPage';
 import { useInitData } from './hooks/useInitData';
 import { useAuthStore } from './stores/authStore';
@@ -102,6 +103,7 @@ function App() {
 
   return (
     <BrowserRouter>
+      <OfflineIndicator />
       <Routes>
         {user ? (
           <Route element={<MainLayout />}>
