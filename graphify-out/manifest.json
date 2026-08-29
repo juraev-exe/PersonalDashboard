@@ -15,13 +15,13 @@
     "semantic_hash": ""
   },
   "lifeos/src/components/layout/MainLayout.tsx": {
-    "mtime": 1782831700.8517783,
-    "ast_hash": "d2e2cbc8e293cc15afa2f5ec5b802cc1",
+    "mtime": 1782864037.928091,
+    "ast_hash": "c7aecf769e7e454773611fdba7300cfc",
     "semantic_hash": ""
   },
   "lifeos/src/components/layout/Sidebar.tsx": {
-    "mtime": 1782831660.7288423,
-    "ast_hash": "70f03842be4bfaba7d36ebc1e9600fde",
+    "mtime": 1782864029.5278957,
+    "ast_hash": "c49a911feca18539ef473b3aad8ac28a",
     "semantic_hash": ""
   },
   "lifeos/src/components/layout/TopNav.tsx": {
@@ -80,8 +80,8 @@
     "semantic_hash": ""
   },
   "lifeos/src/pages/DashboardPage.tsx": {
-    "mtime": 1782843227.367096,
-    "ast_hash": "0792ba00d8e400ffeb2a2c423c9e76d6",
+    "mtime": 1782864076.4384978,
+    "ast_hash": "d8d1ee87c589d42c4e7746d0e1fa9bf3",
     "semantic_hash": ""
   },
   "lifeos/src/pages/FocusPage.tsx": {
@@ -95,8 +95,8 @@
     "semantic_hash": ""
   },
   "lifeos/src/pages/HabitsPage.tsx": {
-    "mtime": 1782831525.4627793,
-    "ast_hash": "925a5ca189afc257c566b0dfa0c8bbd1",
+    "mtime": 1782864093.8728194,
+    "ast_hash": "3f6c3bc088835b1281cfba73f4ef3ea7",
     "semantic_hash": ""
   },
   "lifeos/src/pages/JournalPage.tsx": {
@@ -220,8 +220,8 @@
     "semantic_hash": ""
   },
   "lifeos/src/stores/settingsStore.ts": {
-    "mtime": 1782831562.0340483,
-    "ast_hash": "c153f3da0912f9bac8af223643d53e4e",
+    "mtime": 1782864013.4228742,
+    "ast_hash": "0aba61c51bd3b99037a82d13be52555f",
     "semantic_hash": ""
   },
   "lifeos/src/stores/taskStore.ts": {
@@ -235,8 +235,8 @@
     "semantic_hash": ""
   },
   "lifeos/src/types/index.ts": {
-    "mtime": 1782831545.6568143,
-    "ast_hash": "4a2eab3059eaa5ab7ed75a861254bae8",
+    "mtime": 1782863998.957285,
+    "ast_hash": "caf38a8e822c12e9b42960040e0556b9",
     "semantic_hash": ""
   },
   "lifeos/tsconfig.json": {
@@ -1237,6 +1237,11 @@
   "lifeos/public/icons/app/utensils.svg": {
     "mtime": 1782831209.9545615,
     "ast_hash": "2995db359f9330f77348371256899ddb",
+    "semantic_hash": ""
+  },
+  "lifeos/src/components/layout/Interactive3DOrb.tsx": {
+    "mtime": 1782863957.0459762,
+    "ast_hash": "b9876e0728b0bf3204bc633130f808cb",
     "semantic_hash": ""
   }
 }
