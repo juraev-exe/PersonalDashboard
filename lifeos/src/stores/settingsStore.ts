@@ -35,6 +35,8 @@ const defaultSettings: AppSettings = {
   sidebarCollapsed: false,
   notionDatabaseId: '',
   notionParentType: 'database',
+  notionTasksDatabaseId: '',
+  notionHabitsDatabaseId: '',
   spotifyPlaylistUrl: 'https://open.spotify.com/playlist/37i9dQZF1DX8UebgpwzvUh',
   sidebarAutoHide: false,
 };

@@ -4,8 +4,10 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import MainLayout from './components/layout/MainLayout';
 import OfflineIndicator from './components/layout/OfflineIndicator';
+import ErrorBoundary from './components/ErrorBoundary';
 import DashboardPage from './pages/DashboardPage';
 import { useInitData } from './hooks/useInitData';
+import { useEventReminders } from './hooks/useEventReminders';
 import { useAuthStore } from './stores/authStore';
 import { useSettingsStore } from './stores/settingsStore';
 import { supabase } from './services/supabase';
@@ -46,6 +48,9 @@ function App() {
 
   // Initialize data stores after auth is ready
   useInitData();
+
+  // Fire local reminders for upcoming calendar events
+  useEventReminders();
 
   useEffect(() => {
     initializeAuth();
@@ -134,8 +139,10 @@ function App() {
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <App />
-    </QueryClientProvider>
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <App />
+      </QueryClientProvider>
+    </ErrorBoundary>
   </React.StrictMode>
 );

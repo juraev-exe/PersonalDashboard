@@ -101,6 +101,8 @@ export interface Task {
   recurringPattern?: 'daily' | 'weekly' | 'monthly';
   createdAt: string;
   completedAt?: string;
+  /** Source page id when this task was imported from Notion. */
+  notionId?: string;
 }
 
 export interface Habit {
@@ -112,6 +114,8 @@ export interface Habit {
   color: string;
   createdAt: string;
   archived: boolean;
+  /** Source page id when this habit was imported from Notion. */
+  notionId?: string;
 }
 
 export interface HabitLog {
@@ -236,6 +240,10 @@ export interface AppSettings {
   googleUserEmail?: string;
   notionDatabaseId?: string;
   notionParentType?: 'database' | 'page';
+  /** Notion database synced into the Tasks page. */
+  notionTasksDatabaseId?: string;
+  /** Notion database synced into the Habits page. */
+  notionHabitsDatabaseId?: string;
   spotifyPlaylistUrl?: string;
   sidebarAutoHide?: boolean;
 }

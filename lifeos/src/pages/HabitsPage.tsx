@@ -5,6 +5,7 @@ import { Plus, Repeat, Flame, Trash2, Edit3, Archive, Check, Calendar, HelpCircl
 import { Dumbbell, Bed, Brain, Utensils, AppleWhole, Carrot, Bicycle, Guitar, Leaf, Pen, Droplet } from '../components/icons/packIcons';
 import { motion, AnimatePresence } from 'framer-motion';
 import { format, subDays } from 'date-fns';
+import NotionSyncButton from '../components/NotionSyncButton';
 
 const PRESET_ICONS = [
   { name: 'Activity', component: Activity },
@@ -49,6 +50,7 @@ export default function HabitsPage() {
   const toggleHabitDay = useHabitStore((s) => s.toggleHabitDay);
   const getHabitCompletionForDate = useHabitStore((s) => s.getHabitCompletionForDate);
   const getStreak = useHabitStore((s) => s.getStreak);
+  const syncFromNotion = useHabitStore((s) => s.syncFromNotion);
   const getCompletionPercentage = useHabitStore((s) => s.getCompletionPercentage);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -131,14 +133,17 @@ export default function HabitsPage() {
   return (
     <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
       {/* Header bar */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
         <div>
           <h1 style={{ fontSize: 28, fontWeight: 800, marginBottom: 4, letterSpacing: '-0.03em' }}>Habit Tracker</h1>
           <p style={{ fontSize: 14, color: 'var(--color-text-muted)' }}>Build routines, track streaks, and levels up your discipline.</p>
         </div>
-        <button onClick={handleOpenAddModal} className="btn btn-primary" style={{ gap: '6px' }}>
-          <Plus size={18} /> New Habit
-        </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+          <NotionSyncButton onSync={syncFromNotion} />
+          <button onClick={handleOpenAddModal} className="btn btn-primary" style={{ gap: '6px' }}>
+            <Plus size={18} /> New Habit
+          </button>
+        </div>
       </div>
 
       {/* Progress Card */}

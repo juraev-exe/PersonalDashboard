@@ -30,6 +30,7 @@ export function mapTaskFromDB(row: any): Task {
     recurringPattern: row.recurring_pattern || undefined,
     createdAt: row.created_at,
     completedAt: row.completed_at || undefined,
+    notionId: row.notion_id || undefined,
   };
 }
 
@@ -47,6 +48,7 @@ export function mapTaskToDB(task: Task, userId: string): any {
     recurring_pattern: task.recurringPattern || null,
     created_at: task.createdAt,
     completed_at: task.completedAt || null,
+    notion_id: task.notionId || null,
   };
 }
 
@@ -89,6 +91,7 @@ export function mapHabitFromDB(row: any): Habit {
     color: row.color,
     createdAt: row.created_at,
     archived: row.archived,
+    notionId: row.notion_id || undefined,
   };
 }
 
@@ -103,6 +106,7 @@ export function mapHabitToDB(habit: Habit, userId: string): any {
     color: habit.color,
     created_at: habit.createdAt,
     archived: habit.archived,
+    notion_id: habit.notionId || null,
   };
 }
 
