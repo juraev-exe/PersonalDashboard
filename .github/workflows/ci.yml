@@ -22,9 +22,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # jsdom 30 (via its bundled undici) calls webidl.util.markAsUncloneable,
+      # which does not exist before Node 22 — its engines field requires
+      # ^22.22.2 || ^24.15.0 || >=26.0.0.
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
           cache: npm
           cache-dependency-path: lifeos/package-lock.json
 
