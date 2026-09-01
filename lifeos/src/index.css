@@ -53,6 +53,7 @@
   --spacing-sidebar: 240px;
   --spacing-sidebar-collapsed: 64px;
   --spacing-topnav: 60px;
+  --spacing-bottomnav: 60px;
 
   /* Premium 3D Shadows */
   --shadow-card: 0 4px 20px -2px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.05);
@@ -195,6 +196,10 @@ body {
 @keyframes countUp {
   from { opacity: 0; transform: translateY(5px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 
 .animate-fade-in {
@@ -575,4 +580,129 @@ select.input {
 .sidebar-trigger-zone:hover .sidebar-trigger-strip {
   opacity: 1;
   height: 100px;
+}
+
+/* ============================================
+   Mobile / Responsive
+   Below 768px the sidebar is replaced by a fixed bottom nav (see BottomNav.tsx),
+   so layout, tap targets and overlays are retuned for touch.
+   ============================================ */
+
+@media (max-width: 767px) {
+  /* Touch targets — spec: buttons >= 48px, form controls >= 44px. */
+  .btn {
+    min-height: 48px;
+    padding: 12px 16px;
+  }
+
+  .btn-sm {
+    min-height: 40px;
+    padding: 8px 12px;
+  }
+
+  .btn-icon {
+    min-width: 48px;
+    min-height: 48px;
+  }
+
+  .input,
+  input,
+  select,
+  textarea {
+    min-height: 44px;
+    /* Prevents iOS Safari from zooming the viewport on focus. */
+    font-size: 16px;
+  }
+
+  textarea.input {
+    min-height: 88px;
+  }
+
+  /* Sheets and dialogs dock to the bottom rather than floating mid-screen. */
+  .modal-overlay {
+    align-items: flex-end;
+    padding: 0;
+  }
+
+  .modal-content {
+    width: 100%;
+    max-width: 100%;
+    max-height: 88vh;
+    margin: 0 !important;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  /* The desktop hover tooltip has no touch equivalent — suppress it. */
+  .tooltip {
+    display: none;
+  }
+
+  /* The auto-hide edge trigger is a pointer affordance; it steals edge swipes on touch. */
+  .sidebar-trigger-zone {
+    display: none;
+  }
+
+  /* Multi-column dashboard grids collapse to a single column. */
+  main [style*="grid-template-columns"] {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* The pages style their rows inline with `display: flex` and no wrap, so a
+     row's min-content width forces the page sideways on a narrow screen — and
+     because `1fr` carries an auto minimum, it drags the enclosing grid track
+     wider too. Allowing these rows to wrap fixes both. Rows that already fit
+     are unaffected, since wrapping only engages on overflow. */
+  main [style*="display: flex"],
+  main [style*="display:flex"] {
+    flex-wrap: wrap;
+  }
+
+  /* Cards are laid out for desktop column widths; cap them so none can push the
+     page wider than the screen. */
+  main .glass-card,
+  main .glass {
+    max-width: 100%;
+  }
+
+  /* Flex and grid items default to `min-width: auto`, so they refuse to shrink
+     below their content width and push the row past the viewport edge. */
+  main [style*="display: flex"] > *,
+  main [style*="display:flex"] > *,
+  main [style*="display: grid"] > *,
+  main [style*="display:grid"] > * {
+    min-width: 0;
+  }
+
+  /* Wide content (tables, kanban boards) scrolls inside itself instead of
+     forcing the page to scroll horizontally. */
+  main table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+}
+
+/* Small phones — tighten typography so headings don't wrap awkwardly. */
+@media (max-width: 400px) {
+  h1 {
+    font-size: 20px;
+  }
+
+  h2 {
+    font-size: 17px;
+  }
+}
+
+/* Users who asked the OS to reduce motion get no transitions or transforms. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

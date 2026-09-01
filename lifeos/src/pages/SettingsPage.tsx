@@ -7,6 +7,11 @@ import { Settings, Sun, Moon, Bell, Volume2, Download, Upload, Trash2, ShieldAle
 import type { AppSettings } from '../types';
 import { supabase } from '../services/supabase';
 import { connectGoogleCalendar } from '../services/googleAuth';
+import {
+  getPermission,
+  requestNotificationPermission,
+  type NotificationPermissionState,
+} from '../services/notifications';
 
 import { exportToGoogleSheets } from '../services/googleSheetsService';
 import { useTaskStore } from '../stores/taskStore';
@@ -47,6 +52,19 @@ export default function SettingsPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [exportingSheets, setExportingSheets] = useState(false);
+  const [notifPermission, setNotifPermission] = useState<NotificationPermissionState>(() => getPermission());
+
+  // Enabling reminders needs the browser prompt, which must run in this click handler.
+  const handleNotificationsToggle = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const wantsOn = e.target.checked;
+    if (!wantsOn) {
+      setNotificationsEnabled(false);
+      return;
+    }
+    const permission = await requestNotificationPermission();
+    setNotifPermission(permission);
+    setNotificationsEnabled(permission === 'granted');
+  };
 
   const handleConnectGoogle = async () => {
     if (!supabase) {
@@ -244,6 +262,39 @@ export default function SettingsPage() {
                   />
                 </div>
               </div>
+
+              {/* Databases pulled into Tasks / Habits by the sync buttons on those pages */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginTop: 12 }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: 12, fontWeight: 500, color: 'var(--color-text-muted)', marginBottom: 6 }}>
+                    Tasks Database ID (sync)
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Database synced into Tasks"
+                    value={useSettingsStore((s) => s.notionTasksDatabaseId) || ''}
+                    onChange={(e) => setIntegrationKey('notionTasksDatabaseId', e.target.value)}
+                    className="input"
+                  />
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: 12, fontWeight: 500, color: 'var(--color-text-muted)', marginBottom: 6 }}>
+                    Habits Database ID (sync)
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Database synced into Habits"
+                    value={useSettingsStore((s) => s.notionHabitsDatabaseId) || ''}
+                    onChange={(e) => setIntegrationKey('notionHabitsDatabaseId', e.target.value)}
+                    className="input"
+                  />
+                </div>
+              </div>
+              <p style={{ fontSize: 11, color: 'var(--color-text-muted)', marginTop: 8, lineHeight: 1.5 }}>
+                Share each database with your Notion integration, then use “Sync Notion” on the
+                Tasks and Habits pages. Rows are matched on their Notion page id, so syncing twice
+                updates instead of duplicating.
+              </p>
             </div>
 
             {/* Spotify */}
@@ -414,15 +465,26 @@ export default function SettingsPage() {
               />
               Enable audio alert chime
             </label>
-            <label style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 13, color: 'var(--color-text-primary)', cursor: 'pointer' }}>
-              <input
-                type="checkbox"
-                checked={notificationsEnabled}
-                onChange={(e) => setNotificationsEnabled(e.target.checked)}
-                style={{ width: 14, height: 14, cursor: 'pointer' }}
-              />
-              Enable desktop notifications
-            </label>
+            <div>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 13, color: 'var(--color-text-primary)', cursor: 'pointer' }}>
+                <input
+                  type="checkbox"
+                  checked={notificationsEnabled}
+                  onChange={handleNotificationsToggle}
+                  style={{ width: 14, height: 14, cursor: 'pointer' }}
+                />
+                Enable event reminders
+              </label>
+              <p style={{ fontSize: 11, color: notifPermission === 'denied' ? 'var(--color-danger)' : 'var(--color-text-muted)', marginTop: 6, lineHeight: 1.5 }}>
+                {notifPermission === 'unsupported'
+                  ? 'This browser does not support notifications.'
+                  : notifPermission === 'denied'
+                    ? 'Blocked by the browser — re-allow notifications for this site in your browser settings.'
+                    : notifPermission === 'granted'
+                      ? 'Reminders fire ~10 minutes before an event, while LifeOS is open.'
+                      : 'You will be asked for permission when you enable this.'}
+              </p>
+            </div>
           </div>
         </motion.div>
 

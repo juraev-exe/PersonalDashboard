@@ -14,6 +14,8 @@ import { useGamificationStore } from './gamificationStore';
 import { usePomodoroStore } from './pomodoroStore';
 import { useTaskStore } from './taskStore';
 import { usePrayerStore } from './prayerStore';
+import { useSettingsStore } from './settingsStore';
+import { fetchNotionHabits } from '../services/notionSync';
 
 const HABITS_COLLECTION = 'habits';
 const LOGS_COLLECTION = 'habit_logs';
@@ -29,6 +31,8 @@ interface HabitState {
   getHabitCompletionForDate: (habitId: string, date: string) => boolean;
   getCompletionPercentage: (date: string) => number;
   getStreak: (habitId: string) => number;
+  /** Pull the configured Notion habits database in, upserting by Notion page id. */
+  syncFromNotion: () => Promise<{ imported: number; updated: number }>;
 }
 
 export const useHabitStore = create<HabitState>((set, get) => ({
@@ -103,6 +107,7 @@ export const useHabitStore = create<HabitState>((set, get) => ({
         if (updates.dailyTarget !== undefined) dbUpdates.daily_target = updates.dailyTarget;
         if (updates.color !== undefined) dbUpdates.color = updates.color;
         if (updates.archived !== undefined) dbUpdates.archived = updates.archived;
+        if (updates.notionId !== undefined) dbUpdates.notion_id = updates.notionId || null;
 
         const { error } = await supabase!
           .from('habits')
@@ -275,5 +280,32 @@ export const useHabitStore = create<HabitState>((set, get) => ({
       else break;
     }
     return streak;
+  },
+
+  syncFromNotion: async () => {
+    const { notionApiKey, notionHabitsDatabaseId } = useSettingsStore.getState();
+    if (!notionApiKey) throw new Error('Add your Notion API key in Settings first');
+    if (!notionHabitsDatabaseId) throw new Error('Add your Notion habits database ID in Settings first');
+
+    const drafts = await fetchNotionHabits(notionHabitsDatabaseId);
+    let imported = 0;
+    let updated = 0;
+
+    for (const draft of drafts) {
+      const existing = get().habits.find((h) => h.notionId === draft.notionId);
+      if (existing) {
+        await get().updateHabit(existing.id, {
+          name: draft.name,
+          frequency: draft.frequency,
+          dailyTarget: draft.dailyTarget,
+        });
+        updated++;
+      } else {
+        await get().addHabit(draft);
+        imported++;
+      }
+    }
+
+    return { imported, updated };
   },
 }));

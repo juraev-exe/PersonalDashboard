@@ -8,6 +8,7 @@ import { useAuthStore } from '../../stores/authStore';
 import { Search, Bell, Sun, Moon as MoonIcon, User, LogOut, Settings, ChevronDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
+import { useIsMobile } from '../../hooks/useMediaQuery';
 
 export default function TopNav() {
   const [searchOpen, setSearchOpen] = useState(false);
@@ -15,6 +16,7 @@ export default function TopNav() {
   const theme = useSettingsStore((s) => s.theme);
   const toggleTheme = useSettingsStore((s) => s.toggleTheme);
   const collapsed = useSettingsStore((s) => s.sidebarCollapsed);
+  const isMobile = useIsMobile();
   const user = useAuthStore((s) => s.user);
   const isGuest = useAuthStore((s) => s.isGuest);
   const signOut = useAuthStore((s) => s.signOut);
@@ -64,26 +66,28 @@ export default function TopNav() {
           position: 'fixed',
           top: 0,
           right: 0,
-          left: collapsed ? 'var(--spacing-sidebar-collapsed)' : 'var(--spacing-sidebar)',
+          left: isMobile ? 0 : collapsed ? 'var(--spacing-sidebar-collapsed)' : 'var(--spacing-sidebar)',
           zIndex: 30,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          padding: '0 24px',
+          gap: 12,
+          padding: isMobile ? '0 12px' : '0 24px',
           background: 'var(--color-bg-primary)',
           borderBottom: '1px solid var(--color-border)',
           transition: 'left 0.2s ease',
         }}
       >
-        {/* Left/Center: Search */}
-        <div style={{ flex: 1, maxWidth: 400 }}>
+        {/* Left/Center: Search — minWidth 0 so it can shrink past its content on narrow screens */}
+        <div style={{ flex: 1, minWidth: 0, maxWidth: 400 }}>
           <button
             onClick={() => setSearchOpen(true)}
             style={{
               display: 'flex',
               alignItems: 'center',
               gap: 8,
-              padding: '6px 12px',
+              padding: isMobile ? '10px 12px' : '6px 12px',
+              minHeight: isMobile ? 44 : undefined,
               background: 'var(--color-bg-secondary)',
               border: '1px solid var(--color-border)',
               borderRadius: 'var(--radius-md)',
@@ -91,6 +95,8 @@ export default function TopNav() {
               cursor: 'pointer',
               fontSize: 13,
               width: '100%',
+              minWidth: 0,
+              overflow: 'hidden',
               justifyContent: 'space-between',
               transition: 'border-color 0.15s',
             }}
@@ -101,17 +107,19 @@ export default function TopNav() {
               <Search size={14} />
               Search...
             </span>
-            <kbd style={{
-              padding: '2px 6px',
-              background: 'var(--color-bg-primary)',
-              borderRadius: 4,
-              fontSize: 10,
-              fontFamily: 'var(--font-mono)',
-              border: '1px solid var(--color-border)',
-              color: 'var(--color-text-secondary)',
-            }}>
-              Ctrl K
-            </kbd>
+            {!isMobile && (
+              <kbd style={{
+                padding: '2px 6px',
+                background: 'var(--color-bg-primary)',
+                borderRadius: 4,
+                fontSize: 10,
+                fontFamily: 'var(--font-mono)',
+                border: '1px solid var(--color-border)',
+                color: 'var(--color-text-secondary)',
+              }}>
+                Ctrl K
+              </kbd>
+            )}
           </button>
         </div>
 

@@ -11,6 +11,8 @@ import { useAuthStore } from './authStore';
 import { mapTaskFromDB, mapTaskToDB } from '../services/dbMapper';
 import { v4 as uuid } from 'uuid';
 import { useGamificationStore } from './gamificationStore';
+import { useSettingsStore } from './settingsStore';
+import { fetchNotionTasks } from '../services/notionSync';
 
 const COLLECTION = 'tasks';
 
@@ -25,6 +27,8 @@ interface TaskState {
   completeTask: (id: string) => Promise<void>;
   setFilter: (filter: Partial<TaskState['filter']>) => void;
   setViewMode: (mode: 'list' | 'kanban' | 'calendar') => void;
+  /** Pull the configured Notion tasks database in, upserting by Notion page id. */
+  syncFromNotion: () => Promise<{ imported: number; updated: number }>;
 }
 
 export const useTaskStore = create<TaskState>((set, get) => ({
@@ -90,6 +94,7 @@ export const useTaskStore = create<TaskState>((set, get) => ({
         if (updates.recurring !== undefined) dbUpdates.recurring = updates.recurring;
         if (updates.recurringPattern !== undefined) dbUpdates.recurring_pattern = updates.recurringPattern || null;
         if (updates.completedAt !== undefined) dbUpdates.completed_at = updates.completedAt || null;
+        if (updates.notionId !== undefined) dbUpdates.notion_id = updates.notionId || null;
 
         const { error } = await supabase!
           .from('tasks')
@@ -224,4 +229,35 @@ export const useTaskStore = create<TaskState>((set, get) => ({
 
   setFilter: (filter) => set((s) => ({ filter: { ...s.filter, ...filter } })),
   setViewMode: (viewMode) => set({ viewMode }),
+
+  syncFromNotion: async () => {
+    const { notionApiKey, notionTasksDatabaseId } = useSettingsStore.getState();
+    if (!notionApiKey) throw new Error('Add your Notion API key in Settings first');
+    if (!notionTasksDatabaseId) throw new Error('Add your Notion tasks database ID in Settings first');
+
+    const drafts = await fetchNotionTasks(notionTasksDatabaseId);
+    let imported = 0;
+    let updated = 0;
+
+    for (const draft of drafts) {
+      const existing = get().tasks.find((t) => t.notionId === draft.notionId);
+      if (existing) {
+        // Notion is the source of truth for synced rows; keep local-only fields.
+        await get().updateTask(existing.id, {
+          title: draft.title,
+          description: draft.description,
+          status: draft.status,
+          priority: draft.priority,
+          category: draft.category,
+          dueDate: draft.dueDate,
+        });
+        updated++;
+      } else {
+        await get().addTask(draft);
+        imported++;
+      }
+    }
+
+    return { imported, updated };
+  },
 }));

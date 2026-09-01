@@ -4,6 +4,7 @@ import { TaskStatus, TaskPriority, TaskCategory, type Task } from '../types';
 import { Plus, List, Kanban, Search, Filter, ArrowUpDown, Calendar, Trash2, Edit3, CheckCircle, Clock, AlertTriangle, RefreshCw, Mic, MicOff } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { format } from 'date-fns';
+import NotionSyncButton from '../components/NotionSyncButton';
 
 export default function TasksPage() {
   const tasks = useTaskStore((s) => s.tasks);
@@ -11,6 +12,7 @@ export default function TasksPage() {
   const updateTask = useTaskStore((s) => s.updateTask);
   const deleteTask = useTaskStore((s) => s.deleteTask);
   const completeTask = useTaskStore((s) => s.completeTask);
+  const syncFromNotion = useTaskStore((s) => s.syncFromNotion);
 
   const [viewMode, setViewMode] = useState<'list' | 'kanban'>('list');
   const [search, setSearch] = useState('');
@@ -229,14 +231,17 @@ export default function TasksPage() {
   return (
     <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
       {/* Header bar */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
         <div>
           <h1 style={{ fontSize: 28, fontWeight: 800, marginBottom: 4, letterSpacing: '-0.03em' }}>Tasks</h1>
           <p style={{ fontSize: 14, color: 'var(--color-text-muted)' }}>Organize, schedule, and execute your study and work items.</p>
         </div>
-        <button onClick={handleOpenAddModal} className="btn btn-primary" style={{ gap: '6px' }}>
-          <Plus size={18} /> New Task
-        </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+          <NotionSyncButton onSync={syncFromNotion} />
+          <button onClick={handleOpenAddModal} className="btn btn-primary" style={{ gap: '6px' }}>
+            <Plus size={18} /> New Task
+          </button>
+        </div>
       </div>
 
       {/* Filter and View toolbar */}

@@ -4,75 +4,8 @@ import { useSettingsStore } from '../../stores/settingsStore';
 import { useGamificationStore } from '../../stores/gamificationStore';
 import { useAuthStore } from '../../stores/authStore';
 import { motion } from 'framer-motion';
-import {
-  LayoutDashboard,
-  Timer,
-  CheckSquare,
-  Repeat,
-  Moon,
-  Target,
-  CalendarDays,
-  GraduationCap,
-  PenTool,
-  FolderKanban,
-  Code2,
-  StickyNote,
-  Bookmark,
-  Gamepad2,
-  BarChart3,
-  Settings,
-  ChevronLeft,
-  ChevronRight,
-  Zap,
-  DollarSign,
-  ShieldAlert,
-  LogOut,
-  Pin,
-} from 'lucide-react';
-
-const navGroups = [
-  {
-    title: 'PRODUCTIVITY',
-    items: [
-      { path: '/', label: 'Dashboard', icon: LayoutDashboard },
-      { path: '/pomodoro', label: 'Pomodoro', icon: Timer },
-      { path: '/tasks', label: 'Tasks', icon: CheckSquare },
-      { path: '/habits', label: 'Habits', icon: Repeat },
-      { path: '/prayers', label: 'Prayers', icon: Moon },
-      { path: '/focus', label: 'Focus Mode', icon: Target },
-      { path: '/detox', label: 'Digital Detox', icon: ShieldAlert },
-    ]
-  },
-  {
-    title: 'LEARNING',
-    items: [
-      { path: '/journal', label: 'Journal', icon: PenTool },
-      { path: '/goals', label: 'Goals', icon: Target },
-      { path: '/weekly', label: 'Weekly Review', icon: CalendarDays },
-    ]
-  },
-  {
-    title: 'PROJECTS',
-    items: [
-      { path: '/projects', label: 'Projects', icon: FolderKanban },
-    ]
-  },
-  {
-    title: 'PERSONAL',
-    items: [
-      { path: '/calendar', label: 'Calendar', icon: CalendarDays },
-      { path: '/notes', label: 'Notes', icon: StickyNote },
-      { path: '/finance', label: 'Finance', icon: DollarSign },
-    ]
-  },
-  {
-    title: 'INSIGHTS',
-    items: [
-      { path: '/analytics', label: 'Analytics', icon: BarChart3 },
-      { path: '/settings', label: 'Settings', icon: Settings },
-    ]
-  }
-];
+import { ChevronLeft, ChevronRight, Zap, LogOut, Pin } from 'lucide-react';
+import { navGroups } from './navConfig';
 
 export default function Sidebar() {
   const collapsed = useSettingsStore((s) => s.sidebarCollapsed);
