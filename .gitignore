@@ -1,2 +1,11 @@
 .vercel
 .env*
+
+# Dependencies and generated analysis output
+node_modules/
+graphify-out/
+
+# Logs and local tooling
+*.log
+.DS_Store
+Thumbs.db
