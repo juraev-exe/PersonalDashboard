@@ -5,16 +5,18 @@
 import React, { useState, useEffect } from 'react';
 import { useSettingsStore } from '../stores/settingsStore';
 import { useTaskStore } from '../stores/taskStore';
-import { X, RefreshCw, CheckCircle2, AlertCircle, ExternalLink, CheckSquare } from 'lucide-react';
+import { useHabitStore } from '../stores/habitStore';
+import { X, RefreshCw, CheckCircle2, AlertCircle, ExternalLink, Database, Copy } from 'lucide-react';
+import { configureSupabase, testSupabaseConnection, isSupabaseConfigured } from '../services/supabase';
 
 interface Props {
   isOpen: boolean;
   onClose: () => void;
-  defaultTab?: 'notion' | 'microsoft';
+  defaultTab?: 'supabase' | 'notion' | 'microsoft';
 }
 
-export default function IntegrationsModal({ isOpen, onClose, defaultTab = 'notion' }: Props) {
-  const [activeTab, setActiveTab] = useState<'notion' | 'microsoft'>(defaultTab);
+export default function IntegrationsModal({ isOpen, onClose, defaultTab = 'supabase' }: Props) {
+  const [activeTab, setActiveTab] = useState<'supabase' | 'notion' | 'microsoft'>(defaultTab);
 
   // Notion Settings
   const notionApiKey = useSettingsStore((s) => s.notionApiKey) || '';
@@ -25,11 +27,17 @@ export default function IntegrationsModal({ isOpen, onClose, defaultTab = 'notio
   const microsoftAccessToken = useSettingsStore((s) => s.microsoftAccessToken) || '';
   const microsoftTodoListId = useSettingsStore((s) => s.microsoftTodoListId) || '';
 
+  // Supabase Settings
+  const supabaseUrl = useSettingsStore((s) => s.supabaseUrl) || '';
+  const supabaseAnonKey = useSettingsStore((s) => s.supabaseAnonKey) || '';
+
   // Task store sync
   const syncFromNotion = useTaskStore((s) => s.syncFromNotion);
   const syncFromMicrosoftTodo = useTaskStore((s) => s.syncFromMicrosoftTodo);
 
   // Local form inputs
+  const [supabaseUrlInput, setSupabaseUrlInput] = useState(supabaseUrl);
+  const [supabaseKeyInput, setSupabaseKeyInput] = useState(supabaseAnonKey);
   const [notionTokenInput, setNotionTokenInput] = useState(notionApiKey);
   const [notionDbInput, setNotionDbInput] = useState(notionTasksDatabaseId);
   const [msTokenInput, setMsTokenInput] = useState(microsoftAccessToken);
@@ -37,19 +45,61 @@ export default function IntegrationsModal({ isOpen, onClose, defaultTab = 'notio
 
   // Status & Feedback
   const [syncing, setSyncing] = useState(false);
+  const [testingSupabase, setTestingSupabase] = useState(false);
+  const [copiedSql, setCopiedSql] = useState(false);
   const [statusMessage, setStatusMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   useEffect(() => {
     if (isOpen) {
+      setSupabaseUrlInput(supabaseUrl);
+      setSupabaseKeyInput(supabaseAnonKey);
       setNotionTokenInput(notionApiKey);
       setNotionDbInput(notionTasksDatabaseId);
       setMsTokenInput(microsoftAccessToken);
       setMsListInput(microsoftTodoListId);
       setStatusMessage(null);
     }
-  }, [isOpen, notionApiKey, notionTasksDatabaseId, microsoftAccessToken, microsoftTodoListId]);
+  }, [isOpen, supabaseUrl, supabaseAnonKey, notionApiKey, notionTasksDatabaseId, microsoftAccessToken, microsoftTodoListId]);
 
   if (!isOpen) return null;
+
+  const handleConnectSupabase = async () => {
+    setStatusMessage(null);
+    setTestingSupabase(true);
+    try {
+      const url = supabaseUrlInput.trim();
+      const key = supabaseKeyInput.trim();
+      const result = await testSupabaseConnection(url, key);
+      if (result.success) {
+        configureSupabase(url, key);
+        setIntegrationKey('supabaseUrl', url);
+        setIntegrationKey('supabaseAnonKey', key);
+        useTaskStore.getState().loadTasks();
+        useHabitStore.getState().loadHabits();
+        setStatusMessage({ type: 'success', text: result.message });
+      } else {
+        setStatusMessage({ type: 'error', text: result.message });
+      }
+    } catch (e: any) {
+      setStatusMessage({ type: 'error', text: e.message || 'Connection failed' });
+    } finally {
+      setTestingSupabase(false);
+    }
+  };
+
+  const handleCopySql = async () => {
+    try {
+      const res = await fetch('/supabase_schema.sql');
+      if (res.ok) {
+        const sql = await res.text();
+        await navigator.clipboard.writeText(sql);
+        setCopiedSql(true);
+        setTimeout(() => setCopiedSql(false), 3000);
+      }
+    } catch {
+      alert('You can find the SQL script in your project at lifeos/supabase_schema.sql');
+    }
+  };
 
   const handleSaveNotion = async () => {
     setStatusMessage(null);
@@ -141,6 +191,33 @@ export default function IntegrationsModal({ isOpen, onClose, defaultTab = 'notio
         {/* Tab Switcher */}
         <div style={{ display: 'flex', borderBottom: '1px solid var(--color-border)', padding: '0 22px' }}>
           <button
+            onClick={() => { setActiveTab('supabase'); setStatusMessage(null); }}
+            style={{
+              padding: '12px 16px',
+              background: 'transparent',
+              border: 'none',
+              borderBottom: activeTab === 'supabase' ? '2px solid #3ecf8e' : '2px solid transparent',
+              color: activeTab === 'supabase' ? 'var(--color-text-primary)' : 'var(--color-text-secondary)',
+              fontWeight: activeTab === 'supabase' ? 600 : 500,
+              fontSize: 13,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+            }}
+          >
+            <Database size={14} style={{ color: '#3ecf8e' }} /> Supabase
+            <span
+              style={{
+                width: 6,
+                height: 6,
+                borderRadius: '50%',
+                background: isSupabaseConfigured ? '#3ecf8e' : 'var(--color-border-light)',
+              }}
+            />
+          </button>
+
+          <button
             onClick={() => { setActiveTab('notion'); setStatusMessage(null); }}
             style={{
               padding: '12px 16px',
@@ -173,7 +250,7 @@ export default function IntegrationsModal({ isOpen, onClose, defaultTab = 'notio
               padding: '12px 16px',
               background: 'transparent',
               border: 'none',
-              borderBottom: activeTab === 'microsoft' ? '2px solid var(--color-accent)' : '2px solid transparent',
+              borderBottom: activeTab === 'microsoft' ? '2px solid #0284c7' : '2px solid transparent',
               color: activeTab === 'microsoft' ? 'var(--color-text-primary)' : 'var(--color-text-secondary)',
               fontWeight: activeTab === 'microsoft' ? 600 : 500,
               fontSize: 13,
@@ -183,7 +260,7 @@ export default function IntegrationsModal({ isOpen, onClose, defaultTab = 'notio
               gap: 8,
             }}
           >
-            <CheckSquare size={14} /> Microsoft To Do
+            <span style={{ color: '#0284c7', fontWeight: 'bold' }}>MS</span> To Do
             <span
               style={{
                 width: 6,
@@ -209,7 +286,7 @@ export default function IntegrationsModal({ isOpen, onClose, defaultTab = 'notio
                 marginBottom: 18,
                 background: statusMessage.type === 'success' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(225, 29, 72, 0.1)',
                 border: `1px solid ${statusMessage.type === 'success' ? 'rgba(16, 185, 129, 0.25)' : 'rgba(225, 29, 72, 0.25)'}`,
-                color: statusMessage.type === 'success' ? 'var(--color-accent)' : 'var(--color-rose)',
+                color: statusMessage.type === 'success' ? '#3ecf8e' : 'var(--color-rose)',
               }}
             >
               {statusMessage.type === 'success' ? <CheckCircle2 size={15} /> : <AlertCircle size={15} />}
@@ -217,7 +294,66 @@ export default function IntegrationsModal({ isOpen, onClose, defaultTab = 'notio
             </div>
           )}
 
-          {activeTab === 'notion' ? (
+          {activeTab === 'supabase' ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+              <div>
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--color-text-primary)', marginBottom: 6 }}>
+                  Supabase Project URL
+                </label>
+                <input
+                  type="text"
+                  placeholder="https://your-project-id.supabase.co"
+                  value={supabaseUrlInput}
+                  onChange={(e) => setSupabaseUrlInput(e.target.value)}
+                  className="input"
+                />
+                <div style={{ marginTop: 6, fontSize: 11, color: 'var(--color-text-muted)', display: 'flex', alignItems: 'center', gap: 4 }}>
+                  Find this under Project Settings &rarr; API in
+                  <a
+                    href="https://supabase.com/dashboard"
+                    target="_blank"
+                    rel="noreferrer"
+                    style={{ color: '#3ecf8e', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 2, fontWeight: 600 }}
+                  >
+                    Supabase Dashboard <ExternalLink size={10} />
+                  </a>
+                </div>
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--color-text-primary)', marginBottom: 6 }}>
+                  Supabase Anon Public Key
+                </label>
+                <input
+                  type="password"
+                  placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                  value={supabaseKeyInput}
+                  onChange={(e) => setSupabaseKeyInput(e.target.value)}
+                  className="input"
+                />
+              </div>
+
+              <div style={{ display: 'flex', gap: 10, marginTop: 8, flexWrap: 'wrap' }}>
+                <button
+                  onClick={handleConnectSupabase}
+                  disabled={testingSupabase || !supabaseUrlInput || !supabaseKeyInput}
+                  className="btn btn-primary"
+                  style={{ flex: 1, gap: 6, background: '#3ecf8e', borderColor: '#3ecf8e', color: '#000', fontWeight: 600 }}
+                >
+                  <RefreshCw size={14} className={testingSupabase ? 'animate-spin' : ''} />
+                  {testingSupabase ? 'Connecting...' : 'Connect & Test'}
+                </button>
+                <button
+                  onClick={handleCopySql}
+                  className="btn btn-secondary"
+                  style={{ gap: 6 }}
+                >
+                  <Copy size={14} />
+                  {copiedSql ? 'Copied SQL!' : 'Copy SQL Schema'}
+                </button>
+              </div>
+            </div>
+          ) : activeTab === 'notion' ? (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
               <div>
                 <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--color-text-primary)', marginBottom: 6 }}>

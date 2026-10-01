@@ -269,3 +269,19 @@ export const X = (props: LucideProps) => (
     <line x1="6" y1="6" x2="18" y2="18"></line>
   </svg>
 );
+
+export const Database = (props: LucideProps) => (
+  <svg width={props.size || 24} height={props.size || 24} viewBox="0 0 24 24" fill="none" stroke={props.color || "currentColor"} strokeWidth={props.strokeWidth || 2} strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, ...(props.style as any) }} className={props.className}>
+    <ellipse cx="12" cy="5" rx="9" ry="3"></ellipse>
+    <path d="M3 5V19A9 3 0 0 0 21 19V5"></path>
+    <path d="M3 12A9 3 0 0 0 21 12"></path>
+  </svg>
+);
+
+export const Copy = (props: LucideProps) => (
+  <svg width={props.size || 24} height={props.size || 24} viewBox="0 0 24 24" fill="none" stroke={props.color || "currentColor"} strokeWidth={props.strokeWidth || 2} strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, ...(props.style as any) }} className={props.className}>
+    <rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect>
+    <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2-.9 2 2"></path>
+  </svg>
+);
+

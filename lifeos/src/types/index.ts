@@ -254,6 +254,10 @@ export interface AppSettings {
   microsoftTodoListId?: string;
   spotifyPlaylistUrl?: string;
   sidebarAutoHide?: boolean;
+  /** Supabase Project URL */
+  supabaseUrl?: string;
+  /** Supabase Public Anon Key */
+  supabaseAnonKey?: string;
 }
 
 export interface Quote {

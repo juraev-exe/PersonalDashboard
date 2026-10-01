@@ -2,10 +2,10 @@ import React, { useRef, useState } from 'react';
 import { useSettingsStore } from '../stores/settingsStore';
 import { pomodoroPresets } from '../data/seed';
 import { exportAllData, importAllData, clearAllData } from '../services/storage';
-import { Settings, Sun, Moon, Bell, Volume2, Download, Upload, Trash2, ShieldAlert, Plug, GitBranch, Code, CalendarDays, FileSpreadsheet, CheckCircle } from 'lucide-react';
+import { Settings, Sun, Moon, Bell, Volume2, Download, Upload, Trash2, ShieldAlert, Plug, GitBranch, Code, CalendarDays, FileSpreadsheet, CheckCircle, Database, Copy, ExternalLink } from 'lucide-react';
 
 import type { AppSettings } from '../types';
-import { supabase } from '../services/supabase';
+import { supabase, configureSupabase, testSupabaseConnection, isSupabaseConfigured } from '../services/supabase';
 import { connectGoogleCalendar } from '../services/googleAuth';
 import {
   getPermission,
@@ -55,6 +55,54 @@ export default function SettingsPage() {
   const syncFromMicrosoftTodo = useTaskStore((s) => s.syncFromMicrosoftTodo);
   const [testingNotion, setTestingNotion] = useState(false);
   const [testingMicrosoft, setTestingMicrosoft] = useState(false);
+
+  // Supabase state
+  const supabaseUrlSetting = useSettingsStore((s) => s.supabaseUrl) || '';
+  const supabaseAnonKeySetting = useSettingsStore((s) => s.supabaseAnonKey) || '';
+  const [supabaseUrlInput, setSupabaseUrlInput] = useState(supabaseUrlSetting);
+  const [supabaseKeyInput, setSupabaseKeyInput] = useState(supabaseAnonKeySetting);
+  const [testingSupabase, setTestingSupabase] = useState(false);
+  const [supabaseStatusMessage, setSupabaseStatusMessage] = useState<{ success: boolean; message: string; tablesExist?: boolean } | null>(null);
+  const [copiedSql, setCopiedSql] = useState(false);
+
+  const handleSaveAndTestSupabase = async () => {
+    setTestingSupabase(true);
+    setSupabaseStatusMessage(null);
+    try {
+      const url = supabaseUrlInput.trim();
+      const key = supabaseKeyInput.trim();
+      const result = await testSupabaseConnection(url, key);
+      if (result.success) {
+        configureSupabase(url, key);
+        setIntegrationKey('supabaseUrl', url);
+        setIntegrationKey('supabaseAnonKey', key);
+        // Trigger cloud synchronization merge
+        useTaskStore.getState().loadTasks();
+        useHabitStore.getState().loadHabits();
+      }
+      setSupabaseStatusMessage(result);
+    } catch (e: any) {
+      setSupabaseStatusMessage({ success: false, message: e.message || 'Connection failed' });
+    } finally {
+      setTestingSupabase(false);
+    }
+  };
+
+  const handleCopySqlSchema = async () => {
+    try {
+      const res = await fetch('/supabase_schema.sql');
+      if (res.ok) {
+        const sql = await res.text();
+        await navigator.clipboard.writeText(sql);
+        setCopiedSql(true);
+        setTimeout(() => setCopiedSql(false), 3000);
+      } else {
+        alert('You can find the SQL script in your project root at lifeos/supabase_schema.sql');
+      }
+    } catch {
+      alert('You can find the SQL script in your project root at lifeos/supabase_schema.sql');
+    }
+  };
 
   const handleTestNotion = async () => {
     setTestingNotion(true);
@@ -224,6 +272,112 @@ export default function SettingsPage() {
           </p>
           
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            {/* Supabase Cloud Database & Auth */}
+            <div style={{
+              padding: 16,
+              background: 'var(--color-bg-secondary)',
+              border: '1px solid var(--color-border)',
+              borderRadius: 'var(--radius-md)',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 12,
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <Database size={16} style={{ color: '#3ecf8e' }} />
+                  <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text-primary)' }}>
+                    Supabase Cloud Database &amp; Auth
+                  </span>
+                </div>
+                <span
+                  style={{
+                    fontSize: 11,
+                    fontWeight: 600,
+                    padding: '3px 8px',
+                    borderRadius: 12,
+                    background: isSupabaseConfigured ? 'rgba(62, 207, 142, 0.15)' : 'rgba(234, 179, 8, 0.15)',
+                    color: isSupabaseConfigured ? '#3ecf8e' : '#eab308',
+                  }}
+                >
+                  {isSupabaseConfigured ? '● Cloud Connected' : '○ Local Storage Mode'}
+                </span>
+              </div>
+              <p style={{ fontSize: 11, color: 'var(--color-text-muted)', margin: 0, lineHeight: 1.5 }}>
+                Connect your Supabase project to automatically synchronize and persist tasks, habits, and focus sessions to the cloud across devices.
+              </p>
+
+              <div>
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 500, color: 'var(--color-text-muted)', marginBottom: 6 }}>
+                  Supabase Project URL
+                </label>
+                <input
+                  type="text"
+                  placeholder="https://your-project-id.supabase.co"
+                  value={supabaseUrlInput}
+                  onChange={(e) => setSupabaseUrlInput(e.target.value)}
+                  className="input"
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 500, color: 'var(--color-text-muted)', marginBottom: 6 }}>
+                  Supabase Anon Public Key
+                </label>
+                <input
+                  type="password"
+                  placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                  value={supabaseKeyInput}
+                  onChange={(e) => setSupabaseKeyInput(e.target.value)}
+                  className="input"
+                />
+              </div>
+
+              {supabaseStatusMessage && (
+                <div style={{
+                  padding: '8px 12px',
+                  borderRadius: 'var(--radius-sm)',
+                  fontSize: 12,
+                  background: supabaseStatusMessage.success ? 'rgba(62, 207, 142, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+                  color: supabaseStatusMessage.success ? '#3ecf8e' : '#ef4444',
+                  border: `1px solid ${supabaseStatusMessage.success ? 'rgba(62, 207, 142, 0.25)' : 'rgba(239, 68, 68, 0.25)'}`,
+                }}>
+                  {supabaseStatusMessage.message}
+                </div>
+              )}
+
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 4 }}>
+                <button
+                  type="button"
+                  onClick={handleSaveAndTestSupabase}
+                  disabled={testingSupabase || !supabaseUrlInput || !supabaseKeyInput}
+                  className="btn btn-primary btn-sm"
+                  style={{ gap: 6 }}
+                >
+                  <CheckCircle size={13} />
+                  {testingSupabase ? 'Testing & Connecting...' : 'Save & Connect Supabase'}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleCopySqlSchema}
+                  className="btn btn-secondary btn-sm"
+                  style={{ gap: 6 }}
+                >
+                  <Copy size={13} />
+                  {copiedSql ? 'Copied SQL Setup Script!' : 'Copy Database Setup SQL'}
+                </button>
+                <a
+                  href="https://supabase.com/dashboard/new"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="btn btn-secondary btn-sm"
+                  style={{ gap: 6, textDecoration: 'none' }}
+                >
+                  <ExternalLink size={13} />
+                  Create Free Supabase Project
+                </a>
+              </div>
+            </div>
+
             {/* GitHub */}
             <div>
               <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 500, color: 'var(--color-text-secondary)', marginBottom: 6 }}>

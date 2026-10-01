@@ -45,6 +45,8 @@ const defaultSettings: AppSettings = {
   microsoftTodoListId: '',
   spotifyPlaylistUrl: 'https://open.spotify.com/playlist/37i9dQZF1DX8UebgpwzvUh',
   sidebarAutoHide: false,
+  supabaseUrl: import.meta.env.VITE_SUPABASE_URL || '',
+  supabaseAnonKey: import.meta.env.VITE_SUPABASE_ANON_KEY || '',
 };
 
 const loadSettings = (): AppSettings => {
@@ -54,6 +56,8 @@ const loadSettings = (): AppSettings => {
     ...loaded,
     notionApiKey: loaded.notionApiKey || import.meta.env.VITE_NOTION_API_KEY || defaultSettings.notionApiKey,
     notionTasksDatabaseId: loaded.notionTasksDatabaseId || import.meta.env.VITE_NOTION_DATABASE_ID || defaultSettings.notionTasksDatabaseId,
+    supabaseUrl: loaded.supabaseUrl || import.meta.env.VITE_SUPABASE_URL || defaultSettings.supabaseUrl,
+    supabaseAnonKey: loaded.supabaseAnonKey || import.meta.env.VITE_SUPABASE_ANON_KEY || defaultSettings.supabaseAnonKey,
   };
 };
 
