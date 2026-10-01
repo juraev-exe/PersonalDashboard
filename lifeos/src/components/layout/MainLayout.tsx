@@ -6,20 +6,24 @@ import { Outlet, useLocation } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import BottomNav from './BottomNav';
 import TopNav from './TopNav';
-import XpToastContainer from './XpToastContainer';
+import IntegrationsModal from '../IntegrationsModal';
 import { useSettingsStore } from '../../stores/settingsStore';
 import { usePomodoroStore } from '../../stores/pomodoroStore';
 import { useKeyboardShortcuts } from '../../hooks/useKeyboardShortcuts';
 import { useIsMobile } from '../../hooks/useMediaQuery';
+import { useAutoSync } from '../../hooks/useAutoSync';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function MainLayout() {
   const collapsed = useSettingsStore((s) => s.sidebarCollapsed);
   const sidebarAutoHide = useSettingsStore((s) => s.sidebarAutoHide);
+  const integrationsModalOpen = useSettingsStore((s) => s.integrationsModalOpen);
+  const closeIntegrationsModal = useSettingsStore((s) => s.closeIntegrationsModal);
   const isRunning = usePomodoroStore((s) => s.isRunning);
   const isMobile = useIsMobile();
   const location = useLocation();
   useKeyboardShortcuts();
+  useAutoSync();
 
   const hideNavigation = location.pathname === '/focus' && isRunning;
   const showBottomNav = isMobile && !hideNavigation;
@@ -37,7 +41,10 @@ export default function MainLayout() {
   return (
     <div style={{ display: 'flex', minHeight: '100vh' }}>
       {!hideNavigation && !isMobile && <Sidebar />}
-      <XpToastContainer />
+      <IntegrationsModal
+        isOpen={integrationsModalOpen}
+        onClose={closeIntegrationsModal}
+      />
       <div
         style={{
           flex: 1,

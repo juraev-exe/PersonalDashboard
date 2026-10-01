@@ -51,6 +51,35 @@ export default function SettingsPage() {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const syncFromNotion = useTaskStore((s) => s.syncFromNotion);
+  const syncFromMicrosoftTodo = useTaskStore((s) => s.syncFromMicrosoftTodo);
+  const [testingNotion, setTestingNotion] = useState(false);
+  const [testingMicrosoft, setTestingMicrosoft] = useState(false);
+
+  const handleTestNotion = async () => {
+    setTestingNotion(true);
+    try {
+      const res = await syncFromNotion();
+      alert(`Notion Connected! ${res.imported} tasks imported, ${res.updated} updated.`);
+    } catch (err: any) {
+      alert(`Notion connection error: ${err.message}`);
+    } finally {
+      setTestingNotion(false);
+    }
+  };
+
+  const handleTestMicrosoft = async () => {
+    setTestingMicrosoft(true);
+    try {
+      const res = await syncFromMicrosoftTodo();
+      alert(`Microsoft To Do Connected! ${res.imported} tasks imported, ${res.updated} updated.`);
+    } catch (err: any) {
+      alert(`Microsoft To Do connection error: ${err.message}`);
+    } finally {
+      setTestingMicrosoft(false);
+    }
+  };
+
   const [exportingSheets, setExportingSheets] = useState(false);
   const [notifPermission, setNotifPermission] = useState<NotificationPermissionState>(() => getPermission());
 
@@ -295,6 +324,60 @@ export default function SettingsPage() {
                 Tasks and Habits pages. Rows are matched on their Notion page id, so syncing twice
                 updates instead of duplicating.
               </p>
+              <div style={{ marginTop: 10 }}>
+                <button
+                  type="button"
+                  onClick={handleTestNotion}
+                  disabled={testingNotion || !notionApiKey}
+                  className="btn btn-secondary btn-sm"
+                  style={{ gap: 6 }}
+                >
+                  <CheckCircle size={13} />
+                  {testingNotion ? 'Testing & Syncing Notion...' : 'Test & Sync Notion Connection'}
+                </button>
+              </div>
+            </div>
+
+            {/* Microsoft To Do */}
+            <div>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 500, color: 'var(--color-text-secondary)', marginBottom: 6 }}>
+                <span style={{ color: '#0284c7', fontWeight: 'bold' }}>Microsoft</span> To Do Access Token
+              </label>
+              <input
+                type="password"
+                placeholder="Paste your Microsoft Graph access token"
+                value={useSettingsStore((s) => s.microsoftAccessToken) || ''}
+                onChange={(e) => setIntegrationKey('microsoftAccessToken', e.target.value)}
+                className="input"
+              />
+              <div style={{ marginTop: 12 }}>
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 500, color: 'var(--color-text-muted)', marginBottom: 6 }}>
+                  To Do List ID (optional — defaults to first list)
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. AAMkAD..."
+                  value={useSettingsStore((s) => s.microsoftTodoListId) || ''}
+                  onChange={(e) => setIntegrationKey('microsoftTodoListId', e.target.value)}
+                  className="input"
+                />
+              </div>
+              <p style={{ fontSize: 11, color: 'var(--color-text-muted)', marginTop: 8, lineHeight: 1.5 }}>
+                Generate a token from the Microsoft Graph Explorer or an Azure App Registration.
+                Use "Sync Microsoft To Do" on the Tasks page to pull tasks.
+              </p>
+              <div style={{ marginTop: 10 }}>
+                <button
+                  type="button"
+                  onClick={handleTestMicrosoft}
+                  disabled={testingMicrosoft || !useSettingsStore.getState().microsoftAccessToken}
+                  className="btn btn-secondary btn-sm"
+                  style={{ gap: 6, color: '#0284c7' }}
+                >
+                  <CheckCircle size={13} />
+                  {testingMicrosoft ? 'Testing & Syncing Microsoft...' : 'Test & Sync Microsoft To Do'}
+                </button>
+              </div>
             </div>
 
             {/* Spotify */}

@@ -215,3 +215,38 @@ export async function pushTaskStatusToNotion(
 
   await updateNotionPage(notionId, { [propName]: value });
 }
+
+/**
+ * Create a new task in the Notion database.
+ */
+export async function pushTaskToNotion(
+  databaseId: string,
+  task: Pick<Task, 'title' | 'status' | 'priority' | 'dueDate'>
+): Promise<string> {
+  const statusName =
+    task.status === TaskStatus.COMPLETED
+      ? 'Done'
+      : task.status === TaskStatus.IN_PROGRESS
+      ? 'In progress'
+      : 'Not started';
+
+  const properties: Record<string, unknown> = {
+    'Task name': {
+      title: [{ text: { content: task.title } }],
+    },
+    'Status': {
+      status: { name: statusName },
+    },
+  };
+
+  if (task.dueDate) {
+    properties['Due date'] = {
+      date: { start: task.dueDate },
+    };
+  }
+
+  const { createNotionDatabasePage } = await import('./notionService');
+  const page = await createNotionDatabasePage(databaseId, properties);
+  return page.id;
+}
+

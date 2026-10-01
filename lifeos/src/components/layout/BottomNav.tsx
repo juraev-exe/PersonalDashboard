@@ -247,7 +247,9 @@ export default function BottomNav() {
           paddingBottom: 'env(safe-area-inset-bottom, 0px)',
           display: 'flex',
           alignItems: 'stretch',
-          background: 'var(--color-bg-primary)',
+          background: 'var(--color-bg-card)',
+          backdropFilter: 'blur(16px)',
+          WebkitBackdropFilter: 'blur(16px)',
           borderTop: '1px solid var(--color-border)',
         }}
       >

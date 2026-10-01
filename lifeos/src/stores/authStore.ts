@@ -21,7 +21,7 @@ interface AuthState {
   updateUserXp: (level: number, xp: number) => Promise<void>;
 }
 
-const GUEST_KEY = 'lifeos_auth_is_guest';
+const GUEST_KEY = 'auth_is_guest';
 
 const defaultGuestUser: User = {
   id: 'guest',
@@ -33,17 +33,19 @@ const defaultGuestUser: User = {
   createdAt: new Date().toISOString(),
 };
 
+const initialIsGuest = !isSupabaseConfigured ? storage.getValue<boolean>(GUEST_KEY, true) : false;
+
 export const useAuthStore = create<AuthState>((set, get) => ({
-  user: null,
+  user: initialIsGuest ? defaultGuestUser : null,
   session: null,
-  isGuest: storage.getValue<boolean>(GUEST_KEY, false),
-  loading: true,
-  initialized: false,
+  isGuest: initialIsGuest,
+  loading: false,
+  initialized: true,
 
   initializeAuth: async () => {
     if (!isSupabaseConfigured) {
       // Offline mode fallback
-      const isGuest = storage.getValue<boolean>(GUEST_KEY, false);
+      const isGuest = storage.getValue<boolean>(GUEST_KEY, true);
       if (isGuest) {
         set({ user: defaultGuestUser, session: null, isGuest: true, loading: false, initialized: true });
       } else {
@@ -127,8 +129,13 @@ export const useAuthStore = create<AuthState>((set, get) => ({
             set({ user: formattedProfile, session: currentSession, isGuest: false, loading: false, initialized: true });
           }
         } else {
-          // Signed out
-          set({ user: null, session: null, isGuest: false, loading: false, initialized: true });
+          // No active Supabase session — check if guest mode is enabled
+          const isGuest = storage.getValue<boolean>(GUEST_KEY, true);
+          if (isGuest) {
+            set({ user: defaultGuestUser, session: null, isGuest: true, loading: false, initialized: true });
+          } else {
+            set({ user: null, session: null, isGuest: false, loading: false, initialized: true });
+          }
         }
       });
 
@@ -186,7 +193,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       }
 
       // No session, check if we have guest flag
-      const isGuest = storage.getValue<boolean>(GUEST_KEY, false);
+      const isGuest = storage.getValue<boolean>(GUEST_KEY, true);
       if (isGuest) {
         set({ user: defaultGuestUser, session: null, isGuest: true, loading: false, initialized: true });
       } else {

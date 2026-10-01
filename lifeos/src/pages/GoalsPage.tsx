@@ -8,6 +8,7 @@ import type { Goal } from '../types';
 import { Target, Plus, Trophy, Clock, Trash2, Edit3, CheckCircle, ChevronRight, TrendingUp } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { format } from 'date-fns';
+import Modal from '../components/ui/Modal';
 
 export default function GoalsPage() {
   const goals = useGoalStore((s) => s.goals);
@@ -167,70 +168,109 @@ export default function GoalsPage() {
       </div>
 
       {/* Add/Edit Modal */}
-      <AnimatePresence>
-        {isModalOpen && (
-          <div className="modal-overlay" onClick={() => setIsModalOpen(false)}>
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="modal-content"
-              onClick={(e) => e.stopPropagation()}
-              style={{ maxWidth: 450 }}
-            >
-              <div className="modal-header">
-                <h2 style={{ fontSize: 18, fontWeight: 600 }}>{editingGoal ? 'Edit Goal' : 'Create New Goal'}</h2>
-              </div>
-              <form onSubmit={handleSave}>
-                <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                  <div>
-                    <label style={{ display: 'block', fontSize: 12, fontWeight: 500, color: 'var(--color-text-secondary)', marginBottom: 6 }}>Goal Title</label>
-                    <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} className="input" placeholder="e.g. Master React & TS" required />
-                  </div>
-                  <div>
-                    <label style={{ display: 'block', fontSize: 12, fontWeight: 500, color: 'var(--color-text-secondary)', marginBottom: 6 }}>Description</label>
-                    <textarea value={description} onChange={(e) => setDescription(e.target.value)} className="input" placeholder="Describe your vision..." />
-                  </div>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-                    <div>
-                      <label style={{ display: 'block', fontSize: 12, fontWeight: 500, color: 'var(--color-text-secondary)', marginBottom: 6 }}>Target Value</label>
-                      <input type="number" value={targetValue} onChange={(e) => setTargetValue(Number(e.target.value))} className="input" required />
-                    </div>
-                    <div>
-                      <label style={{ display: 'block', fontSize: 12, fontWeight: 500, color: 'var(--color-text-secondary)', marginBottom: 6 }}>Current Value</label>
-                      <input type="number" value={currentValue} onChange={(e) => setCurrentValue(Number(e.target.value))} className="input" required />
-                    </div>
-                  </div>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-                    <div>
-                      <label style={{ display: 'block', fontSize: 12, fontWeight: 500, color: 'var(--color-text-secondary)', marginBottom: 6 }}>Unit</label>
-                      <input type="text" value={unit} onChange={(e) => setUnit(e.target.value)} className="input" placeholder="%, hrs, pages..." />
-                    </div>
-                    <div>
-                      <label style={{ display: 'block', fontSize: 12, fontWeight: 500, color: 'var(--color-text-secondary)', marginBottom: 6 }}>Category</label>
-                      <select value={category} onChange={(e) => setCategory(e.target.value)} className="input">
-                        <option>Personal</option>
-                        <option>Study</option>
-                        <option>Health</option>
-                        <option>Career</option>
-                        <option>Finance</option>
-                      </select>
-                    </div>
-                  </div>
-                  <div>
-                    <label style={{ display: 'block', fontSize: 12, fontWeight: 500, color: 'var(--color-text-secondary)', marginBottom: 6 }}>Deadline (Optional)</label>
-                    <input type="date" value={deadline} onChange={(e) => setDeadline(e.target.value)} className="input" />
-                  </div>
-                </div>
-                <div className="modal-footer">
-                  <button type="button" onClick={() => setIsModalOpen(false)} className="btn btn-secondary">Cancel</button>
-                  <button type="submit" className="btn btn-primary">Save Goal</button>
-                </div>
-              </form>
-            </motion.div>
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        title={editingGoal ? 'Edit Goal' : 'Create New Goal'}
+        subtitle="Set clear targets and track measurable milestones."
+        maxWidth={460}
+        footer={
+          <>
+            <button type="button" onClick={() => setIsModalOpen(false)} className="btn btn-secondary">
+              Cancel
+            </button>
+            <button type="submit" form="goal-form" className="btn btn-primary">
+              {editingGoal ? 'Save Changes' : 'Create Goal'}
+            </button>
+          </>
+        }
+      >
+        <form id="goal-form" onSubmit={handleSave} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <div>
+            <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--color-text-secondary)', marginBottom: 6 }}>
+              Goal Title
+            </label>
+            <input
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              className="input"
+              placeholder="e.g. Master React & TS"
+              required
+            />
           </div>
-        )}
-      </AnimatePresence>
+          <div>
+            <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--color-text-secondary)', marginBottom: 6 }}>
+              Description
+            </label>
+            <textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              className="input"
+              placeholder="Describe your vision..."
+              rows={3}
+            />
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+            <div>
+              <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--color-text-secondary)', marginBottom: 6 }}>
+                Target Value
+              </label>
+              <input
+                type="number"
+                value={targetValue}
+                onChange={(e) => setTargetValue(Number(e.target.value))}
+                className="input"
+                required
+              />
+            </div>
+            <div>
+              <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--color-text-secondary)', marginBottom: 6 }}>
+                Current Value
+              </label>
+              <input
+                type="number"
+                value={currentValue}
+                onChange={(e) => setCurrentValue(Number(e.target.value))}
+                className="input"
+                required
+              />
+            </div>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+            <div>
+              <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--color-text-secondary)', marginBottom: 6 }}>
+                Unit
+              </label>
+              <input
+                type="text"
+                value={unit}
+                onChange={(e) => setUnit(e.target.value)}
+                className="input"
+                placeholder="%, hrs, pages..."
+              />
+            </div>
+            <div>
+              <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--color-text-secondary)', marginBottom: 6 }}>
+                Category
+              </label>
+              <select value={category} onChange={(e) => setCategory(e.target.value)} className="input">
+                <option>Personal</option>
+                <option>Study</option>
+                <option>Health</option>
+                <option>Career</option>
+                <option>Finance</option>
+              </select>
+            </div>
+          </div>
+          <div>
+            <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--color-text-secondary)', marginBottom: 6 }}>
+              Deadline (Optional)
+            </label>
+            <input type="date" value={deadline} onChange={(e) => setDeadline(e.target.value)} className="input" />
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 }

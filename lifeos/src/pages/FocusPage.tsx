@@ -113,18 +113,20 @@ export default function FocusPage() {
             transition={{ duration: 0.3 }}
             className="glass-card" 
             style={{ 
-              padding: '32px', 
-              maxWidth: 540, 
+              padding: '36px 32px', 
+              maxWidth: 520, 
               width: '100%', 
               display: 'flex', 
               flexDirection: 'column', 
               gap: 24,
-              boxShadow: 'var(--shadow-card-hover)',
-              background: 'linear-gradient(135deg, rgba(16, 16, 32, 0.6) 0%, rgba(8, 8, 18, 0.8) 100%)',
+              borderRadius: '16px',
+              border: '1px solid var(--color-border)',
+              background: 'var(--color-bg-card)',
+              boxShadow: 'var(--shadow-card)',
             }}
           >
             <div style={{ textAlign: 'center' }}>
-              <h2 style={{ fontSize: 22, fontWeight: 700, letterSpacing: '-0.02em', marginBottom: 6 }}>Enter Focus Mode</h2>
+              <h2 style={{ fontSize: 22, fontWeight: 700, letterSpacing: '-0.02em', marginBottom: 6, color: 'var(--color-text-primary)' }}>Enter Focus Mode</h2>
               <p style={{ fontSize: 13, color: 'var(--color-text-muted)' }}>Mute notifications and lock your focus on a single objective.</p>
             </div>
 
@@ -189,11 +191,10 @@ export default function FocusPage() {
                 padding: '12px',
                 fontWeight: 600,
                 fontSize: 14,
-                boxShadow: '0 8px 24px var(--color-accent-glow)',
                 marginTop: 8
               }}
             >
-              Start Session (+25 XP)
+              Start Focus Session
             </button>
           </motion.div>
         ) : (

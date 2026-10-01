@@ -12,7 +12,8 @@ import { mapTaskFromDB, mapTaskToDB } from '../services/dbMapper';
 import { v4 as uuid } from 'uuid';
 import { useGamificationStore } from './gamificationStore';
 import { useSettingsStore } from './settingsStore';
-import { fetchNotionTasks } from '../services/notionSync';
+import { fetchNotionTasks, pushTaskToNotion, pushTaskStatusToNotion } from '../services/notionSync';
+import { fetchMicrosoftTasks, syncTaskStatusToMicrosoft } from '../services/microsoftTodoSync';
 
 const COLLECTION = 'tasks';
 
@@ -27,8 +28,10 @@ interface TaskState {
   completeTask: (id: string) => Promise<void>;
   setFilter: (filter: Partial<TaskState['filter']>) => void;
   setViewMode: (mode: 'list' | 'kanban' | 'calendar') => void;
-  /** Pull the configured Notion tasks database in, upserting by Notion page id. */
-  syncFromNotion: () => Promise<{ imported: number; updated: number }>;
+  /** Pull & Push tasks to Notion database with safe two-way merge. */
+  syncFromNotion: () => Promise<{ imported: number; updated: number; exported: number }>;
+  /** Pull the configured Microsoft To Do list in, upserting by Microsoft task id. */
+  syncFromMicrosoftTodo: () => Promise<{ imported: number; updated: number }>;
 }
 
 export const useTaskStore = create<TaskState>((set, get) => ({
@@ -37,43 +40,64 @@ export const useTaskStore = create<TaskState>((set, get) => ({
   viewMode: 'list',
 
   loadTasks: async () => {
+    const localTasks = storage.getAll<Task>(COLLECTION);
     const { user, isGuest } = useAuthStore.getState();
+
     if (isSupabaseConfigured && !isGuest && user) {
       try {
         const { data, error } = await supabase!
           .from('tasks')
           .select('*')
           .eq('user_id', user.id);
+
         if (!error && data) {
-          set({ tasks: data.map(mapTaskFromDB) });
+          const remoteTasks = data.map(mapTaskFromDB);
+          const remoteIds = new Set(remoteTasks.map((t) => t.id));
+          const remoteTitles = new Set(remoteTasks.map((t) => t.title.toLowerCase().trim()));
+
+          // Protect local items: Any local task not yet in Supabase (e.g. created offline/guest)
+          // gets preserved and automatically backed up to Supabase!
+          const unsyncedLocalTasks = localTasks.filter(
+            (lt) => !remoteIds.has(lt.id) && !remoteTitles.has(lt.title.toLowerCase().trim())
+          );
+
+          for (const localTask of unsyncedLocalTasks) {
+            try {
+              await supabase!.from('tasks').insert(mapTaskToDB(localTask, user.id));
+            } catch (err) {
+              console.warn('Could not auto-backup local task to Supabase:', err);
+            }
+          }
+
+          const mergedTasks = [...remoteTasks, ...unsyncedLocalTasks];
+          storage.setAll(COLLECTION, mergedTasks);
+          set({ tasks: mergedTasks });
           return;
         }
       } catch (e) {
-        console.error('Error loading tasks from Supabase:', e);
+        console.error('Error loading tasks from Supabase, keeping local copy:', e);
       }
     }
-    const tasks = storage.getAll<Task>(COLLECTION);
-    set({ tasks });
+
+    set({ tasks: localTasks });
   },
 
   addTask: async (taskData) => {
     const { user, isGuest } = useAuthStore.getState();
     const task: Task = { ...taskData, id: uuid(), createdAt: new Date().toISOString() };
-    
+
+    // 1. Always save locally first (failsafe offline-first guarantee)
+    storage.create<Task>(COLLECTION, task);
+
+    // 2. Persist to cloud if online and logged in
     if (isSupabaseConfigured && !isGuest && user) {
       try {
-        const { error } = await supabase!
-          .from('tasks')
-          .insert(mapTaskToDB(task, user.id));
-        if (error) throw error;
+        await supabase!.from('tasks').insert(mapTaskToDB(task, user.id));
       } catch (e) {
-        console.error('Error saving task to Supabase:', e);
-        throw e;
+        console.error('Error saving task to Supabase (saved locally):', e);
       }
-    } else {
-      storage.create<Task>(COLLECTION, task);
     }
-    
+
     set((s) => ({ tasks: [...s.tasks, task] }));
     return task;
   },
@@ -103,12 +127,19 @@ export const useTaskStore = create<TaskState>((set, get) => ({
         if (error) throw error;
       } catch (e) {
         console.error('Error updating task in Supabase:', e);
-        throw e;
       }
-    } else {
-      storage.update<Task>(COLLECTION, id, updates);
     }
-    
+
+    // Always keep local storage in sync
+    storage.update<Task>(COLLECTION, id, updates);
+
+    const targetTask = get().tasks.find((t) => t.id === id);
+    if (updates.status !== undefined && targetTask?.notionId) {
+      pushTaskStatusToNotion(targetTask.notionId, updates.status).catch((e) =>
+        console.error('Failed to sync status update to Notion:', e)
+      );
+    }
+
     set((s) => ({
       tasks: s.tasks.map((t) => (t.id === id ? { ...t, ...updates } : t)),
     }));
@@ -126,11 +157,10 @@ export const useTaskStore = create<TaskState>((set, get) => ({
         if (error) throw error;
       } catch (e) {
         console.error('Error deleting task in Supabase:', e);
-        throw e;
       }
-    } else {
-      storage.remove<Task>(COLLECTION, id);
     }
+
+    storage.remove<Task>(COLLECTION, id);
     
     set((s) => ({ tasks: s.tasks.filter((t) => t.id !== id) }));
   },
@@ -180,6 +210,18 @@ export const useTaskStore = create<TaskState>((set, get) => ({
       }
     } else {
       storage.update<Task>(COLLECTION, id, updates);
+    }
+
+    if (targetTask?.todoId && targetTask?.todoListId) {
+      syncTaskStatusToMicrosoft(targetTask.todoListId, targetTask.todoId, TaskStatus.COMPLETED).catch((e) =>
+        console.error('Failed to sync completion to Microsoft To Do:', e)
+      );
+    }
+
+    if (targetTask?.notionId) {
+      pushTaskStatusToNotion(targetTask.notionId, TaskStatus.COMPLETED).catch((e) =>
+        console.error('Failed to sync completion to Notion:', e)
+      );
     }
     
     set((s) => {
@@ -238,11 +280,61 @@ export const useTaskStore = create<TaskState>((set, get) => ({
     const drafts = await fetchNotionTasks(notionTasksDatabaseId);
     let imported = 0;
     let updated = 0;
+    let exported = 0;
 
+    // 1. Pull & update from Notion
     for (const draft of drafts) {
-      const existing = get().tasks.find((t) => t.notionId === draft.notionId);
+      const existing = get().tasks.find(
+        (t) => t.notionId === draft.notionId || t.title.toLowerCase().trim() === draft.title.toLowerCase().trim()
+      );
       if (existing) {
         // Notion is the source of truth for synced rows; keep local-only fields.
+        await get().updateTask(existing.id, {
+          title: draft.title,
+          description: draft.description,
+          status: draft.status,
+          priority: draft.priority,
+          category: draft.category,
+          dueDate: draft.dueDate,
+          notionId: draft.notionId,
+        });
+        updated++;
+      } else {
+        await get().addTask(draft);
+        imported++;
+      }
+    }
+
+    // 2. Bidirectional push: local tasks not yet in Notion get pushed to Notion!
+    const currentTasks = get().tasks;
+    for (const localTask of currentTasks) {
+      if (!localTask.notionId) {
+        try {
+          const newNotionId = await pushTaskToNotion(notionTasksDatabaseId, localTask);
+          if (newNotionId) {
+            await get().updateTask(localTask.id, { notionId: newNotionId });
+            exported++;
+          }
+        } catch (err) {
+          console.warn(`Could not export task "${localTask.title}" to Notion:`, err);
+        }
+      }
+    }
+
+    return { imported, updated, exported };
+  },
+
+  syncFromMicrosoftTodo: async () => {
+    const { microsoftAccessToken, microsoftTodoListId } = useSettingsStore.getState();
+    if (!microsoftAccessToken) throw new Error('Add your Microsoft Access Token in Settings first');
+
+    const { tasks: drafts } = await fetchMicrosoftTasks(microsoftTodoListId);
+    let imported = 0;
+    let updated = 0;
+
+    for (const draft of drafts) {
+      const existing = get().tasks.find((t) => t.todoId === draft.todoId);
+      if (existing) {
         await get().updateTask(existing.id, {
           title: draft.title,
           description: draft.description,

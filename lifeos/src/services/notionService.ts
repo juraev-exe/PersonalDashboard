@@ -119,6 +119,23 @@ export interface NotionPage {
 }
 
 /**
+ * Create a new row (page) inside a Notion database.
+ */
+export const createNotionDatabasePage = async (
+  databaseId: string,
+  properties: Record<string, unknown>
+): Promise<NotionPage> => {
+  return notionFetch('/pages', {
+    method: 'POST',
+    headers: getHeaders(),
+    body: JSON.stringify({
+      parent: { database_id: databaseId },
+      properties,
+    }),
+  });
+};
+
+/**
  * Search across all Notion pages and databases
  */
 export const searchNotion = async (query: string) => {

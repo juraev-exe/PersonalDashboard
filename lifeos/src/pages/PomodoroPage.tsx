@@ -210,10 +210,7 @@ export default function PomodoroPage() {
               <label style={{ display: 'block', fontSize: 12, fontWeight: 500, color: 'var(--color-text-secondary)', marginBottom: 6 }}>
                 Session Goal
               </label>
-              <div style={{ position: 'relative' }}>
-                <span className="badge badge-accent" style={{ position: 'absolute', right: 8, top: 11, fontSize: 10 }}>
-                  +25 XP
-                </span>
+              <div>
                 <div className="input" style={{ background: 'var(--color-bg-secondary)', border: '1px solid var(--color-border)', padding: '10px 14px', fontSize: 14 }}>
                   Complete Pomodoro
                 </div>
@@ -286,7 +283,7 @@ export default function PomodoroPage() {
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flexGrow: 1, color: 'var(--color-text-muted)', textAlign: 'center', padding: '20px 0' }}>
                 <Clock size={32} style={{ marginBottom: 8, opacity: 0.4 }} />
                 <p style={{ fontSize: 13 }}>No focus sessions completed today yet.</p>
-                <p style={{ fontSize: 11, marginTop: 4 }}>Start the timer to earn XP!</p>
+                <p style={{ fontSize: 11, marginTop: 4 }}>Completed sessions will appear here.</p>
               </div>
             ) : (
               [...todaySessions].reverse().map((session) => (
@@ -310,9 +307,6 @@ export default function PomodoroPage() {
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <span style={{ fontSize: 11, color: 'var(--color-text-muted)' }}>
                       Focus: {session.duration} mins
-                    </span>
-                    <span className="badge badge-emerald" style={{ fontSize: 9 }}>
-                      +25 XP
                     </span>
                   </div>
                   {session.notes && (
