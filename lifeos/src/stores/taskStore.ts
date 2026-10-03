@@ -80,14 +80,15 @@ export const useTaskStore = create<TaskState>((set, get) => ({
     // 1. Always save locally first (failsafe offline-first guarantee)
     storage.create<Task>(localKey, task);
 
-    // 2. Persist to cloud if online and logged in — check for errors (Issue 6)
+    // 2. Persist to cloud if online and logged in — log error if failed, but preserve local task
     if (isSupabaseConfigured && !isGuest && user) {
-      const { error } = await supabase!.from('tasks').insert(mapTaskToDB(task, user.id));
-      if (error) {
-        console.error('Error saving task to Supabase (saved locally):', error.message);
-        // Revert local save — the task only exists locally and the caller should know
-        storage.remove<Task>(localKey, task.id);
-        throw new Error(`Cloud save failed: ${error.message}`);
+      try {
+        const { error } = await supabase!.from('tasks').insert(mapTaskToDB(task, user.id));
+        if (error) {
+          console.warn('Could not persist task to Supabase (preserved in local storage):', error.message);
+        }
+      } catch (e: any) {
+        console.warn('Network error persisting task to Supabase (preserved in local storage):', e?.message || e);
       }
     }
 
@@ -166,9 +167,22 @@ export const useTaskStore = create<TaskState>((set, get) => ({
     const { user, isGuest } = useAuthStore.getState();
     const localKey = user && !isGuest ? `${COLLECTION}_${user.id}` : COLLECTION;
     const updates = { status: TaskStatus.COMPLETED, completedAt: new Date().toISOString() };
-    
-    // Auto-reschedule recurring task
     const targetTask = get().tasks.find((t) => t.id === id);
+
+    if (isSupabaseConfigured && !isGuest && user) {
+      const { error } = await supabase!
+        .from('tasks')
+        .update({ status: updates.status, completed_at: updates.completedAt })
+        .eq('id', id);
+      if (error) {
+        console.error('Error completing task in Supabase:', error.message);
+        throw new Error(`Cloud complete failed: ${error.message}`);
+      }
+    }
+
+    storage.update<Task>(localKey, id, updates);
+
+    // Auto-reschedule recurring task ONLY AFTER completion succeeds (Issue 2)
     if (targetTask?.recurring && targetTask.recurringPattern) {
       const currentDate = targetTask.dueDate ? new Date(targetTask.dueDate) : new Date();
       const nextDate = new Date(currentDate);
@@ -194,19 +208,6 @@ export const useTaskStore = create<TaskState>((set, get) => ({
         });
       }, 300);
     }
-
-    if (isSupabaseConfigured && !isGuest && user) {
-      const { error } = await supabase!
-        .from('tasks')
-        .update({ status: updates.status, completed_at: updates.completedAt })
-        .eq('id', id);
-      if (error) {
-        console.error('Error completing task in Supabase:', error.message);
-        throw new Error(`Cloud complete failed: ${error.message}`);
-      }
-    }
-
-    storage.update<Task>(localKey, id, updates);
 
     if (targetTask?.todoId && targetTask?.todoListId) {
       syncTaskStatusToMicrosoft(targetTask.todoListId, targetTask.todoId, TaskStatus.COMPLETED).catch((e) =>

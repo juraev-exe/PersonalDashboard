@@ -446,9 +446,11 @@ export default function DashboardPage() {
 
   // Next Calendar Event
   const nextEvent = useMemo(() => {
+    const now = new Date();
+    const currentTime = format(now, 'HH:mm');
     const combined = [...calendarEvents, ...googleEvents];
     const sorted = combined
-      .filter((e) => e.date >= today)
+      .filter((e) => e.date > today || (e.date === today && (!e.startTime || e.startTime >= currentTime)))
       .sort((a, b) => (a.date + (a.startTime || '')).localeCompare(b.date + (b.startTime || '')));
     return sorted[0] || null;
   }, [calendarEvents, googleEvents, today]);

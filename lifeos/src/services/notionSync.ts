@@ -250,8 +250,10 @@ export async function pushTaskToNotion(
         statusPropType = statusEntry[1].type;
       }
 
-      // Find date property
-      const dateEntry = props.find(([name, p]) => p.type === 'date' && (DUE_HINT.test(name) || true));
+      // Find date property: prioritize matching DUE_HINT, fallback to any date property (Issue 3)
+      const dateEntry =
+        props.find(([name, p]) => p.type === 'date' && DUE_HINT.test(name)) ||
+        props.find(([, p]) => p.type === 'date');
       if (dateEntry) datePropName = dateEntry[0];
     }
   } catch (e) {
