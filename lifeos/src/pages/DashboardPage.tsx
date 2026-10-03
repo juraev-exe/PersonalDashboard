@@ -241,21 +241,35 @@ export default function DashboardPage() {
   const spotifyPlaylistUrl = useSettingsStore((s) => s.spotifyPlaylistUrl);
 
   const [googleEvents, setGoogleEvents] = useState<CalendarEvent[]>([]);
+  const [nowTime, setNowTime] = useState(() => Date.now());
+
+  useEffect(() => {
+    const timer = setInterval(() => setNowTime(Date.now()), 60000);
+    return () => clearInterval(timer);
+  }, []);
 
   useEffect(() => {
     if (!googleCalendarToken) return;
     getUpcomingEvents(new Date().toISOString(), 10)
       .then((items) => {
         const mapped: CalendarEvent[] = (items || []).map((item: any) => {
-          const startStr = item.start?.dateTime || item.start?.date || '';
-          const date = startStr.includes('T') ? startStr.split('T')[0] : startStr;
-          const time = startStr.includes('T') ? startStr.split('T')[1].substring(0, 5) : undefined;
+          let eventDate = today;
+          let eventTime: string | undefined = undefined;
+
+          if (item.start?.dateTime) {
+            const d = new Date(item.start.dateTime);
+            eventDate = format(d, 'yyyy-MM-dd');
+            eventTime = format(d, 'HH:mm');
+          } else if (item.start?.date) {
+            eventDate = item.start.date;
+          }
+
           return {
             id: `google-${item.id}`,
             title: item.summary || 'Untitled Event',
             description: item.description || '',
-            date: date || today,
-            startTime: time,
+            date: eventDate,
+            startTime: eventTime,
             type: 'event',
             color: '#4285F4',
           };
@@ -446,14 +460,14 @@ export default function DashboardPage() {
 
   // Next Calendar Event
   const nextEvent = useMemo(() => {
-    const now = new Date();
+    const now = new Date(nowTime);
     const currentTime = format(now, 'HH:mm');
     const combined = [...calendarEvents, ...googleEvents];
     const sorted = combined
       .filter((e) => e.date > today || (e.date === today && (!e.startTime || e.startTime >= currentTime)))
       .sort((a, b) => (a.date + (a.startTime || '')).localeCompare(b.date + (b.startTime || '')));
     return sorted[0] || null;
-  }, [calendarEvents, googleEvents, today]);
+  }, [calendarEvents, googleEvents, today, nowTime]);
 
   // 7-day performance history
   const weekHistory = useMemo(() => {

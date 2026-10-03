@@ -180,7 +180,11 @@ export const useTaskStore = create<TaskState>((set, get) => ({
       }
     }
 
-    storage.update<Task>(localKey, id, updates);
+    try {
+      storage.update<Task>(localKey, id, updates);
+    } catch (err) {
+      console.warn('Could not update local storage on completion:', err);
+    }
 
     // Auto-reschedule recurring task ONLY AFTER completion succeeds (Issue 2)
     if (targetTask?.recurring && targetTask.recurringPattern) {
