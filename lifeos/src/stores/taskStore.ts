@@ -16,6 +16,8 @@ import { fetchNotionTasks, pushTaskToNotion, pushTaskStatusToNotion } from '../s
 import { fetchMicrosoftTasks, syncTaskStatusToMicrosoft } from '../services/microsoftTodoSync';
 
 const COLLECTION = 'tasks';
+let isSyncingNotion = false;
+let isSyncingMicrosoft = false;
 
 interface TaskState {
   tasks: Task[];
@@ -40,8 +42,10 @@ export const useTaskStore = create<TaskState>((set, get) => ({
   viewMode: 'list',
 
   loadTasks: async () => {
-    const localTasks = storage.getAll<Task>(COLLECTION);
     const { user, isGuest } = useAuthStore.getState();
+    // Partition local cache by user to prevent cross-account data leakage (Issue 3)
+    const localKey = user && !isGuest ? `${COLLECTION}_${user.id}` : COLLECTION;
+    const localTasks = storage.getAll<Task>(localKey);
 
     if (isSupabaseConfigured && !isGuest && user) {
       try {
@@ -52,26 +56,12 @@ export const useTaskStore = create<TaskState>((set, get) => ({
 
         if (!error && data) {
           const remoteTasks = data.map(mapTaskFromDB);
-          const remoteIds = new Set(remoteTasks.map((t) => t.id));
-          const remoteTitles = new Set(remoteTasks.map((t) => t.title.toLowerCase().trim()));
-
-          // Protect local items: Any local task not yet in Supabase (e.g. created offline/guest)
-          // gets preserved and automatically backed up to Supabase!
-          const unsyncedLocalTasks = localTasks.filter(
-            (lt) => !remoteIds.has(lt.id) && !remoteTitles.has(lt.title.toLowerCase().trim())
-          );
-
-          for (const localTask of unsyncedLocalTasks) {
-            try {
-              await supabase!.from('tasks').insert(mapTaskToDB(localTask, user.id));
-            } catch (err) {
-              console.warn('Could not auto-backup local task to Supabase:', err);
-            }
-          }
-
-          const mergedTasks = [...remoteTasks, ...unsyncedLocalTasks];
-          storage.setAll(COLLECTION, mergedTasks);
-          set({ tasks: mergedTasks });
+          // Cloud is the source of truth — no local-to-cloud backup on load.
+          // Local-only tasks are already saved locally; they are NOT pushed to
+          // cloud automatically to avoid resurrecting deleted items (Issue 5)
+          // and to avoid cross-account uploads (Issue 3).
+          storage.setAll(localKey, remoteTasks);
+          set({ tasks: remoteTasks });
           return;
         }
       } catch (e) {
@@ -85,16 +75,19 @@ export const useTaskStore = create<TaskState>((set, get) => ({
   addTask: async (taskData) => {
     const { user, isGuest } = useAuthStore.getState();
     const task: Task = { ...taskData, id: uuid(), createdAt: new Date().toISOString() };
+    const localKey = user && !isGuest ? `${COLLECTION}_${user.id}` : COLLECTION;
 
     // 1. Always save locally first (failsafe offline-first guarantee)
-    storage.create<Task>(COLLECTION, task);
+    storage.create<Task>(localKey, task);
 
-    // 2. Persist to cloud if online and logged in
+    // 2. Persist to cloud if online and logged in — check for errors (Issue 6)
     if (isSupabaseConfigured && !isGuest && user) {
-      try {
-        await supabase!.from('tasks').insert(mapTaskToDB(task, user.id));
-      } catch (e) {
-        console.error('Error saving task to Supabase (saved locally):', e);
+      const { error } = await supabase!.from('tasks').insert(mapTaskToDB(task, user.id));
+      if (error) {
+        console.error('Error saving task to Supabase (saved locally):', error.message);
+        // Revert local save — the task only exists locally and the caller should know
+        storage.remove<Task>(localKey, task.id);
+        throw new Error(`Cloud save failed: ${error.message}`);
       }
     }
 
@@ -104,34 +97,36 @@ export const useTaskStore = create<TaskState>((set, get) => ({
 
   updateTask: async (id, updates) => {
     const { user, isGuest } = useAuthStore.getState();
+    const localKey = user && !isGuest ? `${COLLECTION}_${user.id}` : COLLECTION;
     
+    // Issue 7: attempt cloud update FIRST, then apply locally only on success
     if (isSupabaseConfigured && !isGuest && user) {
-      try {
-        // Map updates to db format
-        const dbUpdates: any = {};
-        if (updates.title !== undefined) dbUpdates.title = updates.title;
-        if (updates.description !== undefined) dbUpdates.description = updates.description;
-        if (updates.status !== undefined) dbUpdates.status = updates.status;
-        if (updates.priority !== undefined) dbUpdates.priority = updates.priority;
-        if (updates.category !== undefined) dbUpdates.category = updates.category;
-        if (updates.dueDate !== undefined) dbUpdates.due_date = updates.dueDate || null;
-        if (updates.recurring !== undefined) dbUpdates.recurring = updates.recurring;
-        if (updates.recurringPattern !== undefined) dbUpdates.recurring_pattern = updates.recurringPattern || null;
-        if (updates.completedAt !== undefined) dbUpdates.completed_at = updates.completedAt || null;
-        if (updates.notionId !== undefined) dbUpdates.notion_id = updates.notionId || null;
+      const dbUpdates: any = {};
+      if (updates.title !== undefined) dbUpdates.title = updates.title;
+      if (updates.description !== undefined) dbUpdates.description = updates.description;
+      if (updates.status !== undefined) dbUpdates.status = updates.status;
+      if (updates.priority !== undefined) dbUpdates.priority = updates.priority;
+      if (updates.category !== undefined) dbUpdates.category = updates.category;
+      if (updates.dueDate !== undefined) dbUpdates.due_date = updates.dueDate || null;
+      if (updates.recurring !== undefined) dbUpdates.recurring = updates.recurring;
+      if (updates.recurringPattern !== undefined) dbUpdates.recurring_pattern = updates.recurringPattern || null;
+      if (updates.completedAt !== undefined) dbUpdates.completed_at = updates.completedAt || null;
+      if (updates.notionId !== undefined) dbUpdates.notion_id = updates.notionId || null;
+      if (updates.todoId !== undefined) dbUpdates.todo_id = updates.todoId || null;
+      if (updates.todoListId !== undefined) dbUpdates.todo_list_id = updates.todoListId || null;
 
-        const { error } = await supabase!
-          .from('tasks')
-          .update(dbUpdates)
-          .eq('id', id);
-        if (error) throw error;
-      } catch (e) {
-        console.error('Error updating task in Supabase:', e);
+      const { error } = await supabase!
+        .from('tasks')
+        .update(dbUpdates)
+        .eq('id', id);
+      if (error) {
+        console.error('Error updating task in Supabase:', error.message);
+        throw new Error(`Cloud update failed: ${error.message}`);
       }
     }
 
-    // Always keep local storage in sync
-    storage.update<Task>(COLLECTION, id, updates);
+    // Cloud succeeded (or offline) — now apply locally
+    storage.update<Task>(localKey, id, updates);
 
     const targetTask = get().tasks.find((t) => t.id === id);
     if (updates.status !== undefined && targetTask?.notionId) {
@@ -147,26 +142,29 @@ export const useTaskStore = create<TaskState>((set, get) => ({
 
   deleteTask: async (id) => {
     const { user, isGuest } = useAuthStore.getState();
+    const localKey = user && !isGuest ? `${COLLECTION}_${user.id}` : COLLECTION;
     
+    // Issue 7: attempt cloud delete FIRST
     if (isSupabaseConfigured && !isGuest && user) {
-      try {
-        const { error } = await supabase!
-          .from('tasks')
-          .delete()
-          .eq('id', id);
-        if (error) throw error;
-      } catch (e) {
-        console.error('Error deleting task in Supabase:', e);
+      const { error } = await supabase!
+        .from('tasks')
+        .delete()
+        .eq('id', id);
+      if (error) {
+        console.error('Error deleting task in Supabase:', error.message);
+        throw new Error(`Cloud delete failed: ${error.message}`);
       }
     }
 
-    storage.remove<Task>(COLLECTION, id);
+    // Cloud succeeded — now remove locally
+    storage.remove<Task>(localKey, id);
     
     set((s) => ({ tasks: s.tasks.filter((t) => t.id !== id) }));
   },
 
   completeTask: async (id) => {
     const { user, isGuest } = useAuthStore.getState();
+    const localKey = user && !isGuest ? `${COLLECTION}_${user.id}` : COLLECTION;
     const updates = { status: TaskStatus.COMPLETED, completedAt: new Date().toISOString() };
     
     // Auto-reschedule recurring task
@@ -198,19 +196,17 @@ export const useTaskStore = create<TaskState>((set, get) => ({
     }
 
     if (isSupabaseConfigured && !isGuest && user) {
-      try {
-        const { error } = await supabase!
-          .from('tasks')
-          .update({ status: updates.status, completed_at: updates.completedAt })
-          .eq('id', id);
-        if (error) throw error;
-      } catch (e) {
-        console.error('Error completing task in Supabase:', e);
-        throw e;
+      const { error } = await supabase!
+        .from('tasks')
+        .update({ status: updates.status, completed_at: updates.completedAt })
+        .eq('id', id);
+      if (error) {
+        console.error('Error completing task in Supabase:', error.message);
+        throw new Error(`Cloud complete failed: ${error.message}`);
       }
-    } else {
-      storage.update<Task>(COLLECTION, id, updates);
     }
+
+    storage.update<Task>(localKey, id, updates);
 
     if (targetTask?.todoId && targetTask?.todoListId) {
       syncTaskStatusToMicrosoft(targetTask.todoListId, targetTask.todoId, TaskStatus.COMPLETED).catch((e) =>
@@ -273,83 +269,101 @@ export const useTaskStore = create<TaskState>((set, get) => ({
   setViewMode: (viewMode) => set({ viewMode }),
 
   syncFromNotion: async () => {
-    const { notionApiKey, notionTasksDatabaseId } = useSettingsStore.getState();
-    if (!notionApiKey) throw new Error('Add your Notion API key in Settings first');
-    if (!notionTasksDatabaseId) throw new Error('Add your Notion tasks database ID in Settings first');
-
-    const drafts = await fetchNotionTasks(notionTasksDatabaseId);
-    let imported = 0;
-    let updated = 0;
-    let exported = 0;
-
-    // 1. Pull & update from Notion
-    for (const draft of drafts) {
-      const existing = get().tasks.find(
-        (t) => t.notionId === draft.notionId || t.title.toLowerCase().trim() === draft.title.toLowerCase().trim()
-      );
-      if (existing) {
-        // Notion is the source of truth for synced rows; keep local-only fields.
-        await get().updateTask(existing.id, {
-          title: draft.title,
-          description: draft.description,
-          status: draft.status,
-          priority: draft.priority,
-          category: draft.category,
-          dueDate: draft.dueDate,
-          notionId: draft.notionId,
-        });
-        updated++;
-      } else {
-        await get().addTask(draft);
-        imported++;
-      }
+    if (isSyncingNotion) {
+      console.warn('Notion sync is already in progress, skipping concurrent run');
+      return { imported: 0, updated: 0, exported: 0 };
     }
+    isSyncingNotion = true;
 
-    // 2. Bidirectional push: local tasks not yet in Notion get pushed to Notion!
-    const currentTasks = get().tasks;
-    for (const localTask of currentTasks) {
-      if (!localTask.notionId) {
-        try {
-          const newNotionId = await pushTaskToNotion(notionTasksDatabaseId, localTask);
-          if (newNotionId) {
-            await get().updateTask(localTask.id, { notionId: newNotionId });
-            exported++;
-          }
-        } catch (err) {
-          console.warn(`Could not export task "${localTask.title}" to Notion:`, err);
+    try {
+      const { notionApiKey, notionTasksDatabaseId } = useSettingsStore.getState();
+      if (!notionApiKey) throw new Error('Add your Notion API key in Settings first');
+      if (!notionTasksDatabaseId) throw new Error('Add your Notion tasks database ID in Settings first');
+
+      const drafts = await fetchNotionTasks(notionTasksDatabaseId);
+      let imported = 0;
+      let updated = 0;
+      let exported = 0;
+
+      // 1. Pull & update from Notion (Match strictly by notionId to avoid clobbering duplicate-titled local tasks - Issue 12)
+      for (const draft of drafts) {
+        const existing = get().tasks.find((t) => t.notionId === draft.notionId);
+        if (existing) {
+          // Notion is the source of truth for synced rows; keep local-only fields.
+          await get().updateTask(existing.id, {
+            title: draft.title,
+            description: draft.description,
+            status: draft.status,
+            priority: draft.priority,
+            category: draft.category,
+            dueDate: draft.dueDate,
+            notionId: draft.notionId,
+          });
+          updated++;
+        } else {
+          await get().addTask(draft);
+          imported++;
         }
       }
-    }
 
-    return { imported, updated, exported };
+      // 2. Bidirectional push: local tasks not yet in Notion get pushed to Notion!
+      const currentTasks = get().tasks;
+      for (const localTask of currentTasks) {
+        if (!localTask.notionId) {
+          try {
+            const newNotionId = await pushTaskToNotion(notionTasksDatabaseId, localTask);
+            if (newNotionId) {
+              await get().updateTask(localTask.id, { notionId: newNotionId });
+              exported++;
+            }
+          } catch (err) {
+            console.warn(`Could not export task "${localTask.title}" to Notion:`, err);
+          }
+        }
+      }
+
+      return { imported, updated, exported };
+    } finally {
+      isSyncingNotion = false;
+    }
   },
 
   syncFromMicrosoftTodo: async () => {
-    const { microsoftAccessToken, microsoftTodoListId } = useSettingsStore.getState();
-    if (!microsoftAccessToken) throw new Error('Add your Microsoft Access Token in Settings first');
-
-    const { tasks: drafts } = await fetchMicrosoftTasks(microsoftTodoListId);
-    let imported = 0;
-    let updated = 0;
-
-    for (const draft of drafts) {
-      const existing = get().tasks.find((t) => t.todoId === draft.todoId);
-      if (existing) {
-        await get().updateTask(existing.id, {
-          title: draft.title,
-          description: draft.description,
-          status: draft.status,
-          priority: draft.priority,
-          category: draft.category,
-          dueDate: draft.dueDate,
-        });
-        updated++;
-      } else {
-        await get().addTask(draft);
-        imported++;
-      }
+    if (isSyncingMicrosoft) {
+      console.warn('Microsoft To Do sync is already in progress, skipping concurrent run');
+      return { imported: 0, updated: 0 };
     }
+    isSyncingMicrosoft = true;
 
-    return { imported, updated };
+    try {
+      const { microsoftAccessToken, microsoftTodoListId } = useSettingsStore.getState();
+      if (!microsoftAccessToken) throw new Error('Add your Microsoft Access Token in Settings first');
+
+      const { tasks: drafts } = await fetchMicrosoftTasks(microsoftTodoListId);
+      let imported = 0;
+      let updated = 0;
+
+      for (const draft of drafts) {
+        const existing = get().tasks.find((t) => t.todoId === draft.todoId);
+        if (existing) {
+          await get().updateTask(existing.id, {
+            title: draft.title,
+            description: draft.description,
+            status: draft.status,
+            priority: draft.priority,
+            category: draft.category,
+            dueDate: draft.dueDate,
+          });
+          updated++;
+        } else {
+          await get().addTask(draft);
+          imported++;
+        }
+      }
+
+      return { imported, updated };
+    } finally {
+      isSyncingMicrosoft = false;
+    }
   },
 }));

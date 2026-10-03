@@ -42,7 +42,8 @@ import { useHabitStore } from '../stores/habitStore';
 import { useProjectStore } from '../stores/projectStore';
 import { useCalendarStore } from '../stores/calendarStore';
 import { useSettingsStore } from '../stores/settingsStore';
-import { TaskStatus, TaskPriority, ProjectStatus, TaskCategory } from '../types';
+import { TaskStatus, TaskPriority, ProjectStatus, TaskCategory, type CalendarEvent } from '../types';
+import { getUpcomingEvents } from '../services/googleCalendarService';
 import { getRandomQuote } from '../data/quotes';
 
 /* ------------------------------------------------------------------ *
@@ -233,10 +234,36 @@ export default function DashboardPage() {
 
   const notionApiKey = useSettingsStore((s) => s.notionApiKey);
   const microsoftAccessToken = useSettingsStore((s) => s.microsoftAccessToken);
+  const googleCalendarToken = useSettingsStore((s) => s.googleCalendarToken);
   const openIntegrationsModal = useSettingsStore((s) => s.openIntegrationsModal);
   const syncFromNotion = useTaskStore((s) => s.syncFromNotion);
   const syncFromMicrosoftTodo = useTaskStore((s) => s.syncFromMicrosoftTodo);
   const spotifyPlaylistUrl = useSettingsStore((s) => s.spotifyPlaylistUrl);
+
+  const [googleEvents, setGoogleEvents] = useState<CalendarEvent[]>([]);
+
+  useEffect(() => {
+    if (!googleCalendarToken) return;
+    getUpcomingEvents(new Date().toISOString(), 10)
+      .then((items) => {
+        const mapped: CalendarEvent[] = (items || []).map((item: any) => {
+          const startStr = item.start?.dateTime || item.start?.date || '';
+          const date = startStr.includes('T') ? startStr.split('T')[0] : startStr;
+          const time = startStr.includes('T') ? startStr.split('T')[1].substring(0, 5) : undefined;
+          return {
+            id: `google-${item.id}`,
+            title: item.summary || 'Untitled Event',
+            description: item.description || '',
+            date: date || today,
+            startTime: time,
+            type: 'event',
+            color: '#4285F4',
+          };
+        });
+        setGoogleEvents(mapped);
+      })
+      .catch((err) => console.warn('Could not load Google Calendar events for dashboard:', err));
+  }, [googleCalendarToken, today]);
 
   // Layout State
   const [editable, setEditable] = useState(false);
@@ -283,23 +310,28 @@ export default function DashboardPage() {
     localStorage.setItem(SCRATCHPAD_KEY, text);
   };
 
-  const handleConvertToTask = () => {
+  const handleConvertToTask = async () => {
     const trimmed = scratchpadText.trim();
     if (!trimmed) return;
     const firstLine = trimmed.split('\n')[0].substring(0, 80);
-    addTask({
-      title: firstLine,
-      description: trimmed,
-      priority: TaskPriority.MEDIUM,
-      category: TaskCategory.PERSONAL,
-      status: TaskStatus.TODO,
-      recurring: false,
-      dueDate: today,
-    });
-    setScratchpadText('');
-    localStorage.removeItem(SCRATCHPAD_KEY);
-    setScratchpadFeedback('Converted to task in Inbox');
-    setTimeout(() => setScratchpadFeedback(null), 3000);
+    try {
+      await addTask({
+        title: firstLine,
+        description: trimmed,
+        priority: TaskPriority.MEDIUM,
+        category: TaskCategory.PERSONAL,
+        status: TaskStatus.TODO,
+        recurring: false,
+        dueDate: today,
+      });
+      setScratchpadText('');
+      localStorage.removeItem(SCRATCHPAD_KEY);
+      setScratchpadFeedback('Converted to task in Inbox');
+      setTimeout(() => setScratchpadFeedback(null), 3000);
+    } catch (err: any) {
+      setScratchpadFeedback(err?.message || 'Failed to create task');
+      setTimeout(() => setScratchpadFeedback(null), 3000);
+    }
   };
 
   // Ambient Audio State
@@ -414,12 +446,12 @@ export default function DashboardPage() {
 
   // Next Calendar Event
   const nextEvent = useMemo(() => {
-    const now = new Date();
-    const sorted = [...calendarEvents]
+    const combined = [...calendarEvents, ...googleEvents];
+    const sorted = combined
       .filter((e) => e.date >= today)
       .sort((a, b) => (a.date + (a.startTime || '')).localeCompare(b.date + (b.startTime || '')));
     return sorted[0] || null;
-  }, [calendarEvents, today]);
+  }, [calendarEvents, googleEvents, today]);
 
   // 7-day performance history
   const weekHistory = useMemo(() => {

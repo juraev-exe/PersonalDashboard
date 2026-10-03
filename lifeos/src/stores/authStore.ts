@@ -22,6 +22,21 @@ interface AuthState {
 }
 
 const GUEST_KEY = 'auth_is_guest';
+const LEGACY_GUEST_KEY = 'isGuest';
+
+/** Read the guest flag, migrating from the legacy key name if necessary. */
+function readGuestFlag(): boolean {
+  const current = storage.getValue<boolean | null>(GUEST_KEY, null);
+  if (current !== null) return current;
+  // Migrate from the legacy key used before this rename.
+  const legacy = storage.getValue<boolean | null>(LEGACY_GUEST_KEY, null);
+  if (legacy !== null) {
+    storage.setValue(GUEST_KEY, legacy);
+    return legacy;
+  }
+  // First visit on a Supabase-configured instance → show login, not guest.
+  return !isSupabaseConfigured;
+}
 
 const defaultGuestUser: User = {
   id: 'guest',
@@ -33,19 +48,19 @@ const defaultGuestUser: User = {
   createdAt: new Date().toISOString(),
 };
 
-const initialIsGuest = !isSupabaseConfigured ? storage.getValue<boolean>(GUEST_KEY, true) : false;
+const initialIsGuest = readGuestFlag();
 
 export const useAuthStore = create<AuthState>((set, get) => ({
   user: initialIsGuest ? defaultGuestUser : null,
   session: null,
   isGuest: initialIsGuest,
-  loading: false,
-  initialized: true,
+  loading: isSupabaseConfigured && !initialIsGuest,
+  initialized: !isSupabaseConfigured || initialIsGuest,
 
   initializeAuth: async () => {
     if (!isSupabaseConfigured) {
       // Offline mode fallback
-      const isGuest = storage.getValue<boolean>(GUEST_KEY, true);
+      const isGuest = readGuestFlag();
       if (isGuest) {
         set({ user: defaultGuestUser, session: null, isGuest: true, loading: false, initialized: true });
       } else {
@@ -130,7 +145,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           }
         } else {
           // No active Supabase session — check if guest mode is enabled
-          const isGuest = storage.getValue<boolean>(GUEST_KEY, true);
+          const isGuest = readGuestFlag();
           if (isGuest) {
             set({ user: defaultGuestUser, session: null, isGuest: true, loading: false, initialized: true });
           } else {
@@ -193,7 +208,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       }
 
       // No session, check if we have guest flag
-      const isGuest = storage.getValue<boolean>(GUEST_KEY, true);
+      const isGuest = readGuestFlag();
       if (isGuest) {
         set({ user: defaultGuestUser, session: null, isGuest: true, loading: false, initialized: true });
       } else {

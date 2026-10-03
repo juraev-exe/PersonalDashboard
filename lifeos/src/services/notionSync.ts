@@ -217,30 +217,60 @@ export async function pushTaskStatusToNotion(
 }
 
 /**
- * Create a new task in the Notion database.
+ * Create a new task in the Notion database using dynamic property discovery.
  */
 export async function pushTaskToNotion(
   databaseId: string,
   task: Pick<Task, 'title' | 'status' | 'priority' | 'dueDate'>
 ): Promise<string> {
-  const statusName =
-    task.status === TaskStatus.COMPLETED
-      ? 'Done'
-      : task.status === TaskStatus.IN_PROGRESS
-      ? 'In progress'
-      : 'Not started';
+  let titlePropName = 'Task name';
+  let statusPropName = 'Status';
+  let statusPropType = 'status';
+  let datePropName: string | undefined = 'Due date';
+
+  try {
+    const { getNotionDatabase } = await import('./notionService');
+    const db = await getNotionDatabase(databaseId);
+    if (db && db.properties) {
+      const props = Object.entries(db.properties) as [string, any][];
+      
+      // Find title property
+      const titleEntry = props.find(([, p]) => p.type === 'title');
+      if (titleEntry) titlePropName = titleEntry[0];
+
+      // Find status/select/checkbox property
+      const statusEntry = props.find(
+        ([name, p]) =>
+          p.type === 'status' ||
+          (p.type === 'checkbox' && STATUS_HINT.test(name)) ||
+          (p.type === 'select' && STATUS_HINT.test(name))
+      );
+      if (statusEntry) {
+        statusPropName = statusEntry[0];
+        statusPropType = statusEntry[1].type;
+      }
+
+      // Find date property
+      const dateEntry = props.find(([name, p]) => p.type === 'date' && (DUE_HINT.test(name) || true));
+      if (dateEntry) datePropName = dateEntry[0];
+    }
+  } catch (e) {
+    console.warn('Could not inspect database schema, falling back to defaults:', e);
+  }
 
   const properties: Record<string, unknown> = {
-    'Task name': {
+    [titlePropName]: {
       title: [{ text: { content: task.title } }],
-    },
-    'Status': {
-      status: { name: statusName },
     },
   };
 
-  if (task.dueDate) {
-    properties['Due date'] = {
+  const statusValue = statusToNotionValue(statusPropType, task.status);
+  if (statusValue) {
+    properties[statusPropName] = statusValue;
+  }
+
+  if (task.dueDate && datePropName) {
+    properties[datePropName] = {
       date: { start: task.dueDate },
     };
   }

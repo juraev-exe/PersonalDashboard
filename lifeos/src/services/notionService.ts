@@ -96,6 +96,10 @@ export const queryNotionDatabase = async (
   return results;
 };
 
+/** Fetch database schema and metadata. */
+export const getNotionDatabase = async (databaseId: string): Promise<any> =>
+  notionFetch(`/databases/${databaseId}`, { method: 'GET', headers: getHeaders() });
+
 /** Fetch a single Notion page (used to discover its property schema before updating). */
 export const getNotionPage = async (pageId: string): Promise<NotionPage> =>
   notionFetch(`/pages/${pageId}`, { method: 'GET', headers: getHeaders() });

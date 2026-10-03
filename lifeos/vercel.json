@@ -3,6 +3,10 @@
     {
       "source": "/api/notion/:path*",
       "destination": "/api/notion"
+    },
+    {
+      "source": "/api/microsoft/:path*",
+      "destination": "/api/microsoft"
     }
   ]
 }

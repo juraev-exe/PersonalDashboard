@@ -31,6 +31,8 @@ export function mapTaskFromDB(row: any): Task {
     createdAt: row.created_at,
     completedAt: row.completed_at || undefined,
     notionId: row.notion_id || undefined,
+    todoId: row.todo_id || undefined,
+    todoListId: row.todo_list_id || undefined,
   };
 }
 
@@ -49,6 +51,8 @@ export function mapTaskToDB(task: Task, userId: string): any {
     created_at: task.createdAt,
     completed_at: task.completedAt || null,
     notion_id: task.notionId || null,
+    todo_id: task.todoId || null,
+    todo_list_id: task.todoListId || null,
   };
 }
 

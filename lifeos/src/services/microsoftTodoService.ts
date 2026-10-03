@@ -50,39 +50,71 @@ const getHeaders = () => {
 };
 
 /**
- * Fetch all task lists from Microsoft To Do
+ * Fetch all task lists from Microsoft To Do with full pagination support
  */
 export const fetchTodoLists = async (): Promise<MicrosoftTodoList[]> => {
-  const res = await fetch(`${MS_GRAPH_BASE}/me/todo/lists`, {
-    headers: getHeaders(),
-  });
+  let lists: MicrosoftTodoList[] = [];
+  let nextUrl: string | null = `${MS_GRAPH_BASE}/me/todo/lists`;
 
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(err.error?.message || `Microsoft Graph API error: ${res.status}`);
+  while (nextUrl) {
+    const res = await fetch(nextUrl, {
+      headers: getHeaders(),
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error?.message || `Microsoft Graph API error: ${res.status}`);
+    }
+
+    const data = await res.json();
+    if (Array.isArray(data.value)) {
+      lists = lists.concat(data.value);
+    }
+    if (data['@odata.nextLink']) {
+      const link = data['@odata.nextLink'] as string;
+      const subpath = link.replace(/^https:\/\/graph\.microsoft\.com\/v1\.0/, '');
+      nextUrl = `${MS_GRAPH_BASE}${subpath}`;
+    } else {
+      nextUrl = null;
+    }
   }
 
-  const data = await res.json();
-  return (data.value || []) as MicrosoftTodoList[];
+  return lists;
 };
 
 /**
- * Fetch tasks from a specific list in Microsoft To Do
+ * Fetch tasks from a specific list in Microsoft To Do with full pagination support
  */
 export const fetchTasksFromList = async (listId: string): Promise<MicrosoftTodoTask[]> => {
   if (!listId) throw new Error('Microsoft To Do List ID is required');
 
-  const res = await fetch(`${MS_GRAPH_BASE}/me/todo/lists/${listId}/tasks?$top=100`, {
-    headers: getHeaders(),
-  });
+  let tasks: MicrosoftTodoTask[] = [];
+  let nextUrl: string | null = `${MS_GRAPH_BASE}/me/todo/lists/${listId}/tasks?$top=100`;
 
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(err.error?.message || `Failed to fetch tasks from list: ${res.status}`);
+  while (nextUrl) {
+    const res = await fetch(nextUrl, {
+      headers: getHeaders(),
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error?.message || `Failed to fetch tasks from list: ${res.status}`);
+    }
+
+    const data = await res.json();
+    if (Array.isArray(data.value)) {
+      tasks = tasks.concat(data.value);
+    }
+    if (data['@odata.nextLink']) {
+      const link = data['@odata.nextLink'] as string;
+      const subpath = link.replace(/^https:\/\/graph\.microsoft\.com\/v1\.0/, '');
+      nextUrl = `${MS_GRAPH_BASE}${subpath}`;
+    } else {
+      nextUrl = null;
+    }
   }
 
-  const data = await res.json();
-  return (data.value || []) as MicrosoftTodoTask[];
+  return tasks;
 };
 
 /**

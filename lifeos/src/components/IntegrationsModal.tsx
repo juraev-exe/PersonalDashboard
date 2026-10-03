@@ -2,7 +2,7 @@
 // LifeOS — Data Integrations Modal (Notion & Microsoft To Do)
 // ============================================
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useSettingsStore } from '../stores/settingsStore';
 import { useTaskStore } from '../stores/taskStore';
 import { useHabitStore } from '../stores/habitStore';
@@ -16,6 +16,7 @@ interface Props {
 }
 
 export default function IntegrationsModal({ isOpen, onClose, defaultTab = 'supabase' }: Props) {
+  const dialogRef = useRef<HTMLDivElement>(null);
   const [activeTab, setActiveTab] = useState<'supabase' | 'notion' | 'microsoft'>(defaultTab);
 
   // Notion Settings
@@ -60,6 +61,20 @@ export default function IntegrationsModal({ isOpen, onClose, defaultTab = 'supab
       setStatusMessage(null);
     }
   }, [isOpen, supabaseUrl, supabaseAnonKey, notionApiKey, notionTasksDatabaseId, microsoftAccessToken, microsoftTodoListId]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    dialogRef.current?.focus();
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 
@@ -165,6 +180,10 @@ export default function IntegrationsModal({ isOpen, onClose, defaultTab = 'supab
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div
+        ref={dialogRef}
+        tabIndex={-1}
+        role="dialog"
+        aria-modal="true"
         className="modal-content"
         onClick={(e) => e.stopPropagation()}
         style={{ maxWidth: 540, width: '100%', background: 'var(--color-bg-secondary)', border: '1px solid var(--color-border)' }}
