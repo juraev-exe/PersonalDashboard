@@ -19,6 +19,9 @@ interface SettingsState extends AppSettings {
   toggleSidebar: () => void;
   toggleSidebarAutoHide: () => void;
   setIntegrationKey: (key: keyof AppSettings, value: string) => void;
+  integrationsModalOpen: boolean;
+  openIntegrationsModal: () => void;
+  closeIntegrationsModal: () => void;
   /** Called after OAuth redirect — stores the provider token + email */
   setGoogleSession: (token: string, email: string) => void;
   clearGoogleSession: () => void;
@@ -33,15 +36,30 @@ const defaultSettings: AppSettings = {
   soundEnabled: true,
   notificationsEnabled: true,
   sidebarCollapsed: false,
-  notionDatabaseId: '',
+  notionApiKey: import.meta.env.VITE_NOTION_API_KEY || '',
+  notionDatabaseId: import.meta.env.VITE_NOTION_DATABASE_ID || '',
   notionParentType: 'database',
-  notionTasksDatabaseId: '',
+  notionTasksDatabaseId: import.meta.env.VITE_NOTION_DATABASE_ID || '',
   notionHabitsDatabaseId: '',
+  microsoftAccessToken: '',
+  microsoftTodoListId: '',
   spotifyPlaylistUrl: 'https://open.spotify.com/playlist/37i9dQZF1DX8UebgpwzvUh',
   sidebarAutoHide: false,
+  supabaseUrl: import.meta.env.VITE_SUPABASE_URL || '',
+  supabaseAnonKey: import.meta.env.VITE_SUPABASE_ANON_KEY || '',
 };
 
-const loadSettings = (): AppSettings => getValue<AppSettings>('settings', defaultSettings);
+const loadSettings = (): AppSettings => {
+  const loaded = getValue<AppSettings>('settings', defaultSettings);
+  return {
+    ...defaultSettings,
+    ...loaded,
+    notionApiKey: loaded.notionApiKey || import.meta.env.VITE_NOTION_API_KEY || defaultSettings.notionApiKey,
+    notionTasksDatabaseId: loaded.notionTasksDatabaseId || import.meta.env.VITE_NOTION_DATABASE_ID || defaultSettings.notionTasksDatabaseId,
+    supabaseUrl: loaded.supabaseUrl || import.meta.env.VITE_SUPABASE_URL || defaultSettings.supabaseUrl,
+    supabaseAnonKey: loaded.supabaseAnonKey || import.meta.env.VITE_SUPABASE_ANON_KEY || defaultSettings.supabaseAnonKey,
+  };
+};
 
 export const useSettingsStore = create<SettingsState>((set) => ({
   ...loadSettings(),
@@ -116,6 +134,10 @@ export const useSettingsStore = create<SettingsState>((set) => ({
     setValue('settings', next);
     return { [key]: value } as Partial<SettingsState>;
   }),
+
+  integrationsModalOpen: false,
+  openIntegrationsModal: () => set({ integrationsModalOpen: true }),
+  closeIntegrationsModal: () => set({ integrationsModalOpen: false }),
 
   setGoogleSession: (token, email) => set((s) => {
     const next = { ...s, googleCalendarToken: token, googleUserEmail: email };

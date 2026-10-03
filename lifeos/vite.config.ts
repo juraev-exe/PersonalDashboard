@@ -59,6 +59,7 @@ export default defineConfig({
   ],
   resolve: {
     alias: {
+      '@': fileURLToPath(new URL('./src', import.meta.url)),
       'lucide-react': fileURLToPath(new URL('./src/components/icons/packIcons.tsx', import.meta.url)),
     },
   },
@@ -69,11 +70,17 @@ export default defineConfig({
     include: ['src/**/*.test.{ts,tsx}'],
   },
   server: {
+    port: 5180,
     proxy: {
       '/api/notion': {
         target: 'https://api.notion.com/v1',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api\/notion/, ''),
+      },
+      '/api/microsoft': {
+        target: 'https://graph.microsoft.com/v1.0',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/microsoft/, ''),
       },
     },
   },

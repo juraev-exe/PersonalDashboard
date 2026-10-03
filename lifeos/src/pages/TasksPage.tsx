@@ -1,10 +1,12 @@
 import React, { useState, useMemo } from 'react';
 import { useTaskStore } from '../stores/taskStore';
 import { TaskStatus, TaskPriority, TaskCategory, type Task } from '../types';
-import { Plus, List, Kanban, Search, Filter, ArrowUpDown, Calendar, Trash2, Edit3, CheckCircle, Clock, AlertTriangle, RefreshCw, Mic, MicOff } from 'lucide-react';
+import { Plus, List, Kanban, Search, Filter, ArrowUpDown, Calendar, Trash2, Edit3, CheckCircle, Clock, AlertTriangle, RefreshCw, Mic, MicOff, Plug } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { format } from 'date-fns';
 import NotionSyncButton from '../components/NotionSyncButton';
+import MicrosoftTodoSyncButton from '../components/MicrosoftTodoSyncButton';
+import { useSettingsStore } from '../stores/settingsStore';
 
 export default function TasksPage() {
   const tasks = useTaskStore((s) => s.tasks);
@@ -13,6 +15,8 @@ export default function TasksPage() {
   const deleteTask = useTaskStore((s) => s.deleteTask);
   const completeTask = useTaskStore((s) => s.completeTask);
   const syncFromNotion = useTaskStore((s) => s.syncFromNotion);
+  const syncFromMicrosoftTodo = useTaskStore((s) => s.syncFromMicrosoftTodo);
+  const openIntegrationsModal = useSettingsStore((s) => s.openIntegrationsModal);
 
   const [viewMode, setViewMode] = useState<'list' | 'kanban'>('list');
   const [search, setSearch] = useState('');
@@ -229,20 +233,30 @@ export default function TasksPage() {
   };
 
   return (
-    <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-      {/* Header bar */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
-        <div>
-          <h1 style={{ fontSize: 28, fontWeight: 800, marginBottom: 4, letterSpacing: '-0.03em' }}>Tasks</h1>
-          <p style={{ fontSize: 14, color: 'var(--color-text-muted)' }}>Organize, schedule, and execute your study and work items.</p>
+    <>
+      <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+        {/* Header bar */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
+          <div>
+            <h1 style={{ fontSize: 28, fontWeight: 800, marginBottom: 4, letterSpacing: '-0.03em' }}>Tasks</h1>
+            <p style={{ fontSize: 14, color: 'var(--color-text-muted)' }}>Organize, schedule, and execute your study and work items.</p>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+            <button
+              onClick={openIntegrationsModal}
+              className="btn btn-secondary"
+              style={{ gap: 6 }}
+              title="Connect Notion & Microsoft To Do"
+            >
+              <Plug size={15} /> Connect Integrations
+            </button>
+            <NotionSyncButton onSync={syncFromNotion} />
+            <MicrosoftTodoSyncButton onSync={syncFromMicrosoftTodo} />
+            <button onClick={handleOpenAddModal} className="btn btn-primary" style={{ gap: '6px' }}>
+              <Plus size={18} /> New Task
+            </button>
+          </div>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-          <NotionSyncButton onSync={syncFromNotion} />
-          <button onClick={handleOpenAddModal} className="btn btn-primary" style={{ gap: '6px' }}>
-            <Plus size={18} /> New Task
-          </button>
-        </div>
-      </div>
 
       {/* Filter and View toolbar */}
       <div className="glass-card" style={{ padding: '16px', display: 'flex', flexWrap: 'wrap', gap: '16px', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -402,15 +416,25 @@ export default function TasksPage() {
                       >
                         <td style={{ padding: '14px 16px' }}>
                           <button
-                            onClick={() => task.status !== TaskStatus.COMPLETED && handleCompleteTask(task.id)}
+                            onClick={async () => {
+                              if (task.status === TaskStatus.COMPLETED) {
+                                await updateTask(task.id, { status: TaskStatus.TODO });
+                              } else {
+                                await handleCompleteTask(task.id);
+                              }
+                            }}
                             style={{
                               background: 'transparent',
                               border: 'none',
-                              cursor: task.status === TaskStatus.COMPLETED ? 'default' : 'pointer',
+                              cursor: 'pointer',
                               color: task.status === TaskStatus.COMPLETED ? 'var(--color-emerald)' : 'var(--color-text-muted)',
                               display: 'flex',
                               alignItems: 'center',
+                              transition: 'transform 0.15s, color 0.15s',
                             }}
+                            onMouseEnter={(e) => { e.currentTarget.style.transform = 'scale(1.15)'; }}
+                            onMouseLeave={(e) => { e.currentTarget.style.transform = 'scale(1)'; }}
+                            title={task.status === TaskStatus.COMPLETED ? 'Mark as todo' : 'Mark completed'}
                           >
                             <CheckCircle
                               size={20}
@@ -428,6 +452,23 @@ export default function TasksPage() {
                               color: task.status === TaskStatus.COMPLETED ? 'var(--color-text-muted)' : 'var(--color-text-primary)',
                             }}>
                               {task.title}
+                              {/* Source badge — shows where this task was synced from */}
+                              {(task as any).notionId && (
+                                <span title="Synced from Notion" style={{
+                                  display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                                  marginLeft: 6, width: 16, height: 16, borderRadius: 4,
+                                  background: 'rgba(163, 113, 247, 0.15)', color: '#a371f7',
+                                  fontSize: 9, fontWeight: 800, lineHeight: 1, verticalAlign: 'middle',
+                                }}>N</span>
+                              )}
+                              {(task as any).todoId && (
+                                <span title="Synced from Microsoft To Do" style={{
+                                  display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                                  marginLeft: 6, width: 16, height: 16, borderRadius: 4,
+                                  background: 'rgba(56, 189, 248, 0.15)', color: '#38bdf8',
+                                  fontSize: 9, fontWeight: 800, lineHeight: 1, verticalAlign: 'middle',
+                                }}>M</span>
+                              )}
                             </div>
                             {task.description && (
                               <div style={{ fontSize: 12, color: 'var(--color-text-muted)', marginTop: 4 }}>
@@ -736,5 +777,6 @@ export default function TasksPage() {
         </div>
       )}
     </div>
+    </>
   );
 }

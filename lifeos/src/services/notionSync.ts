@@ -215,3 +215,70 @@ export async function pushTaskStatusToNotion(
 
   await updateNotionPage(notionId, { [propName]: value });
 }
+
+/**
+ * Create a new task in the Notion database using dynamic property discovery.
+ */
+export async function pushTaskToNotion(
+  databaseId: string,
+  task: Pick<Task, 'title' | 'status' | 'priority' | 'dueDate'>
+): Promise<string> {
+  let titlePropName = 'Task name';
+  let statusPropName = 'Status';
+  let statusPropType = 'status';
+  let datePropName: string | undefined = 'Due date';
+
+  try {
+    const { getNotionDatabase } = await import('./notionService');
+    const db = await getNotionDatabase(databaseId);
+    if (db && db.properties) {
+      const props = Object.entries(db.properties) as [string, any][];
+      
+      // Find title property
+      const titleEntry = props.find(([, p]) => p.type === 'title');
+      if (titleEntry) titlePropName = titleEntry[0];
+
+      // Find status/select/checkbox property
+      const statusEntry = props.find(
+        ([name, p]) =>
+          p.type === 'status' ||
+          (p.type === 'checkbox' && STATUS_HINT.test(name)) ||
+          (p.type === 'select' && STATUS_HINT.test(name))
+      );
+      if (statusEntry) {
+        statusPropName = statusEntry[0];
+        statusPropType = statusEntry[1].type;
+      }
+
+      // Find date property: prioritize matching DUE_HINT, fallback to any date property (Issue 3)
+      const dateEntry =
+        props.find(([name, p]) => p.type === 'date' && DUE_HINT.test(name)) ||
+        props.find(([, p]) => p.type === 'date');
+      if (dateEntry) datePropName = dateEntry[0];
+    }
+  } catch (e) {
+    console.warn('Could not inspect database schema, falling back to defaults:', e);
+  }
+
+  const properties: Record<string, unknown> = {
+    [titlePropName]: {
+      title: [{ text: { content: task.title } }],
+    },
+  };
+
+  const statusValue = statusToNotionValue(statusPropType, task.status);
+  if (statusValue) {
+    properties[statusPropName] = statusValue;
+  }
+
+  if (task.dueDate && datePropName) {
+    properties[datePropName] = {
+      date: { start: task.dueDate },
+    };
+  }
+
+  const { createNotionDatabasePage } = await import('./notionService');
+  const page = await createNotionDatabasePage(databaseId, properties);
+  return page.id;
+}
+

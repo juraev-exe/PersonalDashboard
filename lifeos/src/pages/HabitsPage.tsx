@@ -6,6 +6,7 @@ import { Dumbbell, Bed, Brain, Utensils, AppleWhole, Carrot, Bicycle, Guitar, Le
 import { motion, AnimatePresence } from 'framer-motion';
 import { format, subDays } from 'date-fns';
 import NotionSyncButton from '../components/NotionSyncButton';
+import Modal from '../components/ui/Modal';
 
 const PRESET_ICONS = [
   { name: 'Activity', component: Activity },
@@ -281,11 +282,12 @@ export default function HabitsPage() {
                             style={{
                               width: 24,
                               height: 24,
-                              borderRadius: '4px',
+                              borderRadius: '5px',
                               border: isToday ? `1.5px solid ${habit.color}` : '1px solid transparent',
                               background: isDone ? habit.color : 'var(--color-heat-0)',
+                              boxShadow: isDone ? `0 0 8px ${habit.color}50` : 'none',
                               cursor: 'pointer',
-                              transition: 'all 0.15s',
+                              transition: 'all 0.15s ease',
                             }}
                             title={`${format(d, 'EEEE, MMM d')}: ${isDone ? 'Completed' : 'Not completed'}`}
                           />
@@ -301,19 +303,20 @@ export default function HabitsPage() {
                     style={{
                       width: '100%',
                       background: completedToday ? 'var(--color-bg-tertiary)' : habit.color,
-                      color: completedToday ? 'var(--color-text-secondary)' : 'white',
+                      color: completedToday ? 'var(--color-text-secondary)' : '#ffffff',
                       border: completedToday ? '1px solid var(--color-border)' : 'none',
+                      boxShadow: completedToday ? 'none' : `0 2px 12px ${habit.color}35`,
                       fontWeight: 600,
                       gap: '6px',
                     }}
                   >
                     {completedToday ? (
                       <>
-                        <Check size={16} /> Completed Today (+5 XP)
+                        <Check size={16} /> Completed Today
                       </>
                     ) : (
                       <>
-                        Mark Today Completed (+5 XP)
+                        Mark Today Completed
                       </>
                     )}
                   </button>
@@ -354,138 +357,150 @@ export default function HabitsPage() {
       )}
 
       {/* Add / Edit Habit Modal */}
-      {isModalOpen && (
-        <div className="modal-overlay" onClick={() => setIsModalOpen(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h3 style={{ fontSize: 18, fontWeight: 700 }}>{editingHabit ? 'Edit Habit' : 'Add New Habit'}</h3>
-              <button onClick={() => setIsModalOpen(false)} style={{ background: 'transparent', border: 'none', color: 'var(--color-text-muted)', cursor: 'pointer', fontSize: 18 }}>×</button>
-            </div>
-            <form onSubmit={handleSave}>
-              <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                
-                <div>
-                  <label style={{ display: 'block', fontSize: 12, fontWeight: 500, color: 'var(--color-text-secondary)', marginBottom: 6 }}>Habit Name</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="E.g., Read Research Papers, Stay Hydrated..."
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    className="input"
-                  />
-                </div>
-
-                <div>
-                  <label style={{ display: 'block', fontSize: 12, fontWeight: 500, color: 'var(--color-text-secondary)', marginBottom: 8 }}>Choose Preset Icon</label>
-                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '12px' }}>
-                    {PRESET_ICONS.map((pi) => {
-                      const IconComp = pi.component;
-                      return (
-                        <button
-                          key={pi.name}
-                          type="button"
-                          onClick={() => setIcon(pi.name)}
-                          style={{
-                            width: 38,
-                            height: 38,
-                            borderRadius: 'var(--radius-md)',
-                            border: icon === pi.name ? `2px solid ${color}` : '1px solid var(--color-border)',
-                            background: icon === pi.name ? `${color}15` : 'var(--color-bg-tertiary)',
-                            color: icon === pi.name ? color : 'var(--color-text-secondary)',
-                            cursor: 'pointer',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                          }}
-                        >
-                          <IconComp size={18} />
-                        </button>
-                      );
-                    })}
-                  </div>
-
-                  <label style={{ display: 'block', fontSize: 12, fontWeight: 500, color: 'var(--color-text-secondary)', marginBottom: 8 }}>Choose Premium App Icon (From F:\Picture)</label>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: '8px', maxHeight: '120px', overflowY: 'auto', padding: '6px', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', background: 'var(--color-bg-secondary)' }}>
-                    {CUSTOM_PNG_ICONS.map((pname) => (
-                      <button
-                        key={pname}
-                        type="button"
-                        onClick={() => setIcon(`${pname}.png`)}
-                        style={{
-                          padding: '6px',
-                          borderRadius: 'var(--radius-md)',
-                          border: icon === `${pname}.png` ? `2px solid ${color}` : '1px solid var(--color-border)',
-                          background: icon === `${pname}.png` ? `${color}15` : 'var(--color-bg-tertiary)',
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                        }}
-                        title={pname}
-                      >
-                        <img src={`/images/icons/${pname}.png`} alt={pname} style={{ width: 22, height: 22, objectFit: 'contain' }} />
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div>
-                  <label style={{ display: 'block', fontSize: 12, fontWeight: 500, color: 'var(--color-text-secondary)', marginBottom: 8 }}>Choose Theme Color</label>
-                  <div style={{ display: 'flex', gap: '8px' }}>
-                    {PRESET_COLORS.map((pc) => (
-                      <button
-                        key={pc.name}
-                        type="button"
-                        onClick={() => setColor(pc.value)}
-                        style={{
-                          width: 28,
-                          height: 28,
-                          borderRadius: '50%',
-                          border: color === pc.value ? '2px solid white' : 'none',
-                          background: pc.value,
-                          cursor: 'pointer',
-                          boxShadow: color === pc.value ? '0 0 10px rgba(255, 255, 255, 0.4)' : 'none',
-                        }}
-                        title={pc.name}
-                      />
-                    ))}
-                  </div>
-                </div>
-
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
-                  <div>
-                    <label style={{ display: 'block', fontSize: 12, fontWeight: 500, color: 'var(--color-text-secondary)', marginBottom: 6 }}>Frequency</label>
-                    <select
-                      value={frequency}
-                      onChange={(e) => setFrequency(e.target.value as any)}
-                      className="input"
-                    >
-                      <option value="daily">Daily</option>
-                      <option value="weekly">Weekly</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label style={{ display: 'block', fontSize: 12, fontWeight: 500, color: 'var(--color-text-secondary)', marginBottom: 6 }}>Daily Goal Count</label>
-                    <input
-                      type="number"
-                      min="1"
-                      value={dailyTarget}
-                      onChange={(e) => setDailyTarget(Number(e.target.value))}
-                      className="input"
-                    />
-                  </div>
-                </div>
-
-              </div>
-              <div className="modal-footer">
-                <button type="button" onClick={() => setIsModalOpen(false)} className="btn btn-secondary">Cancel</button>
-                <button type="submit" className="btn btn-primary" style={{ background: color }}>Save Habit</button>
-              </div>
-            </form>
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        title={editingHabit ? 'Edit Habit' : 'Add New Habit'}
+        subtitle="Define routines, frequency, and personal cues."
+        maxWidth={480}
+        footer={
+          <>
+            <button type="button" onClick={() => setIsModalOpen(false)} className="btn btn-secondary">
+              Cancel
+            </button>
+            <button type="submit" form="habit-form" className="btn btn-primary" style={{ background: color }}>
+              Save Habit
+            </button>
+          </>
+        }
+      >
+        <form id="habit-form" onSubmit={handleSave} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <div>
+            <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--color-text-secondary)', marginBottom: 6 }}>
+              Habit Name
+            </label>
+            <input
+              type="text"
+              required
+              placeholder="E.g., Read Research Papers, Stay Hydrated..."
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="input"
+            />
           </div>
-        </div>
-      )}
+
+          <div>
+            <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--color-text-secondary)', marginBottom: 8 }}>
+              Choose Preset Icon
+            </label>
+            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '12px' }}>
+              {PRESET_ICONS.map((pi) => {
+                const IconComp = pi.component;
+                return (
+                  <button
+                    key={pi.name}
+                    type="button"
+                    onClick={() => setIcon(pi.name)}
+                    style={{
+                      width: 38,
+                      height: 38,
+                      borderRadius: 'var(--radius-md)',
+                      border: icon === pi.name ? `2px solid ${color}` : '1px solid var(--color-border)',
+                      background: icon === pi.name ? `${color}15` : 'var(--color-bg-tertiary)',
+                      color: icon === pi.name ? color : 'var(--color-text-secondary)',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                  >
+                    <IconComp size={18} />
+                  </button>
+                );
+              })}
+            </div>
+
+            <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--color-text-secondary)', marginBottom: 8 }}>
+              Choose Premium App Icon
+            </label>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: '8px', maxHeight: '120px', overflowY: 'auto', padding: '6px', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', background: 'var(--color-bg-secondary)' }}>
+              {CUSTOM_PNG_ICONS.map((pname) => (
+                <button
+                  key={pname}
+                  type="button"
+                  onClick={() => setIcon(`${pname}.png`)}
+                  style={{
+                    padding: '6px',
+                    borderRadius: 'var(--radius-md)',
+                    border: icon === `${pname}.png` ? `2px solid ${color}` : '1px solid var(--color-border)',
+                    background: icon === `${pname}.png` ? `${color}15` : 'var(--color-bg-tertiary)',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                  title={pname}
+                >
+                  <img src={`/images/icons/${pname}.png`} alt={pname} style={{ width: 22, height: 22, objectFit: 'contain' }} />
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--color-text-secondary)', marginBottom: 8 }}>
+              Choose Theme Color
+            </label>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              {PRESET_COLORS.map((pc) => (
+                <button
+                  key={pc.name}
+                  type="button"
+                  onClick={() => setColor(pc.value)}
+                  style={{
+                    width: 28,
+                    height: 28,
+                    borderRadius: '50%',
+                    border: color === pc.value ? '2px solid white' : 'none',
+                    background: pc.value,
+                    cursor: 'pointer',
+                    boxShadow: color === pc.value ? '0 0 10px rgba(255, 255, 255, 0.4)' : 'none',
+                  }}
+                  title={pc.name}
+                />
+              ))}
+            </div>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
+            <div>
+              <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--color-text-secondary)', marginBottom: 6 }}>
+                Frequency
+              </label>
+              <select
+                value={frequency}
+                onChange={(e) => setFrequency(e.target.value as any)}
+                className="input"
+              >
+                <option value="daily">Daily</option>
+                <option value="weekly">Weekly</option>
+              </select>
+            </div>
+            <div>
+              <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--color-text-secondary)', marginBottom: 6 }}>
+                Daily Goal Count
+              </label>
+              <input
+                type="number"
+                min="1"
+                value={dailyTarget}
+                onChange={(e) => setDailyTarget(Number(e.target.value))}
+                className="input"
+              />
+            </div>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 }

@@ -128,7 +128,7 @@ export default function PrayersPage() {
                 <div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
                     <PrayerIcon size={24} style={{ color: 'var(--color-violet)' }} />
-                    <span className="badge badge-violet" style={{ fontSize: 10 }}>+5 XP</span>
+                    <span style={{ fontSize: 11, color: 'var(--color-text-muted)', fontFamily: 'var(--font-mono)' }}>Daily</span>
                   </div>
                   <h4 style={{ fontSize: 16, fontWeight: 700, color: 'var(--color-text-primary)' }}>{prayer}</h4>
                   <p style={{ fontSize: 11, color: 'var(--color-text-muted)', marginTop: 4, lineHeight: 1.4 }}>
@@ -165,15 +165,15 @@ export default function PrayersPage() {
       </div>
 
       {/* Weekly Tracker Grid */}
-      <div className="glass-card" style={{ padding: '24px' }}>
-        <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
-          <Calendar size={18} style={{ color: 'var(--color-violet)' }} /> Weekly History Log
+      <div className="glass-card" style={{ padding: '24px 28px', borderRadius: '16px', background: 'var(--color-bg-card)', border: '1px solid var(--color-border)' }}>
+        <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 20, display: 'flex', alignItems: 'center', gap: 8, color: 'var(--color-text-primary)' }}>
+          <Calendar size={18} style={{ color: 'var(--color-accent)' }} /> Weekly History Log
         </h3>
         
         <div style={{ overflowX: 'auto' }}>
-          <div style={{ minWidth: 600 }}>
+          <div style={{ minWidth: 640 }}>
             {/* Header row */}
-            <div style={{ display: 'grid', gridTemplateColumns: '120px repeat(7, 1fr)', borderBottom: '1px solid var(--color-border)', paddingBottom: 10, fontWeight: 600, fontSize: 12, color: 'var(--color-text-muted)' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '130px repeat(7, 1fr)', borderBottom: '1px solid var(--color-border)', paddingBottom: 12, fontWeight: 600, fontSize: 13, color: 'var(--color-text-muted)' }}>
               <div>Prayer</div>
               {last7Days.map((d) => (
                 <div key={d.toISOString()} style={{ textAlign: 'center' }}>
@@ -190,14 +190,14 @@ export default function PrayersPage() {
                   key={prayer}
                   style={{
                     display: 'grid',
-                    gridTemplateColumns: '120px repeat(7, 1fr)',
+                    gridTemplateColumns: '130px repeat(7, 1fr)',
                     alignItems: 'center',
-                    padding: '12px 0',
+                    padding: '14px 0',
                     borderBottom: '1px solid var(--color-border)',
                   }}
                 >
-                  <div style={{ fontWeight: 600, fontSize: 13, display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <PrayerIcon size={14} style={{ color: 'var(--color-violet)' }} />
+                  <div style={{ fontWeight: 600, fontSize: 13, display: 'flex', alignItems: 'center', gap: 8, color: 'var(--color-text-primary)' }}>
+                    <PrayerIcon size={15} style={{ color: 'var(--color-accent)' }} />
                     <span>{prayer}</span>
                   </div>
                   {last7Days.map((d) => {
@@ -210,13 +210,13 @@ export default function PrayersPage() {
                         <button
                           onClick={() => togglePrayer(prayer, dateStr)}
                           style={{
-                            width: 24,
+                            width: 22,
                             height: 24,
-                            borderRadius: '4px',
-                            border: isToday ? '1.5px solid var(--color-violet)' : '1px solid transparent',
-                            background: completed ? 'var(--color-violet)' : 'var(--color-heat-0)',
+                            borderRadius: '6px',
+                            border: isToday && !completed ? '1.5px solid var(--color-accent)' : 'none',
+                            background: completed ? 'var(--color-accent)' : 'var(--color-heat-0)',
                             cursor: 'pointer',
-                            transition: 'all 0.15s',
+                            transition: 'all 0.15s ease',
                           }}
                           title={`${prayer} — ${format(d, 'EEEE, MMM d')}: ${completed ? 'Completed' : 'Not completed'}`}
                         />

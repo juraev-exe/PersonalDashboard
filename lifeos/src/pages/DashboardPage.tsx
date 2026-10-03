@@ -1,56 +1,486 @@
 // ============================================
-// LifeOS — Dashboard Page
+// LifeOS — Executive Dashboard
+// Industrial Precision Design System
 // ============================================
 
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect, useCallback, useRef, type ReactNode } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { format, subDays, isToday, parseISO } from 'date-fns';
+import {
+  Timer,
+  CheckSquare,
+  Check,
+  Flame,
+  Cloud,
+  Sun,
+  CloudRain,
+  CloudSnow,
+  CloudLightning,
+  RefreshCw,
+  FolderKanban,
+  Zap,
+  ChevronRight,
+  ArrowRight,
+  ExternalLink,
+  Calendar,
+  Volume2,
+  VolumeX,
+  Play,
+  Square,
+  Activity,
+  Settings,
+  Music,
+  Plus,
+} from 'lucide-react';
+import DraggableWidgetGrid, {
+  type WidgetItem,
+  type WidgetSize,
+} from '@/components/ui/draggable-widget-grid';
 import { usePomodoroStore } from '../stores/pomodoroStore';
 import { useTaskStore } from '../stores/taskStore';
 import { useHabitStore } from '../stores/habitStore';
 import { useProjectStore } from '../stores/projectStore';
-import { useNoteStore } from '../stores/noteStore';
+import { useCalendarStore } from '../stores/calendarStore';
 import { useSettingsStore } from '../stores/settingsStore';
+import { TaskStatus, TaskPriority, ProjectStatus, TaskCategory, type CalendarEvent } from '../types';
 import { getUpcomingEvents } from '../services/googleCalendarService';
-import { TaskStatus, ProjectStatus } from '../types';
-import { format, subDays } from 'date-fns';
-import { Timer, CheckSquare, Flame, Target, BookOpen, Clock, CalendarDays, Plus, Activity, BookText, Sun, Cloud, CloudRain, CloudSnow, CloudLightning, Music, ChevronRight } from 'lucide-react';
-import { motion } from 'framer-motion';
-import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Legend } from 'recharts';
-import { useNavigate } from 'react-router-dom';
 import { getRandomQuote } from '../data/quotes';
-import SpotifyWidget from '../components/layout/SpotifyWidget';
-import Skeleton, { SkeletonCard } from '../components/layout/Skeleton';
-import Interactive3DOrb from '../components/layout/Interactive3DOrb';
 
-const container = { hidden: {}, show: { transition: { staggerChildren: 0.05 } } };
-const item = { hidden: { opacity: 0, y: 10 }, show: { opacity: 1, y: 0, transition: { duration: 0.3 } } };
+/* ------------------------------------------------------------------ *
+ * Widget Definitions & Default Arrangement
+ * ------------------------------------------------------------------ */
+
+export type DashboardWidgetKind =
+  | 'performance'
+  | 'focus-time'
+  | 'tasks-progress'
+  | 'calendar-event'
+  | 'daily-habits'
+  | 'ambient-audio'
+  | 'scratchpad'
+  | 'data-sync'
+  | 'today-tasks'
+  | 'active-projects'
+  | 'weather'
+  | 'mindset';
+
+export interface DashboardWidget extends WidgetItem {
+  kind: DashboardWidgetKind;
+}
+
+const DEFAULT_WIDGETS: DashboardWidget[] = [
+  { id: 'performance', kind: 'performance', size: 'wide', label: 'Performance Summary' },
+  { id: 'calendar-event', kind: 'calendar-event', size: 'sm', label: 'Upcoming Schedule' },
+  { id: 'focus-time', kind: 'focus-time', size: 'sm', label: 'Focus Time' },
+  { id: 'tasks-progress', kind: 'tasks-progress', size: 'sm', label: 'Task Execution' },
+  { id: 'daily-habits', kind: 'daily-habits', size: 'sm', label: 'Daily Habits' },
+  { id: 'ambient-audio', kind: 'ambient-audio', size: 'sm', label: 'Focus Soundscape' },
+  { id: 'data-sync', kind: 'data-sync', size: 'sm', label: 'Data Sync' },
+  { id: 'scratchpad', kind: 'scratchpad', size: 'wide', label: 'Quick Scratchpad' },
+  { id: 'today-tasks', kind: 'today-tasks', size: 'wide', label: "Today's Priorities" },
+  { id: 'active-projects', kind: 'active-projects', size: 'wide', label: 'Active Projects' },
+  { id: 'weather', kind: 'weather', size: 'sm', label: 'Local Weather' },
+  { id: 'mindset', kind: 'mindset', size: 'sm', label: 'Daily Mindset' },
+];
+
+const STORAGE_KEY = 'lifeos_dashboard_widgets_v3';
+const SCRATCHPAD_KEY = 'lifeos_dashboard_scratchpad_v1';
+
+/* ------------------------------------------------------------------ *
+ * Architectural Card Shell & Metrics
+ * ------------------------------------------------------------------ */
+
+function Shell({
+  title,
+  meta,
+  children,
+}: {
+  title: string;
+  meta?: ReactNode;
+  children: ReactNode;
+}) {
+  return (
+    <section className="flex h-full flex-col justify-between p-4 sm:p-5 select-none bg-card text-card-foreground">
+      <header className="flex items-center justify-between gap-2 pb-2 mb-1.5 border-b border-border/40">
+        <span className="text-[12px] font-medium tracking-tight text-foreground/80">
+          {title}
+        </span>
+        {meta && <div className="shrink-0 text-[11px] text-muted-foreground">{meta}</div>}
+      </header>
+      <div className="flex min-h-0 flex-1 flex-col justify-between">{children}</div>
+    </section>
+  );
+}
+
+function MetricNumber({
+  children,
+  unit,
+}: {
+  children: ReactNode;
+  unit?: string;
+}) {
+  return (
+    <div className="flex items-baseline gap-1.5 font-mono text-[26px] font-medium tracking-tight text-foreground tabular-nums">
+      <span>{children}</span>
+      {unit && (
+        <span className="font-sans text-[12px] font-normal text-muted-foreground tracking-normal">
+          {unit}
+        </span>
+      )}
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ *
+ * Web Audio Ambient Sound Synthesizer (Zero Dependencies)
+ * ------------------------------------------------------------------ */
+
+class AmbientSoundGenerator {
+  private ctx: AudioContext | null = null;
+  private noiseNode: AudioNode | null = null;
+  private gainNode: GainNode | null = null;
+
+  start(preset: 'rain' | 'noise' | 'waves') {
+    this.stop();
+    const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+    if (!AudioCtx) return;
+    this.ctx = new AudioCtx();
+
+    // Create 4-second looping noise buffer
+    const bufferSize = this.ctx.sampleRate * 4;
+    const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+
+    let lastOut = 0.0;
+    for (let i = 0; i < bufferSize; i++) {
+      if (preset === 'noise') {
+        // Brown noise
+        const white = Math.random() * 2 - 1;
+        data[i] = (lastOut + 0.02 * white) / 1.02;
+        lastOut = data[i];
+        data[i] *= 3.5;
+      } else {
+        // Pink / Rain noise
+        const white = Math.random() * 2 - 1;
+        data[i] = (lastOut + 0.05 * white) / 1.05;
+        lastOut = data[i];
+        data[i] *= 2.5;
+      }
+    }
+
+    const noiseSource = this.ctx.createBufferSource();
+    noiseSource.buffer = buffer;
+    noiseSource.loop = true;
+
+    // Filter
+    const filter = this.ctx.createBiquadFilter();
+    if (preset === 'rain') {
+      filter.type = 'lowpass';
+      filter.frequency.value = 900;
+    } else if (preset === 'waves') {
+      filter.type = 'bandpass';
+      filter.frequency.value = 400;
+      filter.Q.value = 1.2;
+    } else {
+      filter.type = 'lowpass';
+      filter.frequency.value = 450;
+    }
+
+    this.gainNode = this.ctx.createGain();
+    this.gainNode.gain.setValueAtTime(0.2, this.ctx.currentTime);
+
+    noiseSource.connect(filter);
+    filter.connect(this.gainNode);
+    this.gainNode.connect(this.ctx.destination);
+
+    noiseSource.start(0);
+    this.noiseNode = noiseSource;
+  }
+
+  stop() {
+    try {
+      if (this.ctx && this.ctx.state !== 'closed') {
+        this.ctx.close();
+      }
+    } catch {}
+    this.ctx = null;
+    this.noiseNode = null;
+    this.gainNode = null;
+  }
+}
+
+const ambientAudio = new AmbientSoundGenerator();
+
+/* ------------------------------------------------------------------ *
+ * Main Executive Dashboard
+ * ------------------------------------------------------------------ */
 
 export default function DashboardPage() {
   const navigate = useNavigate();
   const today = format(new Date(), 'yyyy-MM-dd');
+
+  // Stores
   const sessions = usePomodoroStore((s) => s.sessions);
   const tasks = useTaskStore((s) => s.tasks);
+  const addTask = useTaskStore((s) => s.addTask);
   const habits = useHabitStore((s) => s.habits);
   const habitLogs = useHabitStore((s) => s.logs);
+  const toggleHabitDay = useHabitStore((s) => s.toggleHabitDay);
+  const getStreak = useHabitStore((s) => s.getStreak);
   const projects = useProjectStore((s) => s.projects);
-  const notes = useNoteStore((s) => s.notes);
+  const calendarEvents = useCalendarStore((s) => s.events);
+  const updateTask = useTaskStore((s) => s.updateTask);
+  const completeTask = useTaskStore((s) => s.completeTask);
+
+  const notionApiKey = useSettingsStore((s) => s.notionApiKey);
+  const microsoftAccessToken = useSettingsStore((s) => s.microsoftAccessToken);
+  const googleCalendarToken = useSettingsStore((s) => s.googleCalendarToken);
+  const openIntegrationsModal = useSettingsStore((s) => s.openIntegrationsModal);
+  const syncFromNotion = useTaskStore((s) => s.syncFromNotion);
+  const syncFromMicrosoftTodo = useTaskStore((s) => s.syncFromMicrosoftTodo);
+  const spotifyPlaylistUrl = useSettingsStore((s) => s.spotifyPlaylistUrl);
+
+  const [googleEvents, setGoogleEvents] = useState<CalendarEvent[]>([]);
+  const [nowTime, setNowTime] = useState(() => Date.now());
+
+  useEffect(() => {
+    const timer = setInterval(() => setNowTime(Date.now()), 60000);
+    return () => clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    if (!googleCalendarToken) return;
+    getUpcomingEvents(new Date().toISOString(), 10)
+      .then((items) => {
+        const mapped: CalendarEvent[] = (items || []).map((item: any) => {
+          let eventDate = today;
+          let eventTime: string | undefined = undefined;
+
+          if (item.start?.dateTime) {
+            const d = new Date(item.start.dateTime);
+            eventDate = format(d, 'yyyy-MM-dd');
+            eventTime = format(d, 'HH:mm');
+          } else if (item.start?.date) {
+            eventDate = item.start.date;
+          }
+
+          return {
+            id: `google-${item.id}`,
+            title: item.summary || 'Untitled Event',
+            description: item.description || '',
+            date: eventDate,
+            startTime: eventTime,
+            type: 'event',
+            color: '#4285F4',
+          };
+        });
+        setGoogleEvents(mapped);
+      })
+      .catch((err) => console.warn('Could not load Google Calendar events for dashboard:', err));
+  }, [googleCalendarToken, today]);
+
+  // Layout State
+  const [editable, setEditable] = useState(false);
+  const [widgets, setWidgets] = useState<DashboardWidget[]>(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch (e) {
+      console.warn('Failed to parse dashboard widgets from storage:', e);
+    }
+    return DEFAULT_WIDGETS;
+  });
+
+  const handleWidgetsChange = useCallback((next: WidgetItem[]) => {
+    const updated = next as DashboardWidget[];
+    setWidgets(updated);
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+    } catch (e) {
+      console.warn('Failed to save dashboard widgets:', e);
+    }
+  }, []);
+
+  const resetLayout = useCallback(() => {
+    setWidgets(DEFAULT_WIDGETS);
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(DEFAULT_WIDGETS));
+    } catch (e) {
+      console.warn('Failed to reset dashboard widgets:', e);
+    }
+  }, []);
+
+  // Quick Scratchpad State
+  const [scratchpadText, setScratchpadText] = useState(() => {
+    return localStorage.getItem(SCRATCHPAD_KEY) || '';
+  });
+  const [scratchpadFeedback, setScratchpadFeedback] = useState<string | null>(null);
+
+  const handleScratchpadChange = (text: string) => {
+    setScratchpadText(text);
+    localStorage.setItem(SCRATCHPAD_KEY, text);
+  };
+
+  const handleConvertToTask = async () => {
+    const trimmed = scratchpadText.trim();
+    if (!trimmed) return;
+    const firstLine = trimmed.split('\n')[0].substring(0, 80);
+    try {
+      await addTask({
+        title: firstLine,
+        description: trimmed,
+        priority: TaskPriority.MEDIUM,
+        category: TaskCategory.PERSONAL,
+        status: TaskStatus.TODO,
+        recurring: false,
+        dueDate: today,
+      });
+      setScratchpadText('');
+      localStorage.removeItem(SCRATCHPAD_KEY);
+      setScratchpadFeedback('Converted to task in Inbox');
+      setTimeout(() => setScratchpadFeedback(null), 3000);
+    } catch (err: any) {
+      setScratchpadFeedback(err?.message || 'Failed to create task');
+      setTimeout(() => setScratchpadFeedback(null), 3000);
+    }
+  };
+
+  // Ambient Audio State
+  const [activeSound, setActiveSound] = useState<'rain' | 'noise' | 'waves' | null>(null);
+
+  const toggleSound = (sound: 'rain' | 'noise' | 'waves') => {
+    if (activeSound === sound) {
+      ambientAudio.stop();
+      setActiveSound(null);
+    } else {
+      ambientAudio.start(sound);
+      setActiveSound(sound);
+    }
+  };
+
+  useEffect(() => {
+    return () => ambientAudio.stop();
+  }, []);
+
+  // Sync state
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [syncFeedback, setSyncFeedback] = useState<string | null>(null);
+
+  const handleQuickSync = async () => {
+    if (!notionApiKey && !microsoftAccessToken) {
+      openIntegrationsModal();
+      return;
+    }
+    setIsSyncing(true);
+    setSyncFeedback(null);
+    let imported = 0;
+    let updated = 0;
+    try {
+      if (notionApiKey) {
+        const res = await syncFromNotion();
+        imported += res.imported;
+        updated += res.updated;
+      }
+      if (microsoftAccessToken) {
+        const res = await syncFromMicrosoftTodo();
+        imported += res.imported;
+        updated += res.updated;
+      }
+      setSyncFeedback(`Synced: ${imported} added, ${updated} updated`);
+    } catch (err: any) {
+      setSyncFeedback(err?.message || 'Sync failed');
+    } finally {
+      setIsSyncing(false);
+      setTimeout(() => setSyncFeedback(null), 4000);
+    }
+  };
+
+  // Weather data
+  const [weather, setWeather] = useState<{ temp: number; text: string; code: number } | null>(null);
+  useEffect(() => {
+    fetch('https://api.open-meteo.com/v1/forecast?latitude=38.56&longitude=68.79&current_weather=true')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data?.current_weather) {
+          const temp = Math.round(data.current_weather.temperature);
+          const code = data.current_weather.weathercode;
+          let text = 'Clear Sky';
+          if (code === 0) text = 'Clear Sky';
+          else if ([1, 2, 3].includes(code)) text = 'Partly Cloudy';
+          else if ([45, 48].includes(code)) text = 'Foggy';
+          else if ([51, 53, 55, 61, 63, 65, 80, 81, 82].includes(code)) text = 'Rainy';
+          else if ([71, 73, 75, 77, 85, 86].includes(code)) text = 'Snowy';
+          else if ([95, 96, 99].includes(code)) text = 'Thunderstorm';
+          setWeather({ temp, text, code });
+        }
+      })
+      .catch((err) => console.error('Failed to load weather:', err));
+  }, []);
+
+  const randomQuote = useMemo(() => getRandomQuote(), []);
+
+  // Aggregated Metrics
+  const todaySessions = useMemo(() => sessions.filter((s) => s.date === today), [sessions, today]);
+  const focusMinutesToday = useMemo(() => todaySessions.reduce((acc, s) => acc + s.duration, 0), [todaySessions]);
+  const focusHoursToday = (focusMinutesToday / 60).toFixed(1);
 
   const activeHabits = useMemo(() => habits.filter((h) => !h.archived), [habits]);
+  const habitsCompletedToday = useMemo(
+    () =>
+      activeHabits.filter((h) =>
+        habitLogs.some((l) => l.habitId === h.id && l.date === today && l.completed)
+      ).length,
+    [activeHabits, habitLogs, today]
+  );
+  const longestStreak = useMemo(() => {
+    if (activeHabits.length === 0) return 0;
+    return Math.max(...activeHabits.map((h) => getStreak(h.id)), 0);
+  }, [activeHabits, getStreak]);
 
-  // Compute stats for last 7 days dynamically
-  const weeklyStatsData = useMemo(() => {
-    const data = [];
+  const todayTasks = useMemo(
+    () => tasks.filter((t) => t.dueDate === today || t.status === TaskStatus.IN_PROGRESS),
+    [tasks, today]
+  );
+  const completedTodayTasksCount = useMemo(
+    () => todayTasks.filter((t) => t.status === TaskStatus.COMPLETED).length,
+    [todayTasks]
+  );
+  const pendingTodayTasksCount = todayTasks.length - completedTodayTasksCount;
+  const tasksCompletionRate = todayTasks.length > 0
+    ? Math.round((completedTodayTasksCount / todayTasks.length) * 100)
+    : 0;
+
+  const activeProjects = useMemo(
+    () => projects.filter((p) => p.status === ProjectStatus.ACTIVE),
+    [projects]
+  );
+
+  // Next Calendar Event
+  const nextEvent = useMemo(() => {
+    const now = new Date(nowTime);
+    const currentTime = format(now, 'HH:mm');
+    const combined = [...calendarEvents, ...googleEvents];
+    const sorted = combined
+      .filter((e) => e.date > today || (e.date === today && (!e.startTime || e.startTime >= currentTime)))
+      .sort((a, b) => (a.date + (a.startTime || '')).localeCompare(b.date + (b.startTime || '')));
+    return sorted[0] || null;
+  }, [calendarEvents, googleEvents, today, nowTime]);
+
+  // 7-day performance history
+  const weekHistory = useMemo(() => {
+    const list = [];
     const todayObj = new Date();
-    
     for (let i = 6; i >= 0; i--) {
       const d = subDays(todayObj, i);
       const dateStr = format(d, 'yyyy-MM-dd');
       const dayLabel = format(d, 'EEE');
-      
-      const daySessions = sessions.filter(s => s.date === dateStr);
-      const focusMins = daySessions.reduce((sum, s) => sum + s.duration, 0);
-      const focusHrs = parseFloat((focusMins / 60).toFixed(1));
-      
-      const dayCompletedTasks = tasks.filter(t => {
+      const daySessions = sessions.filter((s) => s.date === dateStr);
+      const mins = daySessions.reduce((acc, s) => acc + s.duration, 0);
+      const hours = parseFloat((mins / 60).toFixed(1));
+      const doneTasks = tasks.filter((t) => {
         if (!t.completedAt || t.status !== TaskStatus.COMPLETED) return false;
         try {
           return format(new Date(t.completedAt), 'yyyy-MM-dd') === dateStr;
@@ -58,633 +488,686 @@ export default function DashboardPage() {
           return false;
         }
       }).length;
-      
-      const dayCompletedHabits = activeHabits.filter(h =>
-        habitLogs.some(l => l.habitId === h.id && l.date === dateStr && l.completed)
-      ).length;
-      
-      data.push({
-        name: dayLabel,
-        'Focus Hours': focusHrs,
-        'Tasks Done': dayCompletedTasks,
-        'Habits Done': dayCompletedHabits,
-      });
+      list.push({ dayLabel, dateStr, hours, doneTasks });
     }
-    
-    return data;
-  }, [sessions, tasks, activeHabits, habitLogs]);
-
-  const [weather, setWeather] = useState<{ temp: number; text: string; code: number } | null>(null);
-  const [loadingWeather, setLoadingWeather] = useState(true);
-
-  useEffect(() => {
-    fetch('https://api.open-meteo.com/v1/forecast?latitude=38.56&longitude=68.79&current_weather=true')
-      .then(res => res.json())
-      .then(data => {
-        if (data?.current_weather) {
-          const temp = Math.round(data.current_weather.temperature);
-          const code = data.current_weather.weathercode;
-          let text = 'Clear Sky';
-          if (code === 0) text = 'Clear Sky';
-          else if ([1,2,3].includes(code)) text = 'Partly Cloudy';
-          else if ([45,48].includes(code)) text = 'Foggy';
-          else if ([51,53,55,61,63,65,80,81,82].includes(code)) text = 'Rainy';
-          else if ([71,73,75,77,85,86].includes(code)) text = 'Snowy';
-          else if ([95,96,99].includes(code)) text = 'Thunderstorm';
-          
-          setWeather({ temp, text, code });
-        }
-      })
-      .catch(err => console.error('Failed to load weather:', err))
-      .finally(() => setLoadingWeather(false));
-  }, []);
-
-  // Weather style mapper
-  const weatherStyles = useMemo(() => {
-    if (!weather) return {
-      bg: 'linear-gradient(135deg, rgba(8, 8, 20, 0.4) 0%, rgba(2, 2, 5, 0.6) 100%)',
-      border: '1px solid var(--color-border)',
-      icon: Sun,
-      color: 'var(--color-accent)'
-    };
-    
-    const code = weather.code;
-    if (code === 0) {
-      return { 
-        bg: 'linear-gradient(135deg, rgba(210, 153, 34, 0.1) 0%, rgba(8, 8, 20, 0.5) 100%)',
-        border: '1px solid rgba(210, 153, 34, 0.2)',
-        icon: Sun,
-        color: 'var(--color-amber)'
-      };
-    }
-    if ([1,2,3].includes(code)) {
-      return {
-        bg: 'linear-gradient(135deg, rgba(110, 118, 129, 0.1) 0%, rgba(8, 8, 20, 0.5) 100%)',
-        border: '1px solid rgba(110, 118, 129, 0.2)',
-        icon: Cloud,
-        color: 'var(--color-text-secondary)'
-      };
-    }
-    if ([51,53,55,61,63,65,80,81,82].includes(code)) {
-      return {
-        bg: 'linear-gradient(135deg, rgba(88, 166, 255, 0.1) 0%, rgba(8, 8, 20, 0.5) 100%)',
-        border: '1px solid rgba(88, 166, 255, 0.2)',
-        icon: CloudRain,
-        color: 'var(--color-cyan)'
-      };
-    }
-    if ([71,73,75,77,85,86].includes(code)) {
-      return {
-        bg: 'linear-gradient(135deg, rgba(240, 243, 246, 0.08) 0%, rgba(8, 8, 20, 0.5) 100%)',
-        border: '1px solid rgba(240, 243, 246, 0.15)',
-        icon: CloudSnow,
-        color: 'var(--color-text-primary)'
-      };
-    }
-    if ([95,96,99].includes(code)) {
-      return {
-        bg: 'linear-gradient(135deg, rgba(163, 113, 247, 0.1) 0%, rgba(8, 8, 20, 0.5) 100%)',
-        border: '1px solid rgba(163, 113, 247, 0.2)',
-        icon: CloudLightning,
-        color: 'var(--color-violet)'
-      };
-    }
-    return {
-      bg: 'linear-gradient(135deg, rgba(8, 8, 20, 0.4) 0%, rgba(2, 2, 5, 0.6) 100%)',
-      border: '1px solid var(--color-border)',
-      icon: Sun,
-      color: 'var(--color-accent)'
-    };
-  }, [weather]);
-
-  const randomQuote = useMemo(() => {
-    return getRandomQuote();
-  }, []);
-
-  const googleCalendarToken = useSettingsStore((s) => s.googleCalendarToken);
-  const [upcomingGoogleEvents, setUpcomingGoogleEvents] = useState<any[]>([]);
-  const [loadingEvents, setLoadingEvents] = useState(false);
-
-  useEffect(() => {
-    if (!googleCalendarToken) return;
-    setLoadingEvents(true);
-    getUpcomingEvents(new Date().toISOString(), 5)
-      .then(setUpcomingGoogleEvents)
-      .catch(err => console.error('Error loading dashboard events:', err))
-      .finally(() => setLoadingEvents(false));
-  }, [googleCalendarToken]);
-
-  const todaySessions = sessions.filter((s) => s.date === today);
-  const focusHours = (todaySessions.reduce((sum, s) => sum + s.duration, 0) / 60).toFixed(1);
-  
-  const todayTasks = tasks.filter((t) => t.dueDate === today || t.status === TaskStatus.IN_PROGRESS);
-  const completedTasks = tasks.filter((t) => t.status === TaskStatus.COMPLETED).length;
-
-  const habitsCompletedToday = activeHabits.filter((h) =>
-    habitLogs.some((l) => l.habitId === h.id && l.date === today && l.completed)
-  ).length;
-
-  const activeProjects = projects.filter((p) => p.status === ProjectStatus.ACTIVE);
-  const recentNotes = [...notes].sort((a, b) => b.updatedAt.localeCompare(a.updatedAt)).slice(0, 3);
-
-  // Daily Progress aggregation
-  const dailyProgress = useMemo(() => {
-    const totalTodayHabits = activeHabits.length;
-    const completedTodayHabits = activeHabits.filter((h) =>
-      habitLogs.some((l) => l.habitId === h.id && l.date === today && l.completed)
-    ).length;
-
-    const totalTodayTasks = todayTasks.length;
-    const completedTodayTasks = todayTasks.filter((t) => t.status === TaskStatus.COMPLETED).length;
-
-    const totalItems = totalTodayHabits + totalTodayTasks;
-    if (totalItems === 0) return 0;
-
-    const completedItems = completedTodayHabits + completedTodayTasks;
-    return Math.round((completedItems / totalItems) * 100);
-  }, [activeHabits, habitLogs, todayTasks, today]);
-
-  // Heatmap data (last 180 days)
-  const heatmapData = useMemo(() => {
-    const counts: Record<string, number> = {};
-    
-    sessions.forEach(s => {
-      counts[s.date] = (counts[s.date] || 0) + 1;
-    });
-    
-    tasks.forEach(t => {
-      if (t.completedAt) {
-        try {
-          const dateStr = format(new Date(t.completedAt), 'yyyy-MM-dd');
-          counts[dateStr] = (counts[dateStr] || 0) + 1;
-        } catch (e) {
-          // Ignore invalid dates
-        }
-      }
-    });
-
-    const data: { date: string; count: number }[] = [];
-    for (let i = 180; i >= 0; i--) {
-      const d = subDays(new Date(), i);
-      const dateStr = format(d, 'yyyy-MM-dd');
-      data.push({ date: dateStr, count: counts[dateStr] || 0 });
-    }
-    return data;
+    return list;
   }, [sessions, tasks]);
 
-  const getHeatColor = (count: number) => {
-    if (count === 0) return 'var(--color-heat-0)';
-    if (count <= 1) return 'var(--color-heat-1)';
-    if (count <= 3) return 'var(--color-heat-2)';
-    if (count <= 5) return 'var(--color-heat-3)';
-    return 'var(--color-heat-4)';
-  };
+  const weekFocusTotal = useMemo(
+    () => weekHistory.reduce((sum, d) => sum + d.hours, 0).toFixed(1),
+    [weekHistory]
+  );
+  const maxDayHours = useMemo(
+    () => Math.max(...weekHistory.map((d) => d.hours), 4),
+    [weekHistory]
+  );
 
-  // Progress ring dimensions
-  const ringRadius = 26;
-  const ringCircumference = 2 * Math.PI * ringRadius;
-  const ringOffset = ringCircumference - (dailyProgress / 100) * ringCircumference;
+  /* ------------------------------------------------------------------ *
+   * Widget Views
+   * ------------------------------------------------------------------ */
 
-  const WeatherIcon = weatherStyles.icon;
-
-  return (
-    <motion.div variants={container} initial="hidden" animate="show" style={{ maxWidth: 1200, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 24 }}>
-      
-      {/* Header Area */}
-      <motion.div variants={item} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: 16 }}>
-        <div>
-          <h1 style={{ fontSize: 28, fontWeight: 700, color: 'var(--color-text-primary)', marginBottom: 4, letterSpacing: '-0.03em' }}>
-            Good {new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 18 ? 'afternoon' : 'evening'}
-          </h1>
-          <p style={{ fontSize: 13, color: 'var(--color-text-muted)' }}>Here's what's happening today.</p>
-        </div>
-        
-        <div style={{ display: 'flex', gap: 12 }}>
-          <button onClick={() => navigate('/settings')} className="btn btn-secondary" style={{ gap: 6 }}>
-            <CalendarDays size={14} />
-            Connect Calendar
-          </button>
-          <button onClick={() => navigate('/focus')} className="btn btn-primary" style={{ gap: 6 }}>
-            <Timer size={14} fill="currentColor" />
-            Start Focus Mode
-          </button>
-        </div>
-      </motion.div>
-
-      {/* Top Widgets Panel: Weather & Quote */}
-      <motion.div variants={item} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 16 }}>
-        
-        {/* Weather Widget */}
-        {loadingWeather ? (
-          <div className="glass-card" style={{ padding: '16px 20px', display: 'flex', gap: 16, alignItems: 'center' }}>
-            <Skeleton width={32} height={32} borderRadius="50%" />
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 6 }}>
-              <Skeleton width="40%" height={10} />
-              <Skeleton width="80%" height={14} />
-            </div>
-          </div>
-        ) : (
-          <div 
-            className="glass-card" 
-            style={{ 
-              padding: '16px 20px', 
-              display: 'flex', 
-              alignItems: 'center', 
-              gap: 16, 
-              background: weatherStyles.bg,
-              borderColor: weatherStyles.border,
-            }}
+  const renderWidget = (item: DashboardWidget, size: WidgetSize) => {
+    switch (item.kind) {
+      case 'performance':
+        return (
+          <Shell
+            title="Weekly performance"
+            meta={<span className="font-mono">{weekFocusTotal}h total</span>}
           >
-            <div style={{ width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', color: weatherStyles.color }}>
-              <WeatherIcon size={28} />
-            </div>
-            <div>
-              <div style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--color-text-muted)' }}>
-                Dushanbe weather
-              </div>
-              <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--color-text-primary)', marginTop: 2 }}>
-                {weather ? `${weather.temp}°C · ${weather.text}` : 'Weather Offline'}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Interactive 3D Orb Widget */}
-        <div 
-          className="glass-card" 
-          style={{ 
-            padding: '16px 20px', 
-            display: 'flex', 
-            alignItems: 'center', 
-            background: 'linear-gradient(135deg, rgba(63, 185, 80, 0.04) 0%, rgba(8, 8, 20, 0.4) 100%)', 
-            borderColor: 'rgba(63, 185, 80, 0.15)',
-            overflow: 'hidden'
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: 16, width: '100%' }}>
-            <div style={{ width: 50, height: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-              <Interactive3DOrb size={50} particleCount={50} color="var(--color-accent)" />
-            </div>
-            <div>
-              <div style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--color-text-muted)' }}>
-                Focus Engine
-              </div>
-              <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-text-primary)', marginTop: 2 }}>
-                Zen system ready
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Motivational Quotes Widget */}
-        <div 
-          className="glass-card" 
-          style={{ 
-            padding: '16px 20px', 
-            display: 'flex', 
-            flexDirection: 'column', 
-            justifyContent: 'center', 
-            background: 'linear-gradient(135deg, rgba(63, 185, 80, 0.03) 0%, rgba(8, 8, 20, 0.4) 100%)', 
-            borderLeft: '3px solid var(--color-accent)' 
-          }}
-        >
-          <div style={{ fontSize: 12.5, fontStyle: 'italic', color: 'var(--color-text-primary)', lineHeight: 1.45 }}>
-            "{randomQuote?.text}"
-          </div>
-          <div style={{ fontSize: 10, fontWeight: 600, color: 'var(--color-text-muted)', marginTop: 6, textAlign: 'right', fontFamily: 'var(--font-mono)' }}>
-            — {randomQuote?.author} ({randomQuote?.category.toUpperCase()})
-          </div>
-        </div>
-
-      </motion.div>
-
-      {/* Main Grid Layout */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', gap: 24 }}>
-        
-        {/* LEFT COLUMN: Overview, Tasks, Habits */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-          
-          {/* Quick Stats & Daily Ring Card */}
-          <motion.div variants={item} className="glass-card" style={{ padding: '20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 20 }}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, flex: 1 }}>
-              <div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: 'var(--color-text-muted)', marginBottom: 6 }}>
-                  <Clock size={13} /> <span style={{ fontSize: 11, fontWeight: 600 }}>FOCUS HOURS</span>
-                </div>
-                <div style={{ fontSize: 24, fontWeight: 700, fontFamily: 'var(--font-mono)' }}>{focusHours}h</div>
-              </div>
-              <div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: 'var(--color-text-muted)', marginBottom: 6 }}>
-                  <CheckSquare size={13} /> <span style={{ fontSize: 11, fontWeight: 600 }}>TASKS DONE</span>
-                </div>
-                <div style={{ fontSize: 24, fontWeight: 700, fontFamily: 'var(--font-mono)' }}>{completedTasks}</div>
-              </div>
-            </div>
-            
-            {/* Visual Ring Loader */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, borderLeft: '1px solid var(--color-border)', paddingLeft: 20 }}>
-              <div style={{ position: 'relative', width: 60, height: 60, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <svg width="60" height="60" style={{ transform: 'rotate(-90deg)' }}>
-                  <circle cx="30" cy="30" r={ringRadius} fill="transparent" stroke="rgba(255,255,255,0.03)" strokeWidth="3" />
-                  <motion.circle 
-                    cx="30" 
-                    cy="30" 
-                    r={ringRadius} 
-                    fill="transparent" 
-                    stroke="var(--color-accent)" 
-                    strokeWidth="3.5" 
-                    strokeDasharray={ringCircumference}
-                    animate={{ strokeDashoffset: ringOffset }}
-                    transition={{ duration: 0.8, ease: 'easeOut' }}
-                    strokeLinecap="round"
-                  />
-                </svg>
-                <span style={{ position: 'absolute', fontSize: 11, fontWeight: 700, fontFamily: 'var(--font-mono)' }}>
-                  {dailyProgress}%
-                </span>
-              </div>
-              <div>
-                <div style={{ fontSize: 12, fontWeight: 700 }}>Today's Goal</div>
-                <div style={{ fontSize: 10, color: 'var(--color-text-muted)' }}>Tasks &amp; Habits</div>
-              </div>
-            </div>
-          </motion.div>
-
-          {/* Spotify Widget card */}
-          <motion.div variants={item} className="glass-card" style={{ padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 10 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: 'var(--color-text-primary)', fontSize: 13, fontWeight: 700 }}>
-              <Music size={14} style={{ color: '#1DB954' }} /> Spotify Soundtrack
-            </div>
-            <SpotifyWidget height={152} />
-          </motion.div>
-
-          {/* Tasks Panel */}
-          <motion.div variants={item} className="glass-card" style={{ padding: 20 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-              <h3 style={{ fontSize: 13, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6, color: 'var(--color-text-primary)', textTransform: 'uppercase', letterSpacing: '0.03em' }}>
-                <CheckSquare size={14} /> Today's Tasks
-              </h3>
-              <span className="badge badge-accent">{todayTasks.length} pending</span>
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-              {todayTasks.length === 0 ? (
-                <p style={{ color: 'var(--color-text-muted)', fontSize: 13, padding: '12px 0', textAlign: 'center' }}>No tasks scheduled for today.</p>
-              ) : todayTasks.slice(0, 5).map((task) => (
-                <div key={task.id} style={{
-                  display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px',
-                  borderRadius: 'var(--radius-md)', transition: 'background 0.15s',
-                  background: 'rgba(255,255,255,0.01)', border: '1px solid rgba(255,255,255,0.02)',
-                  cursor: 'pointer'
-                }}
-                onClick={() => navigate('/tasks')}
-                onMouseEnter={(e) => e.currentTarget.style.background = 'var(--color-bg-hover)'}
-                onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.01)'}
-                >
-                  <div style={{
-                    width: 14, height: 14, borderRadius: 3, border: '1.5px solid var(--color-border-light)',
-                    background: task.status === TaskStatus.COMPLETED ? 'var(--color-text-primary)' : 'transparent',
-                  }} />
-                  <span style={{ fontSize: 13, flex: 1, color: 'var(--color-text-primary)' }}>{task.title}</span>
-                  <ChevronRight size={12} style={{ color: 'var(--color-text-muted)' }} />
-                </div>
-              ))}
-            </div>
-          </motion.div>
-
-          {/* Habits Panel */}
-          <motion.div variants={item} className="glass-card" style={{ padding: 20 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-              <h3 style={{ fontSize: 13, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6, color: 'var(--color-text-primary)', textTransform: 'uppercase', letterSpacing: '0.03em' }}>
-                <Target size={14} /> Habits
-              </h3>
-              <span style={{ fontSize: 12, fontFamily: 'var(--font-mono)', color: 'var(--color-text-muted)' }}>
-                {habitsCompletedToday} / {activeHabits.length} completed
+            <div className="flex items-baseline justify-between mb-2">
+              <MetricNumber unit="hours focused this week">{weekFocusTotal}</MetricNumber>
+              <span className="text-[12px] text-muted-foreground font-mono">
+                {weekHistory.reduce((sum, d) => sum + d.doneTasks, 0)} tasks finished
               </span>
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              {activeHabits.length === 0 ? (
-                <p style={{ color: 'var(--color-text-muted)', fontSize: 13, padding: '12px 0', textAlign: 'center' }}>No habits registered.</p>
-              ) : activeHabits.slice(0, 4).map((habit) => {
-                const isCompleted = habitLogs.some((l) => l.habitId === habit.id && l.date === today && l.completed);
+
+            {/* Precision 7-day slot bars */}
+            <div className="mt-auto flex h-14 items-end gap-2 pt-2 border-t border-border/30">
+              {weekHistory.map((d, i) => {
+                const heightPct = Math.max(14, Math.round((d.hours / maxDayHours) * 100));
+                const isCurrent = i === weekHistory.length - 1;
                 return (
-                  <div 
-                    key={habit.id} 
-                    style={{ 
-                      display: 'flex', 
-                      justifyContent: 'space-between', 
-                      alignItems: 'center', 
-                      fontSize: 13, 
-                      padding: '8px 12px',
-                      background: 'rgba(255,255,255,0.01)',
-                      border: '1px solid rgba(255,255,255,0.02)',
-                      borderRadius: 'var(--radius-md)'
-                    }}
-                  >
-                    <span style={{ fontWeight: 500, color: isCompleted ? 'var(--color-text-muted)' : 'var(--color-text-primary)', textDecoration: isCompleted ? 'line-through' : 'none' }}>
-                      {habit.name}
+                  <div key={d.dateStr} className="group relative flex flex-1 flex-col items-center gap-1.5 h-full justify-end">
+                    <span className="opacity-0 group-hover:opacity-100 transition-opacity absolute -top-5 text-[10px] font-mono text-foreground bg-popover px-1.5 py-0.5 rounded shadow-sm border border-border">
+                      {d.hours}h · {d.doneTasks}t
                     </span>
-                    <div style={{
-                      width: 18, height: 18, borderRadius: '50%', border: '1px solid var(--color-border-light)',
-                      background: isCompleted ? habit.color : 'transparent', borderColor: isCompleted ? habit.color : 'var(--color-border-light)',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      boxShadow: isCompleted ? `0 0 10px ${habit.color}40` : 'none',
-                    }} />
+                    <div
+                      className={`w-full rounded transition-all duration-300 ${
+                        isCurrent
+                          ? 'bg-primary shadow-sm'
+                          : d.hours > 0
+                          ? 'bg-foreground/20 hover:bg-foreground/35'
+                          : 'bg-foreground/5'
+                      }`}
+                      style={{ height: `${heightPct}%` }}
+                    />
+                    <span className={`text-[11px] font-mono ${isCurrent ? 'text-primary font-semibold' : 'text-muted-foreground'}`}>
+                      {d.dayLabel}
+                    </span>
                   </div>
                 );
               })}
             </div>
-          </motion.div>
+          </Shell>
+        );
 
-        </div>
-        
-        {/* RIGHT COLUMN: Heatmap, Skeletons, Analytics, Calendar */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-          
-          {/* GitHub-style Heatmap */}
-          <motion.div 
-            initial={{ opacity: 0, y: 20, scale: 0.98 }}
-            whileInView={{ opacity: 1, y: 0, scale: 1 }}
-            viewport={{ once: true, margin: '-20px' }}
-            transition={{ duration: 0.4 }}
-            className="glass-card" 
-            style={{ padding: 20 }}
+      case 'calendar-event':
+        return (
+          <Shell
+            title="Upcoming schedule"
+            meta={
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigate('/calendar');
+                }}
+                className="text-[11px] text-primary hover:underline flex items-center gap-1"
+              >
+                Calendar <ArrowRight size={11} />
+              </button>
+            }
           >
-            <h3 style={{ fontSize: 13, fontWeight: 700, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 6, textTransform: 'uppercase', letterSpacing: '0.03em' }}>
-              <Flame size={14} style={{ color: 'var(--color-rose)' }} /> Activity Heatmap
-            </h3>
-            <div style={{ 
-              display: 'flex', 
-              flexDirection: 'column', 
-              gap: 4,
-              overflowX: 'auto',
-              paddingBottom: 8
-            }}>
-              <div style={{ 
-                display: 'grid', 
-                gridTemplateRows: 'repeat(7, 10px)', 
-                gridAutoFlow: 'column', 
-                gridAutoColumns: '10px',
-                gap: 4 
-              }}>
-                {heatmapData.map((d) => (
-                  <div
-                    key={d.date}
-                    title={`${d.date}: ${d.count} activities`}
-                    style={{
-                      width: 10,
-                      height: 10,
-                      borderRadius: 2.5,
-                      background: getHeatColor(d.count),
-                      transition: 'background 0.15s ease'
+            {nextEvent ? (
+              <div className="flex flex-col justify-between h-full">
+                <div>
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <span className="px-1.5 py-0.5 rounded text-[10px] font-mono bg-primary/10 text-primary border border-primary/20">
+                      {nextEvent.startTime || 'All day'}
+                    </span>
+                    <span className="text-[11px] text-muted-foreground font-mono">
+                      {nextEvent.date === today ? 'Today' : nextEvent.date}
+                    </span>
+                  </div>
+                  <h4 className="text-[13.5px] font-medium text-foreground line-clamp-2 leading-snug">
+                    {nextEvent.title}
+                  </h4>
+                </div>
+
+                <div className="mt-auto pt-2 border-t border-border/30 flex items-center justify-between text-[11.5px] text-muted-foreground">
+                  <span className="truncate">{nextEvent.description || 'Google Calendar event'}</span>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate('/calendar');
                     }}
-                  />
-                ))}
+                    className="p-1 rounded hover:bg-foreground/5 text-foreground"
+                    title="Open calendar"
+                  >
+                    <ExternalLink size={12} />
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground">
+                <Calendar size={18} className="mb-1 opacity-50 text-blue-500" />
+                <span className="text-[12px] font-medium text-foreground">Schedule clear</span>
+                <span className="text-[11px]">No upcoming events today</span>
+              </div>
+            )}
+          </Shell>
+        );
+
+      case 'ambient-audio':
+        return (
+          <Shell
+            title="Focus soundscape"
+            meta={
+              <span className="flex items-center gap-1.5 font-mono text-[11px] text-muted-foreground">
+                {activeSound ? (
+                  <span className="flex items-center gap-1 text-blue-500 font-medium">
+                    <Activity size={12} className="animate-pulse" /> Live
+                  </span>
+                ) : (
+                  'Standby'
+                )}
+              </span>
+            }
+          >
+            <div className="space-y-1.5 my-auto">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggleSound('rain');
+                }}
+                className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-[12px] transition-colors border ${
+                  activeSound === 'rain'
+                    ? 'bg-blue-500/15 border-blue-500/30 text-blue-400 font-medium'
+                    : 'bg-foreground/[0.03] border-border/40 text-foreground hover:bg-foreground/5'
+                }`}
+              >
+                <span className="flex items-center gap-2">
+                  <CloudRain size={13} className={activeSound === 'rain' ? 'text-blue-400' : 'text-muted-foreground'} />
+                  <span>Rain & Storm</span>
+                </span>
+                {activeSound === 'rain' ? <Square size={11} fill="currentColor" /> : <Play size={11} />}
+              </button>
+
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggleSound('noise');
+                }}
+                className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-[12px] transition-colors border ${
+                  activeSound === 'noise'
+                    ? 'bg-blue-500/15 border-blue-500/30 text-blue-400 font-medium'
+                    : 'bg-foreground/[0.03] border-border/40 text-foreground hover:bg-foreground/5'
+                }`}
+              >
+                <span className="flex items-center gap-2">
+                  <Volume2 size={13} className={activeSound === 'noise' ? 'text-blue-400' : 'text-muted-foreground'} />
+                  <span>Deep Brown Noise</span>
+                </span>
+                {activeSound === 'noise' ? <Square size={11} fill="currentColor" /> : <Play size={11} />}
+              </button>
+            </div>
+
+            <div className="mt-auto pt-2 border-t border-border/30 flex items-center justify-between text-[11px] text-muted-foreground">
+              <span>Offline Web Audio</span>
+              {spotifyPlaylistUrl && (
+                <a
+                  href={spotifyPlaylistUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  onClick={(e) => e.stopPropagation()}
+                  className="flex items-center gap-1 text-emerald-500 hover:underline"
+                >
+                  <Music size={11} /> Spotify
+                </a>
+              )}
+            </div>
+          </Shell>
+        );
+
+      case 'scratchpad':
+        return (
+          <Shell
+            title="Quick scratchpad"
+            meta={
+              scratchpadFeedback ? (
+                <span className="text-blue-500 font-medium">{scratchpadFeedback}</span>
+              ) : (
+                <span className="font-mono text-[11px] text-muted-foreground">
+                  {scratchpadText.length} chars
+                </span>
+              )
+            }
+          >
+            <div className="flex flex-col h-full gap-2">
+              <textarea
+                value={scratchpadText}
+                onChange={(e) => handleScratchpadChange(e.target.value)}
+                onClick={(e) => e.stopPropagation()}
+                placeholder="Type quick thoughts, phone numbers, or raw notes... Autosaves locally."
+                className="w-full flex-1 resize-none bg-transparent font-mono text-[12.5px] leading-relaxed text-foreground placeholder:text-muted-foreground/50 border-0 outline-none p-1"
+                rows={3}
+              />
+              <div className="flex items-center justify-between pt-2 border-t border-border/30">
+                <span className="text-[11px] text-muted-foreground">
+                  Press convert to send directly to your Task Inbox
+                </span>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleConvertToTask();
+                  }}
+                  disabled={!scratchpadText.trim()}
+                  className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11.5px] font-medium bg-foreground/5 hover:bg-foreground/10 text-foreground transition-colors border border-border/50 disabled:opacity-40"
+                >
+                  <Plus size={12} />
+                  <span>Turn into Task</span>
+                </button>
               </div>
             </div>
-          </motion.div>
+          </Shell>
+        );
 
-          {/* Project Progress */}
-          <motion.div 
-            initial={{ opacity: 0, y: 20, scale: 0.98 }}
-            whileInView={{ opacity: 1, y: 0, scale: 1 }}
-            viewport={{ once: true, margin: '-20px' }}
-            transition={{ duration: 0.4, delay: 0.05 }}
-            className="glass-card" 
-            style={{ padding: 20 }}
+      case 'focus-time':
+        return (
+          <Shell
+            title="Focus session"
+            meta={<span className="font-mono">{todaySessions.length} logged</span>}
           >
-            <h3 style={{ fontSize: 13, fontWeight: 700, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 6, textTransform: 'uppercase', letterSpacing: '0.03em' }}>
-              <Activity size={14} /> Project Progress
-            </h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-              {activeProjects.length === 0 ? (
-                <p style={{ color: 'var(--color-text-muted)', fontSize: 13, padding: '12px 0', textAlign: 'center' }}>No active projects.</p>
-              ) : activeProjects.slice(0, 3).map((project) => (
-                <div key={project.id}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-                    <span style={{ fontSize: 13, fontWeight: 600 }}>{project.title}</span>
-                    <span style={{ fontSize: 12, color: 'var(--color-text-muted)', fontFamily: 'var(--font-mono)' }}>{project.progress}%</span>
-                  </div>
-                  <div className="progress-bar" style={{ height: 6 }}>
-                    <div className="progress-bar-fill" style={{ width: `${project.progress}%`, background: 'linear-gradient(90deg, var(--color-accent), var(--color-cyan))' }} />
-                  </div>
-                </div>
-              ))}
+            <MetricNumber unit="hrs today">{focusHoursToday}</MetricNumber>
+
+            <div className="mt-auto space-y-2">
+              <div className="flex items-center justify-between text-[12px] text-muted-foreground">
+                <span>Daily target (3h)</span>
+                <span className="font-mono">{Math.round((focusMinutesToday / 180) * 100)}%</span>
+              </div>
+              <div className="h-1.5 w-full rounded-full bg-foreground/10 overflow-hidden">
+                <div
+                  className="h-full rounded-full bg-primary transition-all duration-500"
+                  style={{ width: `${Math.min(100, Math.round((focusMinutesToday / 180) * 100))}%` }}
+                />
+              </div>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigate('/focus');
+                }}
+                className="w-full flex items-center justify-center gap-1.5 rounded-lg py-1.5 px-3 text-[12px] font-medium bg-foreground/5 hover:bg-foreground/10 text-foreground transition-colors border border-border/60"
+              >
+                <Timer size={13} className="text-primary" />
+                <span>Enter Focus Mode</span>
+                <ChevronRight size={13} className="opacity-60 ml-auto" />
+              </button>
             </div>
-          </motion.div>
+          </Shell>
+        );
 
-          {/* Study / Coding Statistics (Weekly Charts) */}
-          <motion.div 
-            initial={{ opacity: 0, y: 20, scale: 0.98 }}
-            whileInView={{ opacity: 1, y: 0, scale: 1 }}
-            viewport={{ once: true, margin: '-20px' }}
-            transition={{ duration: 0.4, delay: 0.1 }}
-            className="glass-card" 
-            style={{ padding: 20 }}
+      case 'tasks-progress':
+        return (
+          <Shell
+            title="Task execution"
+            meta={<span className="font-mono">{completedTodayTasksCount}/{todayTasks.length}</span>}
           >
-            <h3 style={{ fontSize: 13, fontWeight: 700, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 6, color: 'var(--color-text-primary)', textTransform: 'uppercase', letterSpacing: '0.03em' }}>
-              <BookText size={14} /> Weekly Statistics
-            </h3>
-            <div style={{ height: 200, width: '100%' }}>
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={weeklyStatsData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                  <XAxis 
-                    dataKey="name" 
-                    stroke="var(--color-text-muted)" 
-                    fontSize={11} 
-                    tickLine={false} 
-                    axisLine={false} 
-                  />
-                  <YAxis 
-                    stroke="var(--color-text-muted)" 
-                    fontSize={11} 
-                    tickLine={false} 
-                    axisLine={false} 
-                  />
-                  <Tooltip 
-                    contentStyle={{ 
-                      background: 'var(--color-bg-secondary)', 
-                      border: '1px solid var(--color-border)',
-                      borderRadius: 'var(--radius-md)',
-                      fontSize: 12,
-                      color: 'var(--color-text-primary)'
-                    }} 
-                    labelStyle={{ color: 'var(--color-text-primary)', fontWeight: 600 }}
-                  />
-                  <Legend 
-                    wrapperStyle={{ fontSize: 11, paddingTop: 10 }} 
-                    verticalAlign="bottom" 
-                    height={36} 
-                  />
-                  <Bar dataKey="Focus Hours" fill="var(--color-accent)" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="Tasks Done" fill="var(--color-cyan)" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="Habits Done" fill="var(--color-violet)" radius={[4, 4, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
+            <MetricNumber unit="completed">{tasksCompletionRate}%</MetricNumber>
+
+            <div className="mt-auto space-y-2">
+              <div className="flex items-center justify-between text-[12px] text-muted-foreground">
+                <span>Pending today</span>
+                <span className="font-mono">{pendingTodayTasksCount} tasks</span>
+              </div>
+              <div className="h-1.5 w-full rounded-full bg-foreground/10 overflow-hidden">
+                <div
+                  className="h-full rounded-full bg-primary transition-all duration-500"
+                  style={{ width: `${tasksCompletionRate}%` }}
+                />
+              </div>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigate('/tasks');
+                }}
+                className="w-full flex items-center justify-center gap-1.5 rounded-lg py-1.5 px-3 text-[12px] font-medium bg-foreground/5 hover:bg-foreground/10 text-foreground transition-colors border border-border/60"
+              >
+                <CheckSquare size={13} className="text-primary" />
+                <span>Task Board</span>
+                <ChevronRight size={13} className="opacity-60 ml-auto" />
+              </button>
             </div>
-          </motion.div>
+          </Shell>
+        );
 
-          {/* Upcoming Events */}
-          <motion.div 
-            initial={{ opacity: 0, y: 20, scale: 0.98 }}
-            whileInView={{ opacity: 1, y: 0, scale: 1 }}
-            viewport={{ once: true, margin: '-20px' }}
-            transition={{ duration: 0.4, delay: 0.15 }}
-            className="glass-card" 
-            style={{ padding: 20 }}
+      case 'daily-habits':
+        return (
+          <Shell
+            title="Daily habits"
+            meta={
+              <span className="flex items-center gap-1 font-mono text-amber-500 text-[11px]">
+                <Flame size={12} fill="currentColor" /> {longestStreak}d
+              </span>
+            }
           >
-            <h3 style={{ fontSize: 13, fontWeight: 700, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 6, textTransform: 'uppercase', letterSpacing: '0.03em' }}>
-              <CalendarDays size={14} /> Upcoming Events
-            </h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-              {loadingEvents ? (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                  <Skeleton width="100%" height={32} />
-                  <Skeleton width="100%" height={32} />
-                </div>
-              ) : !googleCalendarToken ? (
-                <div style={{ fontSize: 13, color: 'var(--color-text-muted)', padding: '16px 0', textAlign: 'center' }}>
-                  No events scheduled. Connect Google Calendar in Settings.
-                </div>
-              ) : upcomingGoogleEvents.length === 0 ? (
-                <div style={{ fontSize: 13, color: 'var(--color-text-muted)', padding: '16px 0', textAlign: 'center' }}>
-                  No upcoming events today.
-                </div>
-              ) : (
-                upcomingGoogleEvents.map((event) => {
-                  const startDateTime = event.start?.dateTime || event.start?.date;
-                  const dateStr = startDateTime ? format(new Date(startDateTime), 'MMM d, yyyy') : '';
-                  const timeStr = event.start?.dateTime ? format(new Date(event.start.dateTime), 'HH:mm') : 'All Day';
+            <MetricNumber unit="completed">{habitsCompletedToday}/{activeHabits.length}</MetricNumber>
+
+            <div className="mt-auto space-y-1.5">
+              <div className="flex flex-col gap-1">
+                {activeHabits.slice(0, 3).map((h) => {
+                  const isDone = habitLogs.some((l) => l.habitId === h.id && l.date === today && l.completed);
                   return (
                     <div
-                      key={event.id}
-                      style={{
-                        padding: '10px 12px',
-                        background: 'rgba(255,255,255,0.01)',
-                        borderRadius: 'var(--radius-md)',
-                        borderLeft: '3px solid var(--color-accent)',
-                        border: '1px solid rgba(255,255,255,0.02)',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: 4
+                      key={h.id}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleHabitDay(h.id, today);
                       }}
+                      className="flex items-center justify-between gap-2 p-1 rounded-md hover:bg-foreground/5 cursor-pointer transition-colors text-[12px]"
                     >
-                      <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text-primary)' }}>
-                        {event.summary}
+                      <span className="truncate text-foreground flex items-center gap-1.5">
+                        <span
+                          className={`size-3.5 rounded flex items-center justify-center border text-[9px] transition-colors ${
+                            isDone
+                              ? 'bg-primary border-primary text-white'
+                              : 'border-border/80 text-transparent hover:border-foreground/50'
+                          }`}
+                        >
+                          <Check size={10} strokeWidth={3} />
+                        </span>
+                        <span className={isDone ? 'line-through text-muted-foreground' : ''}>{h.name}</span>
                       </span>
-                      <div style={{ display: 'flex', gap: 8, fontSize: 11, color: 'var(--color-text-muted)' }}>
-                        <span>{dateStr}</span>
-                        <span>•</span>
-                        <span>{timeStr}</span>
+                      <span className="text-[11px] font-mono text-muted-foreground">{getStreak(h.id)}d</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </Shell>
+        );
+
+      case 'data-sync': {
+        const hasNotion = Boolean(notionApiKey);
+        const hasMicrosoft = Boolean(microsoftAccessToken);
+        const activeCount = (hasNotion ? 1 : 0) + (hasMicrosoft ? 1 : 0);
+
+        return (
+          <Shell
+            title="Integrations & Sync"
+            meta={<span className="font-mono text-[11px] text-muted-foreground">{activeCount} connected</span>}
+          >
+            <MetricNumber unit="services">{activeCount > 0 ? `${activeCount} Active` : 'Offline'}</MetricNumber>
+
+            <div className="mt-auto space-y-1.5">
+              <div className="flex items-center justify-between text-[12px]">
+                <span className="text-muted-foreground">Notion database</span>
+                <span className={`font-mono text-[11px] ${hasNotion ? 'text-primary' : 'text-muted-foreground'}`}>
+                  {hasNotion ? 'Active' : 'Unconfigured'}
+                </span>
+              </div>
+              <div className="flex items-center justify-between text-[12px]">
+                <span className="text-muted-foreground">Microsoft To Do</span>
+                <span className={`font-mono text-[11px] ${hasMicrosoft ? 'text-primary' : 'text-muted-foreground'}`}>
+                  {hasMicrosoft ? 'Active' : 'Unconfigured'}
+                </span>
+              </div>
+
+              {syncFeedback && (
+                <div className="text-[11px] font-mono text-primary truncate pt-0.5">
+                  {syncFeedback}
+                </div>
+              )}
+
+              <div className="flex gap-2 pt-1">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleQuickSync();
+                  }}
+                  disabled={isSyncing}
+                  className="flex-1 flex items-center justify-center gap-1.5 rounded-lg py-1.5 px-2 text-[12px] font-medium bg-foreground/5 hover:bg-foreground/10 text-foreground transition-colors border border-border/60 disabled:opacity-50"
+                >
+                  <RefreshCw size={12} className={isSyncing ? 'animate-spin text-primary' : ''} />
+                  <span>{isSyncing ? 'Syncing...' : 'Sync Now'}</span>
+                </button>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    openIntegrationsModal();
+                  }}
+                  className="rounded-lg py-1.5 px-2 text-[12px] font-medium bg-foreground/5 hover:bg-foreground/10 text-foreground transition-colors border border-border/60"
+                  title="Configure Keys"
+                >
+                  Keys
+                </button>
+              </div>
+            </div>
+          </Shell>
+        );
+      }
+
+      case 'today-tasks':
+        return (
+          <Shell
+            title="Today's priorities"
+            meta={
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigate('/tasks');
+                }}
+                className="text-[11px] text-primary hover:underline flex items-center gap-1"
+              >
+                Board <ArrowRight size={11} />
+              </button>
+            }
+          >
+            <div className="space-y-1.5 flex-1 min-h-0 overflow-y-auto pr-1">
+              {todayTasks.length === 0 ? (
+                <div className="h-full flex flex-col items-center justify-center text-center p-4 text-muted-foreground text-[12px]">
+                  <CheckSquare size={18} className="mb-1 opacity-40" />
+                  <span>No tasks due today. Everything clear!</span>
+                </div>
+              ) : (
+                todayTasks.slice(0, 4).map((t) => {
+                  const isDone = t.status === TaskStatus.COMPLETED;
+                  return (
+                    <div
+                      key={t.id}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (isDone) {
+                          updateTask(t.id, { status: TaskStatus.TODO, completedAt: undefined });
+                        } else {
+                          completeTask(t.id);
+                        }
+                      }}
+                      className="group flex items-center justify-between gap-3 p-2 rounded-lg hover:bg-foreground/5 cursor-pointer border border-border/30 transition-all text-[12.5px]"
+                    >
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <span
+                          className={`size-4 rounded flex items-center justify-center border text-[10px] shrink-0 transition-colors ${
+                            isDone
+                              ? 'bg-primary border-primary text-white'
+                              : 'border-border/80 text-transparent group-hover:border-foreground/50'
+                          }`}
+                        >
+                          <Check size={11} strokeWidth={3} />
+                        </span>
+                        <span className={`truncate font-medium text-foreground ${isDone ? 'line-through text-muted-foreground' : ''}`}>
+                          {t.title}
+                        </span>
+                      </div>
+                      <span
+                        className={`px-1.5 py-0.5 rounded text-[10px] font-mono uppercase ${
+                          t.priority === TaskPriority.URGENT
+                            ? 'bg-rose-500/15 text-rose-500 border border-rose-500/30'
+                            : t.priority === TaskPriority.HIGH
+                            ? 'bg-amber-500/15 text-amber-500 border border-amber-500/30'
+                            : 'bg-foreground/5 text-muted-foreground border border-border/50'
+                        }`}
+                      >
+                        {t.priority}
+                      </span>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          </Shell>
+        );
+
+      case 'active-projects':
+        return (
+          <Shell
+            title="Active projects"
+            meta={
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigate('/projects');
+                }}
+                className="text-[11px] text-blue-500 hover:underline flex items-center gap-1"
+              >
+                All ({activeProjects.length}) <ArrowRight size={11} />
+              </button>
+            }
+          >
+            <div className="space-y-2 flex-1 min-h-0 overflow-y-auto pr-1">
+              {activeProjects.length === 0 ? (
+                <div className="h-full flex flex-col items-center justify-center text-center p-4 text-muted-foreground text-[12px]">
+                  <FolderKanban size={18} className="mb-1 opacity-40" />
+                  <span>No active projects</span>
+                </div>
+              ) : (
+                activeProjects.slice(0, 3).map((p) => {
+                  const progress = p.progress || 0;
+                  return (
+                    <div
+                      key={p.id}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        navigate('/projects');
+                      }}
+                      className="p-2 rounded-lg bg-foreground/[0.02] hover:bg-foreground/5 border border-border/40 cursor-pointer transition-colors"
+                    >
+                      <div className="flex items-center justify-between text-[12px] font-medium text-foreground mb-1">
+                        <span className="truncate">{p.title}</span>
+                        <span className="font-mono text-muted-foreground text-[11px]">{progress}%</span>
+                      </div>
+                      <div className="h-1.5 w-full rounded-full bg-foreground/10 overflow-hidden">
+                        <div
+                          className="h-full rounded-full bg-blue-500 transition-all duration-500"
+                          style={{ width: `${progress}%` }}
+                        />
                       </div>
                     </div>
                   );
                 })
               )}
             </div>
-          </motion.div>
+          </Shell>
+        );
 
+      case 'weather': {
+        const WeatherIcon =
+          weather?.code === 0
+            ? Sun
+            : [1, 2, 3].includes(weather?.code ?? -1)
+            ? Cloud
+            : [51, 53, 55, 61, 63, 65, 80, 81, 82].includes(weather?.code ?? -1)
+            ? CloudRain
+            : [71, 73, 75, 77, 85, 86].includes(weather?.code ?? -1)
+            ? CloudSnow
+            : [95, 96, 99].includes(weather?.code ?? -1)
+            ? CloudLightning
+            : Sun;
+
+        return (
+          <Shell
+            title="Local atmosphere"
+            meta={<span className="text-[11px] font-mono text-muted-foreground">Dushanbe</span>}
+          >
+            <div className="flex items-center justify-between my-auto">
+              <MetricNumber unit="°C">{weather ? weather.temp : '--'}</MetricNumber>
+              <div className="size-9 rounded-lg bg-foreground/5 border border-border/50 flex items-center justify-center text-amber-500">
+                <WeatherIcon size={20} />
+              </div>
+            </div>
+
+            <div className="mt-auto pt-2 border-t border-border/30 text-[12px] text-muted-foreground flex justify-between">
+              <span>Condition</span>
+              <span className="font-medium text-foreground">{weather ? weather.text : 'Updating...'}</span>
+            </div>
+          </Shell>
+        );
+      }
+
+      case 'mindset':
+        return (
+          <Shell
+            title="Daily mindset"
+            meta={<span className="text-[11px] font-mono text-muted-foreground">{randomQuote.category}</span>}
+          >
+            <div className="flex flex-col justify-center h-full py-1">
+              <blockquote className="text-[13px] font-normal leading-relaxed text-foreground italic line-clamp-3">
+                "{randomQuote.text}"
+              </blockquote>
+              <div className="mt-2 text-[11px] font-mono text-muted-foreground text-right">
+                — {randomQuote.author}
+              </div>
+            </div>
+          </Shell>
+        );
+
+      default:
+        return <div>Widget {item.id}</div>;
+    }
+  };
+
+  return (
+    <div className="w-full max-w-[1280px] mx-auto flex flex-col gap-5 pb-12 antialiased">
+      {/* ── Top Executive Header Bar ── */}
+      <header className="flex flex-wrap items-center justify-between gap-4 border-b border-border/40 pb-4">
+        <div>
+          <div className="flex items-center gap-2 mb-1">
+            <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-mono bg-primary/10 text-primary border border-primary/20 font-medium">
+              <Zap size={10} fill="currentColor" /> {format(new Date(), 'EEEE, MMMM d')}
+            </span>
+            <span className="text-xs text-muted-foreground font-mono">
+              Industrial Precision OS
+            </span>
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-medium tracking-tight text-foreground">
+            Good {new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 18 ? 'afternoon' : 'evening'}
+          </h1>
+          <p className="text-[13px] text-muted-foreground mt-0.5">
+            You have <strong className="text-foreground font-medium">{pendingTodayTasksCount}</strong> tasks pending and{' '}
+            <strong className="text-foreground font-medium">{activeHabits.length - habitsCompletedToday}</strong> habits remaining today.
+          </p>
         </div>
-      </div>
-    </motion.div>
+
+        {/* Action Controls */}
+        <div className="flex items-center gap-2 flex-wrap">
+          <button
+            onClick={() => setEditable(!editable)}
+            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-medium transition-colors border ${
+              editable
+                ? 'bg-primary text-white border-primary shadow-sm'
+                : 'bg-card text-foreground hover:bg-muted border-border'
+            }`}
+          >
+            <Settings size={13} />
+            <span>{editable ? 'Done Rearranging' : 'Customize Layout'}</span>
+          </button>
+
+          {editable && (
+            <button
+              onClick={resetLayout}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-medium bg-card text-muted-foreground hover:text-foreground hover:bg-muted border border-border transition-colors"
+              title="Reset layout to default"
+            >
+              <RefreshCw size={13} />
+              <span>Reset</span>
+            </button>
+          )}
+
+          <button
+            onClick={openIntegrationsModal}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-medium bg-card text-foreground hover:bg-muted border border-border transition-colors"
+          >
+            <CheckSquare size={13} />
+            <span>Integrations</span>
+          </button>
+
+          <button
+            onClick={() => navigate('/focus')}
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-[12px] font-medium bg-primary hover:opacity-90 text-white transition-all shadow-sm"
+          >
+            <Timer size={13} fill="currentColor" />
+            <span>Start Focus</span>
+          </button>
+        </div>
+      </header>
+
+      {/* ── Edit Mode Helper ── */}
+      {editable && (
+        <div className="flex items-center justify-between gap-3 px-4 py-2.5 rounded-xl bg-primary/10 border border-primary/20 text-primary text-[12.5px]">
+          <div className="flex items-center gap-2">
+            <span className="size-2 rounded-full bg-primary animate-pulse" />
+            <span>Drag tiles to rearrange your dashboard. Positions save automatically.</span>
+          </div>
+          <button
+            onClick={() => setEditable(false)}
+            className="text-[12px] font-medium underline underline-offset-2 hover:opacity-80"
+          >
+            Done
+          </button>
+        </div>
+      )}
+
+      {/* ── Precision Draggable Widget Grid ── */}
+      <section aria-label="Executive Dashboard Grid" className="w-full">
+        <DraggableWidgetGrid
+          items={widgets}
+          editable={editable}
+          onChange={handleWidgetsChange}
+          renderItem={(item, size) => renderWidget(item as DashboardWidget, size)}
+          maxColumns={4}
+          cellSize={220}
+          gap={14}
+          radius={18}
+        />
+      </section>
+    </div>
   );
 }

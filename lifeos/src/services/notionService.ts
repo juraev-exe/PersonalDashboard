@@ -96,6 +96,10 @@ export const queryNotionDatabase = async (
   return results;
 };
 
+/** Fetch database schema and metadata. */
+export const getNotionDatabase = async (databaseId: string): Promise<any> =>
+  notionFetch(`/databases/${databaseId}`, { method: 'GET', headers: getHeaders() });
+
 /** Fetch a single Notion page (used to discover its property schema before updating). */
 export const getNotionPage = async (pageId: string): Promise<NotionPage> =>
   notionFetch(`/pages/${pageId}`, { method: 'GET', headers: getHeaders() });
@@ -117,6 +121,23 @@ export interface NotionPage {
   archived?: boolean;
   properties: Record<string, any>;
 }
+
+/**
+ * Create a new row (page) inside a Notion database.
+ */
+export const createNotionDatabasePage = async (
+  databaseId: string,
+  properties: Record<string, unknown>
+): Promise<NotionPage> => {
+  return notionFetch('/pages', {
+    method: 'POST',
+    headers: getHeaders(),
+    body: JSON.stringify({
+      parent: { database_id: databaseId },
+      properties,
+    }),
+  });
+};
 
 /**
  * Search across all Notion pages and databases

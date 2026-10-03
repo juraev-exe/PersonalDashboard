@@ -329,7 +329,7 @@ export default function FinancePage() {
         <div className="modal-overlay" onClick={() => setIsModalOpen(false)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h3 style={{ fontSize: 18, fontWeight: 700 }}>Log Transaction (+2 XP)</h3>
+              <h3 style={{ fontSize: 18, fontWeight: 700 }}>Log Transaction</h3>
               <button onClick={() => setIsModalOpen(false)} style={{ background: 'transparent', border: 'none', color: 'var(--color-text-muted)', cursor: 'pointer', fontSize: 18 }}>×</button>
             </div>
             <form onSubmit={handleSave}>

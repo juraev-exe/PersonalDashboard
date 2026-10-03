@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { Suspense, useEffect } from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -15,21 +15,39 @@ import AuthPage from './pages/AuthPage';
 import './index.css';
 
 
-// Import pages
-import PomodoroPage from './pages/PomodoroPage';
-import TasksPage from './pages/TasksPage';
-import HabitsPage from './pages/HabitsPage';
-import PrayersPage from './pages/PrayersPage';
-import ProjectsPage from './pages/ProjectsPage';
-import CalendarPage from './pages/CalendarPage';
-import NotesPage from './pages/NotesPage';
-import JournalPage from './pages/JournalPage';
-import FocusPage from './pages/FocusPage';
-import GoalsPage from './pages/GoalsPage';
-import AnalyticsPage from './pages/AnalyticsPage';
-import SettingsPage from './pages/SettingsPage';
-import FinancePage from './pages/FinancePage';
-import DetoxPage from './pages/DetoxPage';
+// Lazy-loaded pages — each gets its own chunk for faster initial load
+const PomodoroPage = React.lazy(() => import('./pages/PomodoroPage'));
+const TasksPage = React.lazy(() => import('./pages/TasksPage'));
+const HabitsPage = React.lazy(() => import('./pages/HabitsPage'));
+const PrayersPage = React.lazy(() => import('./pages/PrayersPage'));
+const ProjectsPage = React.lazy(() => import('./pages/ProjectsPage'));
+const CalendarPage = React.lazy(() => import('./pages/CalendarPage'));
+const NotesPage = React.lazy(() => import('./pages/NotesPage'));
+const JournalPage = React.lazy(() => import('./pages/JournalPage'));
+const FocusPage = React.lazy(() => import('./pages/FocusPage'));
+const GoalsPage = React.lazy(() => import('./pages/GoalsPage'));
+const AnalyticsPage = React.lazy(() => import('./pages/AnalyticsPage'));
+const SettingsPage = React.lazy(() => import('./pages/SettingsPage'));
+const FinancePage = React.lazy(() => import('./pages/FinancePage'));
+const DetoxPage = React.lazy(() => import('./pages/DetoxPage'));
+const WidgetGridDemoPage = React.lazy(() => import('./components/ui/demo'));
+
+// Minimal loading fallback for lazy pages
+function PageSpinner() {
+  return (
+    <div style={{
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      minHeight: '60vh', gap: 12,
+    }}>
+      <div style={{
+        width: 24, height: 24, borderRadius: '50%',
+        border: '2.5px solid var(--color-border-light)',
+        borderTopColor: 'var(--color-accent)',
+        animation: 'spin 0.8s linear infinite',
+      }} />
+    </div>
+  );
+}
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -113,20 +131,21 @@ function App() {
         {user ? (
           <Route element={<MainLayout />}>
             <Route path="/" element={<DashboardPage />} />
-            <Route path="/pomodoro" element={<PomodoroPage />} />
-            <Route path="/focus" element={<FocusPage />} />
-            <Route path="/tasks" element={<TasksPage />} />
-            <Route path="/habits" element={<HabitsPage />} />
-            <Route path="/prayers" element={<PrayersPage />} />
-            <Route path="/projects" element={<ProjectsPage />} />
-            <Route path="/calendar" element={<CalendarPage />} />
-            <Route path="/notes" element={<NotesPage />} />
-            <Route path="/journal" element={<JournalPage />} />
-            <Route path="/goals" element={<GoalsPage />} />
-            <Route path="/analytics" element={<AnalyticsPage />} />
-            <Route path="/settings" element={<SettingsPage />} />
-            <Route path="/finance" element={<FinancePage />} />
-            <Route path="/detox" element={<DetoxPage />} />
+            <Route path="/pomodoro" element={<Suspense fallback={<PageSpinner />}><PomodoroPage /></Suspense>} />
+            <Route path="/focus" element={<Suspense fallback={<PageSpinner />}><FocusPage /></Suspense>} />
+            <Route path="/tasks" element={<Suspense fallback={<PageSpinner />}><TasksPage /></Suspense>} />
+            <Route path="/habits" element={<Suspense fallback={<PageSpinner />}><HabitsPage /></Suspense>} />
+            <Route path="/prayers" element={<Suspense fallback={<PageSpinner />}><PrayersPage /></Suspense>} />
+            <Route path="/projects" element={<Suspense fallback={<PageSpinner />}><ProjectsPage /></Suspense>} />
+            <Route path="/calendar" element={<Suspense fallback={<PageSpinner />}><CalendarPage /></Suspense>} />
+            <Route path="/notes" element={<Suspense fallback={<PageSpinner />}><NotesPage /></Suspense>} />
+            <Route path="/journal" element={<Suspense fallback={<PageSpinner />}><JournalPage /></Suspense>} />
+            <Route path="/goals" element={<Suspense fallback={<PageSpinner />}><GoalsPage /></Suspense>} />
+            <Route path="/analytics" element={<Suspense fallback={<PageSpinner />}><AnalyticsPage /></Suspense>} />
+            <Route path="/settings" element={<Suspense fallback={<PageSpinner />}><SettingsPage /></Suspense>} />
+            <Route path="/finance" element={<Suspense fallback={<PageSpinner />}><FinancePage /></Suspense>} />
+            <Route path="/detox" element={<Suspense fallback={<PageSpinner />}><DetoxPage /></Suspense>} />
+            <Route path="/widget-demo" element={<Suspense fallback={<PageSpinner />}><WidgetGridDemoPage /></Suspense>} />
             <Route path="*" element={<DashboardPage />} />
           </Route>
         ) : (

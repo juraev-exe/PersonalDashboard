@@ -40,7 +40,10 @@ export const useHabitStore = create<HabitState>((set, get) => ({
   logs: [],
 
   loadHabits: async () => {
+    const localHabits = storage.getAll<Habit>(HABITS_COLLECTION);
+    const localLogs = storage.getAll<HabitLog>(LOGS_COLLECTION);
     const { user, isGuest } = useAuthStore.getState();
+
     if (isSupabaseConfigured && !isGuest && user) {
       try {
         const habitsRes = await supabase!
@@ -48,48 +51,65 @@ export const useHabitStore = create<HabitState>((set, get) => ({
           .select('*')
           .eq('user_id', user.id);
           
-        if (habitsRes.error) throw habitsRes.error;
-        
-        const habits = habitsRes.data.map(mapHabitFromDB);
-        const habitIds = habits.map(h => h.id);
-        
-        let logs: HabitLog[] = [];
-        if (habitIds.length > 0) {
-          const logsRes = await supabase!
-            .from('habit_logs')
-            .select('*')
-            .in('habit_id', habitIds);
-          if (logsRes.error) throw logsRes.error;
-          logs = logsRes.data.map(mapHabitLogFromDB);
+        if (!habitsRes.error && habitsRes.data) {
+          const remoteHabits = habitsRes.data.map(mapHabitFromDB);
+          const remoteIds = new Set(remoteHabits.map((h) => h.id));
+          const remoteNames = new Set(remoteHabits.map((h) => h.name.toLowerCase().trim()));
+
+          // Auto-backup local habits not yet in Supabase
+          const unsyncedHabits = localHabits.filter(
+            (lh) => !remoteIds.has(lh.id) && !remoteNames.has(lh.name.toLowerCase().trim())
+          );
+
+          for (const localHabit of unsyncedHabits) {
+            try {
+              await supabase!.from('habits').insert(mapHabitToDB(localHabit, user.id));
+            } catch (err) {
+              console.warn('Could not auto-backup local habit:', err);
+            }
+          }
+
+          const mergedHabits = [...remoteHabits, ...unsyncedHabits];
+          const habitIds = mergedHabits.map((h) => h.id);
+          
+          let logs: HabitLog[] = [...localLogs];
+          if (habitIds.length > 0) {
+            const logsRes = await supabase!
+              .from('habit_logs')
+              .select('*')
+              .in('habit_id', habitIds);
+            if (!logsRes.error && logsRes.data) {
+              const remoteLogs = logsRes.data.map(mapHabitLogFromDB);
+              const logKeys = new Set(remoteLogs.map((l) => `${l.habitId}_${l.date}`));
+              const unsyncedLogs = localLogs.filter((l) => !logKeys.has(`${l.habitId}_${l.date}`));
+              logs = [...remoteLogs, ...unsyncedLogs];
+            }
+          }
+          
+          storage.setAll(HABITS_COLLECTION, mergedHabits);
+          storage.setAll(LOGS_COLLECTION, logs);
+          set({ habits: mergedHabits, logs });
+          return;
         }
-        
-        set({ habits, logs });
-        return;
       } catch (e) {
         console.error('Error loading habits/logs from Supabase:', e);
       }
     }
-    const habits = storage.getAll<Habit>(HABITS_COLLECTION);
-    const logs = storage.getAll<HabitLog>(LOGS_COLLECTION);
-    set({ habits, logs });
+    set({ habits: localHabits, logs: localLogs });
   },
 
   addHabit: async (habitData) => {
     const { user, isGuest } = useAuthStore.getState();
     const habit: Habit = { ...habitData, id: uuid(), createdAt: new Date().toISOString(), archived: false };
+
+    storage.create(HABITS_COLLECTION, habit);
     
     if (isSupabaseConfigured && !isGuest && user) {
       try {
-        const { error } = await supabase!
-          .from('habits')
-          .insert(mapHabitToDB(habit, user.id));
-        if (error) throw error;
+        await supabase!.from('habits').insert(mapHabitToDB(habit, user.id));
       } catch (e) {
-        console.error('Error saving habit to Supabase:', e);
-        throw e;
+        console.error('Error saving habit to Supabase (saved locally):', e);
       }
-    } else {
-      storage.create(HABITS_COLLECTION, habit);
     }
     
     set((s) => ({ habits: [...s.habits, habit] }));

@@ -5,10 +5,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useSettingsStore } from '../../stores/settingsStore';
 import { useAuthStore } from '../../stores/authStore';
-import { Search, Bell, Sun, Moon as MoonIcon, User, LogOut, Settings, ChevronDown } from 'lucide-react';
+import { Search, Bell, Sun, Moon as MoonIcon, User, LogOut, Settings, ChevronDown, Plug } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useIsMobile } from '../../hooks/useMediaQuery';
+import CommandPalette from './CommandPalette';
 
 export default function TopNav() {
   const [searchOpen, setSearchOpen] = useState(false);
@@ -16,6 +17,9 @@ export default function TopNav() {
   const theme = useSettingsStore((s) => s.theme);
   const toggleTheme = useSettingsStore((s) => s.toggleTheme);
   const collapsed = useSettingsStore((s) => s.sidebarCollapsed);
+  const openIntegrationsModal = useSettingsStore((s) => s.openIntegrationsModal);
+  const notionApiKey = useSettingsStore((s) => s.notionApiKey);
+  const microsoftAccessToken = useSettingsStore((s) => s.microsoftAccessToken);
   const isMobile = useIsMobile();
   const user = useAuthStore((s) => s.user);
   const isGuest = useAuthStore((s) => s.isGuest);
@@ -73,7 +77,8 @@ export default function TopNav() {
           justifyContent: 'space-between',
           gap: 12,
           padding: isMobile ? '0 12px' : '0 24px',
-          background: 'var(--color-bg-primary)',
+          background: 'var(--color-bg-card)',
+          backdropFilter: 'blur(16px)',
           borderBottom: '1px solid var(--color-border)',
           transition: 'left 0.2s ease',
         }}
@@ -125,6 +130,32 @@ export default function TopNav() {
 
         {/* Right: Actions */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          {/* Data Sync Button */}
+          <button
+            onClick={openIntegrationsModal}
+            className="btn btn-secondary btn-sm"
+            style={{
+              display: isMobile ? 'none' : 'flex',
+              alignItems: 'center',
+              gap: 6,
+              padding: '5px 10px',
+              fontSize: 12,
+              fontWeight: 500,
+            }}
+            title="Connect & Sync Notion / Microsoft To Do"
+          >
+            <Plug size={13} style={{ color: (notionApiKey || microsoftAccessToken) ? 'var(--color-accent)' : 'inherit' }} />
+            <span>{(notionApiKey || microsoftAccessToken) ? 'Data Synced' : 'Connect Data'}</span>
+            <span
+              style={{
+                width: 6,
+                height: 6,
+                borderRadius: '50%',
+                background: (notionApiKey || microsoftAccessToken) ? 'var(--color-accent)' : 'var(--color-border-light)',
+              }}
+            />
+          </button>
+
           <button
             onClick={toggleTheme}
             className="btn btn-ghost btn-icon"
@@ -273,52 +304,8 @@ export default function TopNav() {
         </div>
       </header>
 
-      {/* Search Modal */}
-      <AnimatePresence>
-        {searchOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.15 }}
-            className="modal-overlay"
-            onClick={() => setSearchOpen(false)}
-          >
-            <motion.div
-              initial={{ opacity: 0, scale: 0.97, y: -10 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.97, y: -10 }}
-              transition={{ duration: 0.15, ease: 'easeOut' }}
-              className="modal-content"
-              style={{ maxWidth: 600, marginTop: '-10vh' }}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--color-border)' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <Search size={16} style={{ color: 'var(--color-text-muted)', flexShrink: 0 }} />
-                  <input
-                    autoFocus
-                    type="text"
-                    placeholder="Search tasks, notes, projects..."
-                    style={{
-                      flex: 1,
-                      background: 'transparent',
-                      border: 'none',
-                      outline: 'none',
-                      color: 'var(--color-text-primary)',
-                      fontSize: 15,
-                      fontFamily: 'var(--font-sans)',
-                    }}
-                  />
-                </div>
-              </div>
-              <div style={{ padding: '20px', color: 'var(--color-text-muted)', fontSize: 13 }}>
-                Start typing to search across all modules...
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* Raycast / Linear Command Palette */}
+      <CommandPalette isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
     </>
   );
 }

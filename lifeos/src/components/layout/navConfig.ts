@@ -36,41 +36,29 @@ export interface NavGroup {
 
 export const navGroups: NavGroup[] = [
   {
-    title: 'PRODUCTIVITY',
+    title: 'CORE',
     items: [
       { path: '/', label: 'Dashboard', icon: LayoutDashboard },
-      { path: '/pomodoro', label: 'Pomodoro', icon: Timer },
       { path: '/tasks', label: 'Tasks', icon: CheckSquare },
       { path: '/habits', label: 'Habits', icon: Repeat },
+      { path: '/focus', label: 'Focus & Timer', icon: Timer },
+      { path: '/projects', label: 'Projects', icon: FolderKanban },
+      { path: '/notes', label: 'Notes', icon: StickyNote },
+    ],
+  },
+  {
+    title: 'PLANNING & LIFE',
+    items: [
+      { path: '/calendar', label: 'Calendar', icon: CalendarDays },
       { path: '/prayers', label: 'Prayers', icon: Moon },
-      { path: '/focus', label: 'Focus Mode', icon: Target },
+      { path: '/goals', label: 'Goals', icon: Target },
+      { path: '/journal', label: 'Journal', icon: PenTool },
+      { path: '/finance', label: 'Finance', icon: DollarSign },
       { path: '/detox', label: 'Digital Detox', icon: ShieldAlert },
     ],
   },
   {
-    title: 'LEARNING',
-    items: [
-      { path: '/journal', label: 'Journal', icon: PenTool },
-      { path: '/goals', label: 'Goals', icon: Target },
-      { path: '/weekly', label: 'Weekly Review', icon: CalendarDays },
-    ],
-  },
-  {
-    title: 'PROJECTS',
-    items: [
-      { path: '/projects', label: 'Projects', icon: FolderKanban },
-    ],
-  },
-  {
-    title: 'PERSONAL',
-    items: [
-      { path: '/calendar', label: 'Calendar', icon: CalendarDays },
-      { path: '/notes', label: 'Notes', icon: StickyNote },
-      { path: '/finance', label: 'Finance', icon: DollarSign },
-    ],
-  },
-  {
-    title: 'INSIGHTS',
+    title: 'SYSTEM',
     items: [
       { path: '/analytics', label: 'Analytics', icon: BarChart3 },
       { path: '/settings', label: 'Settings', icon: Settings },

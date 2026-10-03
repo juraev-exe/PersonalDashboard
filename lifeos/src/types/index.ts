@@ -103,6 +103,10 @@ export interface Task {
   completedAt?: string;
   /** Source page id when this task was imported from Notion. */
   notionId?: string;
+  /** Source task id when this task was imported from Microsoft To Do. */
+  todoId?: string;
+  /** Source list id in Microsoft To Do. */
+  todoListId?: string;
 }
 
 export interface Habit {
@@ -244,8 +248,16 @@ export interface AppSettings {
   notionTasksDatabaseId?: string;
   /** Notion database synced into the Habits page. */
   notionHabitsDatabaseId?: string;
+  /** Microsoft Graph Access Token for Microsoft To Do. */
+  microsoftAccessToken?: string;
+  /** Default Microsoft To Do List ID to sync with. */
+  microsoftTodoListId?: string;
   spotifyPlaylistUrl?: string;
   sidebarAutoHide?: boolean;
+  /** Supabase Project URL */
+  supabaseUrl?: string;
+  /** Supabase Public Anon Key */
+  supabaseAnonKey?: string;
 }
 
 export interface Quote {
