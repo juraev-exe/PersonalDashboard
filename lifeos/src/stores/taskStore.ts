@@ -178,12 +178,14 @@ export const useTaskStore = create<TaskState>((set, get) => ({
         console.error('Error completing task in Supabase:', error.message);
         throw new Error(`Cloud complete failed: ${error.message}`);
       }
-    }
-
-    try {
+      try {
+        storage.update<Task>(localKey, id, updates);
+      } catch (err) {
+        console.warn('Could not update local storage cache on completion:', err);
+      }
+    } else {
+      // Guest or offline user: local storage is the source of truth, so write errors must not be swallowed
       storage.update<Task>(localKey, id, updates);
-    } catch (err) {
-      console.warn('Could not update local storage on completion:', err);
     }
 
     // Auto-reschedule recurring task ONLY AFTER completion succeeds (Issue 2)
